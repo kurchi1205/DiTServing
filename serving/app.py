@@ -23,7 +23,7 @@ def load_inference_pipeline():
     pipe = load_pipe(pipe_config_arg)  # Load the DiT model pipeline during startup
     print("Pipeline loaded successfully.")
 
-@app.post("/generate/")
+@app.post("/generate")
 def inference(request: RequestModel):
     try:
         args = request.dict()
