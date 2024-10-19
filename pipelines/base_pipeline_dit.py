@@ -1,14 +1,14 @@
 import torch
 from typing import Dict, List, Optional, Tuple, Union
-from diffusers import DiffusionPipeline, DiTTransformer2DModel, AutoencoderKL, KarrasDiffusionSchedulers, ImagePipelineOutput
-from diffusers.utils import randn_tensor
+from diffusers import DiffusionPipeline, DiTTransformer2DModel, AutoencoderKL, ImagePipelineOutput, DDIMScheduler
+from diffusers.utils.torch_utils import randn_tensor
 
 class DitPipeline(DiffusionPipeline):
     def __init__(
         self,
         transformer: DiTTransformer2DModel,
         vae: AutoencoderKL,
-        scheduler: KarrasDiffusionSchedulers,
+        scheduler: DDIMScheduler,
         id2label: Optional[Dict[int, str]] = None,
     ):
         super().__init__()
