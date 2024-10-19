@@ -1,5 +1,5 @@
-import Path
 import uuid
+from pathlib import Path
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from infer_base_pipeline import load_pipe, generate
