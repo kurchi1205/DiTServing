@@ -26,8 +26,7 @@ def load_pipe(pipe_config_arg=None):
 
 def generate(pipe, prompt, num_inference_steps):
     class_ids = pipe.get_label_ids([prompt])
-    generator = torch.manual_seed(33)
-    output = pipe(class_labels=class_ids, num_inference_steps=num_inference_steps, generator=generator)
+    output = pipe(class_labels=class_ids, num_inference_steps=num_inference_steps)
     image = output.images[0]  
     return image
 
