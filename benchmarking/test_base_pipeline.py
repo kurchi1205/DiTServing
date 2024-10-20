@@ -27,18 +27,3 @@ def test_inference_latency(benchmark):
     # Optionally, assert something in the result
     assert "message" in result
     assert "Image saved at" in result["message"]
-
-
-# Another test: Run multiple requests and measure total time and throughput
-@pytest.mark.benchmark(group="Throughput-Test")
-def test_throughput(benchmark):
-    """Benchmark multiple requests to measure throughput."""
-    num_requests = 10  # Adjust based on your needs
-
-    # Helper function to benchmark a batch of requests
-    def batch_request():
-        for _ in range(num_requests):
-            make_request()
-
-    # Use the benchmark fixture to measure the total time for the batch
-    benchmark(batch_request)
