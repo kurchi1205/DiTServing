@@ -1,6 +1,7 @@
 import torch
 from typing import Dict, List, Optional, Tuple, Union
-from diffusers import DiffusionPipeline, DiTTransformer2DModel, AutoencoderKL, ImagePipelineOutput, DDIMScheduler, BaseOutput
+from diffusers import DiffusionPipeline, DiTTransformer2DModel, AutoencoderKL, ImagePipelineOutput, DDIMScheduler
+from diffusers.utils import BaseOutput
 from diffusers.utils.torch_utils import randn_tensor
 import PIL.Image
 import numpy as np

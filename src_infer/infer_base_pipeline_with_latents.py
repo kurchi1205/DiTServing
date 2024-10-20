@@ -6,7 +6,9 @@ from PIL import Image
 try:
     from pipelines.base_pipeline_dit import DitPipeline
 except ImportError:
-    from ..pipelines.base_pipeline_dit import DitPipeline
+    import sys
+    sys.path.insert(0, "../")
+    from pipelines.base_pipeline_dit import DitPipeline
 
 from diffusers import DPMSolverMultistepScheduler
 
