@@ -1,7 +1,13 @@
 import torch
 from typing import Dict, List, Optional, Tuple, Union
-from diffusers import DiffusionPipeline, DiTTransformer2DModel, AutoencoderKL, ImagePipelineOutput, DDIMScheduler
+from diffusers import DiffusionPipeline, DiTTransformer2DModel, AutoencoderKL, ImagePipelineOutput, DDIMScheduler, BaseOutput
 from diffusers.utils.torch_utils import randn_tensor
+import PIL.Image
+import numpy as np
+
+class ImagePipelineOutputWithLatents(BaseOutput):
+    images: Union[List[PIL.Image.Image], np.ndarray]
+    latents: Union[List[PIL.Image.Image], np.ndarray]
 
 class DitPipeline(DiffusionPipeline):
     def __init__(
@@ -46,6 +52,18 @@ class DitPipeline(DiffusionPipeline):
 
         return [self.labels[l] for l in label]
 
+    def decode_latents(self, latents, output_type="pil"):
+        latents = 1 / self.vae.config.scaling_factor * latents
+        samples = self.vae.decode(latents).sample
+
+        samples = (samples / 2 + 0.5).clamp(0, 1)
+
+        # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
+        samples = samples.cpu().permute(0, 2, 3, 1).float().numpy()
+        if output_type == "pil":
+            samples = self.numpy_to_pil(samples)
+        return samples
+
     @torch.no_grad()
     def __call__(
         self,
@@ -55,6 +73,7 @@ class DitPipeline(DiffusionPipeline):
         num_inference_steps: int = 50,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
+        get_intermediate_latents: bool = False
     ) -> Union[ImagePipelineOutput, Tuple]:
         r"""
         The call function to the pipeline for generation.
@@ -109,6 +128,7 @@ class DitPipeline(DiffusionPipeline):
         batch_size = len(class_labels)
         latent_size = self.transformer.config.sample_size
         latent_channels = self.transformer.config.in_channels
+        intermediate_latents = [] if get_intermediate_latents else None
 
         latents = randn_tensor(
             shape=(batch_size, latent_channels, latent_size, latent_size),
@@ -167,11 +187,21 @@ class DitPipeline(DiffusionPipeline):
 
             # compute previous image: x_t -> x_t-1
             latent_model_input = self.scheduler.step(model_output, t, latent_model_input).prev_sample
+            if get_intermediate_latents:
+                if guidance_scale > 1:
+                    intermediate_latents.append(latent_model_input.chunk(2, dim=0)[0])
+                else:
+                    intermediate_latents.append(latent_model_input)
 
         if guidance_scale > 1:
             latents, _ = latent_model_input.chunk(2, dim=0)
         else:
             latents = latent_model_input
+
+        if intermediate_latents is not None:
+            intermediate_latents = torch.cat(intermediate_latents, dim=0)
+            intermediate_samples = self.decode_latents(intermediate_latents, output_type)
+        
 
         latents = 1 / self.vae.config.scaling_factor * latents
         samples = self.vae.decode(latents).sample
@@ -186,6 +216,11 @@ class DitPipeline(DiffusionPipeline):
 
         # Offload all models
         self.maybe_free_model_hooks()
+        if get_intermediate_latents:
+            if not return_dict:
+                return (samples, intermediate_samples)
+
+            return ImagePipelineOutputWithLatents(images=samples, latents=intermediate_samples)
 
         if not return_dict:
             return (samples,)
