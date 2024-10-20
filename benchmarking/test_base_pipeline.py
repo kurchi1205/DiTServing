@@ -1,3 +1,5 @@
+# pytest test_benchmark_pipeline.py --benchmark-json benchmark_results.json
+
 import pytest
 import requests
 import json
