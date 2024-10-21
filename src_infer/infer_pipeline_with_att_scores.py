@@ -3,7 +3,9 @@ import os
 try:
     from pipelines.pipeline_dit_with_attn_scores import DitPipelineAttnScores
 except:
-    from ..pipelines.pipeline_dit_with_attn_scores import DitPipelineAttnScores
+    import sys
+    sys.path.insert(0, "../")
+    from pipelines.pipeline_dit_with_attn_scores import DitPipelineAttnScores
 
 from diffusers import DPMSolverMultistepScheduler
 
@@ -17,7 +19,7 @@ def load_pipe(pipe_config_arg=None):
         pipe_config = pipe_config_arg
     pipe_type = pipe_config["pipeline_type"]
     if pipe_type == "base":
-        pipe = DitPipelineAttnScores.from_pretrained("facebook/DiT-XL-2-512", torch_dtype=torch.float16)
+        pipe = DitPipelineAttnScores.from_pretrained("facebook/DiT-XL-2-512", torch_dtype=torch.float32)
 
     pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     pipe = pipe.to("cuda")
@@ -33,6 +35,6 @@ def generate(pipe, prompt, num_inference_steps):
 
 if __name__ == "__main__":
     pipe = load_pipe()
-    image = generate(pipe, "white shark", num_inference_steps=25)
+    image = generate(pipe, "white shark", num_inference_steps=2)
     os.makedirs("../results", exist_ok=True)
     image.save("../results/base_infer_image.jpg")

@@ -1,8 +1,8 @@
 import torch
-import logging
 from typing import Any, Dict, List, Optional, Tuple
 from diffusers.models.attention import _chunked_feed_forward, BasicTransformerBlock
 from diffusers.models.attention_processor import Attention
+from diffusers.utils import logging
 
 
 logger = logging.get_logger(__name__)
