@@ -210,4 +210,4 @@ class BasicTransformerBlockWithScores(BasicTransformerBlock):
         if hidden_states.ndim == 4:
             hidden_states = hidden_states.squeeze(1)
 
-        return hidden_states
+        return hidden_states, attention_scores
