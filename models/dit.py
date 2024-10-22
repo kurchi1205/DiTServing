@@ -22,7 +22,7 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
         kwargs.pop("only_cross_attention")
         kwargs.pop("use_linear_projection")
         super().__init__(*args, **kwargs)
-        self.transformer_blocks = nn.ModuleList(
+        transformer_blocks = nn.ModuleList(
             [
                 BasicTransformerBlockWithScores(
                     self.inner_dim,
@@ -40,19 +40,17 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
                 for _ in range(self.config.num_layers)
             ]
         )
+        for old_block, new_block in zip(self.transformer_blocks, transformer_blocks):
+            new_block.load_state_dict(old_block.state_dict())
+        self.transformer_blocks = transformer_blocks
+
 
 
     def save_attention_latent(self, attn_score, idx):
-        joint_attentions = torch.zeros(attn_score.size())
-        joint_attentions[0] = attn_score[0]
-
-        for n in range(1, attn_score.size(0)):
-            joint_attentions[n] = torch.matmul(attn_score[n], joint_attentions[n-1])
-            
-        # Attention from the output token to the input space.
-        v = joint_attentions[-1]
+        v = attn_score[0]
         grid_size = int(np.sqrt(attn_score.size(-1)))
-        mask = v[0, 1:].reshape(grid_size, grid_size).detach().numpy()
+        mask = v.detach().cpu().numpy()
+        mask = np.log(mask + 1e-6)
         fig, ax = plt.subplots()
         cax = ax.matshow(mask, cmap='viridis')
         plt.axis('off')  # Hide the axis
@@ -137,7 +135,6 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
         if encoder_attention_mask is not None and encoder_attention_mask.ndim == 2:
             encoder_attention_mask = (1 - encoder_attention_mask.to(hidden_states.dtype)) * -10000.0
             encoder_attention_mask = encoder_attention_mask.unsqueeze(1)
-
         # 1. Input
         if self.is_input_continuous:
             batch_size, _, height, width = hidden_states.shape

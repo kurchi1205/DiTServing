@@ -20,5 +20,6 @@ class DitPipelineAttnScores(DitPipeline):
         new_transformer = copy.deepcopy(transformer)
         new_transformer.__class__ = Transformer2DModelWithAttScores
         new_transformer.__init__(**transformer.config)
+        new_transformer.load_state_dict(transformer.state_dict())
         super().__init__(new_transformer, vae, scheduler, id2label)
         

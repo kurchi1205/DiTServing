@@ -140,7 +140,6 @@ class BasicTransformerBlockWithScores(BasicTransformerBlock):
             encoder_hidden_states if self.only_cross_attention else None,
             attention_mask
         )
-        print(attention_scores.size())
 
         if self.norm_type == "ada_norm_zero":
             attn_output = gate_msa.unsqueeze(1) * attn_output
