@@ -135,7 +135,7 @@ class DitPipelineAttnScores(DitPipeline):
                 latent_model_input, timestep=timesteps, class_labels=class_labels_input, attention_scores_layer=attention_scores_layer
             )
             noise_pred = trans_output.sample
-            attn_scores = trans_output.scores
+            attn_scores = copy.deepcopy(trans_output.scores)
 
             # perform guidance
             if guidance_scale > 1:
