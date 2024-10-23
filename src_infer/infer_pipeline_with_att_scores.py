@@ -35,6 +35,6 @@ def generate(pipe, prompt, num_inference_steps):
 
 if __name__ == "__main__":
     pipe = load_pipe()
-    image = generate(pipe, "white shark", num_inference_steps=2)
+    image = generate(pipe, "white shark", num_inference_steps=25)
     os.makedirs("../results", exist_ok=True)
     image.save("../results/base_infer_image.jpg")

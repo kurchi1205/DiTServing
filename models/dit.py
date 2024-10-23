@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt
 from .attention import BasicTransformerBlockWithScores
 from diffusers import Transformer2DModel
 from diffusers.models.modeling_outputs import Transformer2DModelOutput
+from diffusers.utils import BaseOutput
 
 
-# class Transformer2DModelOutputWithAttnScores(Transformer2DModelOutput):
-#     sample: torch.Tensor
-#     scores: torch.Tensor
+class Transformer2DModelOutputWithAttnScores(BaseOutput):
+    sample: torch.Tensor
+    scores: Dict
 
 class Transformer2DModelWithAttScores(Transformer2DModel):
     def __init__(self, *args, **kwargs):
@@ -43,7 +44,7 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
         for old_block, new_block in zip(self.transformer_blocks, transformer_blocks):
             new_block.load_state_dict(old_block.state_dict())
         self.transformer_blocks = transformer_blocks
-
+        self.attention_scores = {}
 
 
     def save_attention_latent(self, attn_score, idx):
@@ -71,6 +72,7 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
         attention_mask: Optional[torch.Tensor] = None,
         encoder_attention_mask: Optional[torch.Tensor] = None,
         return_dict: bool = True,
+        attention_scores_layer: int = 0
     ):
         """
         The [`Transformer2DModel`] forward method.
@@ -162,7 +164,9 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
                     cross_attention_kwargs=cross_attention_kwargs,
                     class_labels=class_labels,
                 )
-                self.save_attention_latent(scores, b)
+                if attention_scores_layer == b:
+                    self.attention_scores[b] = scores.detach().cpu().numpy().tolist()
+                # self.save_attention_latent(scores, b)
 
         # 3. Output
         if self.is_input_continuous:
@@ -186,8 +190,9 @@ class Transformer2DModelWithAttScores(Transformer2DModel):
                 width=width,
             )
         if not return_dict:
-            return (output, )
+            return (output, self.attention_scores)
 
-        return Transformer2DModelOutput(
-            sample=output
+        return Transformer2DModelOutputWithAttnScores(
+            sample=output,
+            scores=self.attention_scores
         )
