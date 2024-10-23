@@ -182,7 +182,7 @@ class DitPipelineAttnScores(DitPipeline):
 
         if output_type == "pil":
             samples = self.numpy_to_pil(samples)
-        with open("attention_scores.json", "w") as f:
+        with open(f"attention_scores_{attention_scores_layer}.json", "w") as f:
             json.dump(self.attn_scores_across_timesteps, f)
 
         # Offload all models

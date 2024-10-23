@@ -26,15 +26,22 @@ def load_pipe(pipe_config_arg=None):
     return pipe
 
 
-def generate(pipe, prompt, num_inference_steps):
+def generate(pipe, prompt, num_inference_steps, attention_scores_layer):
     class_ids = pipe.get_label_ids([prompt])
-    output = pipe(class_labels=class_ids, num_inference_steps=num_inference_steps)
+    output = pipe(class_labels=class_ids, num_inference_steps=num_inference_steps, attention_scores_layer=attention_scores_layer)
     image = output.images[0]  
     return image
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate images with attention scores from a specific layer.')
+    parser.add_argument('--attention_scores_layer', type=int, default=2, help='Specifies the transformer layer from which to pull attention scores.')
+    parser.add_argument('--prompt', type=str, required=True, help='Prompt for generating the image.', default="white shark")
+    parser.add_argument('--num_inference_steps', type=int, default=25, help='Number of inference steps.')
+    return parser.parse_args()
 
 if __name__ == "__main__":
+    args = parse_args()
     pipe = load_pipe()
-    image = generate(pipe, "white shark", num_inference_steps=25)
+    image = generate(pipe, args.prompt, num_inference_steps=args.num_inference_steps, attention_scores_layer=args.attention_scores_layer)
     os.makedirs("../results", exist_ok=True)
     image.save("../results/base_infer_image.jpg")
