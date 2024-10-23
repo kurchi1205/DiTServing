@@ -1,5 +1,7 @@
 import torch
 import os
+import argparse
+
 try:
     from pipelines.pipeline_dit_with_attn_scores import DitPipelineAttnScores
 except:
@@ -35,7 +37,7 @@ def generate(pipe, prompt, num_inference_steps, attention_scores_layer):
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate images with attention scores from a specific layer.')
     parser.add_argument('--attention_scores_layer', type=int, default=2, help='Specifies the transformer layer from which to pull attention scores.')
-    parser.add_argument('--prompt', type=str, required=True, help='Prompt for generating the image.', default="white shark")
+    parser.add_argument('--prompt', type=str, help='Prompt for generating the image.', default="white shark")
     parser.add_argument('--num_inference_steps', type=int, default=25, help='Number of inference steps.')
     return parser.parse_args()
 

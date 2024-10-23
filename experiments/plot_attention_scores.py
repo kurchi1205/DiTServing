@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 def plot_attn_scores(json_file):
     with open(json_file, "r") as f:
@@ -40,9 +41,15 @@ def plot_attn_scores(json_file):
     
     # Adjust layout to prevent overlap
     plt.tight_layout()
-    plt.savefig(f"attn_output_{layer_name}.jpeg")  # Save the figure to a file
+    plt.savefig(f"../results/attention/attn_output_{layer_name}.jpeg")  # Save the figure to a file
     plt.close(fig)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate images with attention scores from a specific layer.')
+    parser.add_argument('--attention_scores_layer', type=int, default=2, help='Specifies the transformer layer from which to pull attention scores.')
+    return parser.parse_args()
 
 # Example usage:
 if __name__ == "__main__":
-    plot_attn_scores("../src_infer/attention_scores_2.json")
+    args = parse_args()
+    plot_attn_scores(f"../results/attention/attention_scores_{args.attention_scores_layer}.json")
