@@ -29,7 +29,7 @@ def plot_attn_scores(json_file):
             
             # Plotting on the corresponding subplot
             ax = axes[index]
-            cax = ax.matshow(np.log(matrix), cmap='viridis')
+            cax = ax.matshow(np.log(matrix + 1e-6), cmap='viridis')
             ax.set_title(f"Timestep {timestep}, Layer {layer_id}")
             ax.axis('off')  # Turn off axis numbering and ticks
             layer_name = str(layer_id)
