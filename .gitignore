@@ -3,3 +3,4 @@ serving/**/*.jpeg
 
 #compiled files
 **/*.pyc
+*/attention/attention_scores_*.json
