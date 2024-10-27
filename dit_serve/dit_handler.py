@@ -5,7 +5,8 @@ from abc import ABC
 import diffusers
 import numpy as np
 import torch
-from diffusers import DiffusionPipeline, DiTPipeline
+from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
+from base_pipeline_dit import DitPipeline
 
 from ts.torch_handler.base_handler import BaseHandler
 
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 logger.info("Diffusers version %s", diffusers.__version__)
 
 
-class DiffusersHandler(BaseHandler, ABC):
+class DitHandler(BaseHandler, ABC):
     """
     Diffusers handler class for text to image generation.
     """
@@ -43,8 +44,8 @@ class DiffusersHandler(BaseHandler, ABC):
             zip_ref.extractall(model_dir + "/model")
 
         # self.pipe = DiffusionPipeline.from_pretrained(model_dir + "/model")
-        self.pipe = DiTPipeline.from_pretrained(model_dir + "/model")
-
+        self.pipe = DitPipeline.from_pretrained(model_dir + "/model")
+        self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(self.device)
         logger.info("Diffusion model from path %s loaded successfully", model_dir)
 
@@ -77,8 +78,10 @@ class DiffusersHandler(BaseHandler, ABC):
             list : It returns a list of the generate images for the input text
         """
         # Handling inference for sequence_classification.
+        logger.info("Inputs: '%s'", inputs)
+        class_ids = self.pipe.get_label_ids(inputs)
         inferences = self.pipe(
-            inputs, guidance_scale=7.5, num_inference_steps=50, height=768, width=768
+            class_labels=class_ids, guidance_scale=7.5, num_inference_steps=50
         ).images
 
         logger.info("Generated image: '%s'", inferences)
