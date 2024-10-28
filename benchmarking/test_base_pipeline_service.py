@@ -6,7 +6,7 @@ import json
 import time
 
 def make_request():
-    url = "http://localhost:8080/predictions/dit-diffusion/"
+    url = "http://localhost:8080/predictions/dit-model/"
     prompt = "white shark"
     response = requests.post(url, data=prompt)
     response.raise_for_status()  # Ensure we raise an exception on failed requests

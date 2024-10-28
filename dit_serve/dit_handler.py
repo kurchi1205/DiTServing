@@ -78,6 +78,7 @@ class DitHandler(BaseHandler, ABC):
             list : It returns a list of the generate images for the input text
         """
         # Handling inference for sequence_classification.
+        logger.info("Inputs: %s", inputs)
         class_ids = self.pipe.get_label_ids(inputs)
         inferences = self.pipe(
             class_labels=class_ids, guidance_scale=7.5, num_inference_steps=50

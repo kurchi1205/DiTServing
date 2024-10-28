@@ -28,13 +28,13 @@
             "vendor_id_raw": "GenuineIntel",
             "brand_raw": "Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz",
             "hz_advertised_friendly": "2.1000 GHz",
-            "hz_actual_friendly": "799.9440 MHz",
+            "hz_actual_friendly": "800.4300 MHz",
             "hz_advertised": [
                 2100000000,
                 0
             ],
             "hz_actual": [
-                799944000,
+                800430000,
                 0
             ],
             "stepping": 7,
@@ -200,9 +200,9 @@
     },
     "benchmarks": [
         {
-            "group": "API-Inference",
-            "name": "test_inference_latency",
-            "fullname": "test_base_pipeline_service.py::test_inference_latency",
+            "group": "Batched-API-Inference",
+            "name": "test_batched_inference_latency",
+            "fullname": "test_base_pipeline_batched_service.py::test_batched_inference_latency",
             "params": null,
             "param": null,
             "extra_info": {},
@@ -215,38 +215,38 @@
                 "warmup": false
             },
             "stats": {
-                "min": 2.8714850936084986,
-                "max": 3.0310682374984026,
-                "mean": 2.972992689162493,
-                "stddev": 0.053468898494255034,
+                "min": 5.153091829270124,
+                "max": 5.438527628779411,
+                "mean": 5.317922838032246,
+                "stddev": 0.0845705300820438,
                 "rounds": 10,
-                "median": 2.990968693047762,
-                "iqr": 0.07927713170647621,
-                "q1": 2.934043362736702,
-                "q3": 3.013320494443178,
+                "median": 5.34313777834177,
+                "iqr": 0.0945564266294241,
+                "q1": 5.272070698440075,
+                "q3": 5.366627125069499,
                 "iqr_outliers": 0,
-                "stddev_outliers": 4,
-                "outliers": "4;0",
-                "ld15iqr": 2.8714850936084986,
-                "hd15iqr": 3.0310682374984026,
-                "ops": 0.33636140567897094,
-                "total": 29.729926891624928,
+                "stddev_outliers": 3,
+                "outliers": "3;0",
+                "ld15iqr": 5.153091829270124,
+                "hd15iqr": 5.438527628779411,
+                "ops": 0.1880433452039374,
+                "total": 53.179228380322456,
                 "data": [
-                    2.8714850936084986,
-                    2.9861554615199566,
-                    3.0028099827468395,
-                    2.9108772352337837,
-                    2.9957819245755672,
-                    3.013320494443178,
-                    2.934043362736702,
-                    3.0310682374984026,
-                    3.029159339144826,
-                    2.955225760117173
+                    5.153091829270124,
+                    5.229946771636605,
+                    5.330369343981147,
+                    5.272070698440075,
+                    5.280221868306398,
+                    5.39385742507875,
+                    5.358609477058053,
+                    5.3559062127023935,
+                    5.438527628779411,
+                    5.366627125069499
                 ],
                 "iterations": 1
             }
         }
     ],
-    "datetime": "2024-10-28T12:32:14.744004",
+    "datetime": "2024-10-28T16:58:59.831366",
     "version": "4.0.0"
 }
