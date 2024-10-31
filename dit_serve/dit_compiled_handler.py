@@ -3,12 +3,14 @@ import zipfile
 from abc import ABC
 
 import diffusers
-from dit_serve.dit_handler import DitHandler
 import numpy as np
 import torch
+import torch._dynamo
+torch._dynamo.config.suppress_errors = True
 from diffusers import DiffusionPipeline, DPMSolverMultistepScheduler
 from base_pipeline_dit import DitPipeline
 
+from ts.torch_handler.base_handler import BaseHandler
 from dit_handler import DitHandler
 
 logger = logging.getLogger(__name__)
@@ -21,7 +23,7 @@ class DitCompiledHandler(DitHandler):
     """
 
     def __init__(self):
-        super().__init__()
+        self.initialized=False
 
     def initialize(self, ctx):
         """In this initialize function, the Stable Diffusion model is loaded and
@@ -48,7 +50,7 @@ class DitCompiledHandler(DitHandler):
         self.pipe = DitPipeline.from_pretrained(model_dir + "/model")
         self.pipe.scheduler = DPMSolverMultistepScheduler.from_config(self.pipe.scheduler.config)
         self.pipe.to(self.device)
-        self.pipe.transformer = torch.compile(self.pipe.transformer, fullgraph=True, mode="reduce-overhead")
+        self.pipe.transformer = torch.compile(self.pipe.transformer, fullgraph=False, mode="reduce-overhead")
         logger.info("Diffusion model from path %s loaded successfully", model_dir)
 
         class_ids = self.pipe.get_label_ids(["white shark"])
