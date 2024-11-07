@@ -9,6 +9,7 @@ def load_pipe():
     return pipe
 
 def compile_pipe(pipe):
+    pipe.vae = torch.compile(pipe.vae, fullgraph=True, mode="reduce-overhead")
     pipe.transformer = torch.compile(pipe.transformer, fullgraph=False, mode="reduce-overhead")
     return pipe
 
@@ -29,6 +30,7 @@ if __name__=="__main__":
     compile = True
     if compile:
         pipe = compile_pipe(pipe)
+    print(pipe)
     prompt = "a photo of a cat holding a sign that says hello world"
     num_inference_steps = 28
     image = infer(pipe, prompt, num_inference_steps)
