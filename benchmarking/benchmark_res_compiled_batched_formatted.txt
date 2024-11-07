@@ -1,0 +1,5 @@
+Group                 | Name                           | Min Time | Max Time | Mean Time | Std Dev | Median | Rounds
+--------------------------------------------------------------------------------------------------------------------
+Batched-API-Inference | test_batched_inference_latency | 2.591    | 2.91     | 2.765     | 0.131   | 2.848  | 10    
+
+
