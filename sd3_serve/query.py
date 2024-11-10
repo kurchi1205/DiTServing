@@ -29,3 +29,4 @@ if __name__=="__main__":
     print("Time taken: ", time.time() - st_time)
 
 # python query.py --url http://localhost:8080/predictions/sd3-model/ --prompt "A beautiful girl"
+# python query.py --url http://localhost:8080/predictions/sd3-model-batched/ --prompt "A beautiful girl"
