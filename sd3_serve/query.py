@@ -27,3 +27,5 @@ if __name__=="__main__":
     st_time = time.time()
     response = requests.post(args.url, data=args.prompt)
     print("Time taken: ", time.time() - st_time)
+
+# python query.py --url http://localhost:8080/predictions/sd3-model/ --prompt "A beautiful girl"
