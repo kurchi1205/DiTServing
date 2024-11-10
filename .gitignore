@@ -1,5 +1,8 @@
 #media
-serving/**/*.jpeg
+**/*.jpeg
+**/*.png
+
+
 
 #compiled files
 **/*.pyc
@@ -8,3 +11,4 @@ dit_serve/model.zip
 dit_serve/Dit_model/*
 dit_serve/logs/*
 dit_serve/model_store/*
+
