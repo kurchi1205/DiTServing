@@ -12,7 +12,7 @@
 # cd ../sd3_uncompiled
 
 # mkdir -p model_store
-cd sd3_uncompiled/unbatched
+cd sd3_uncompiled/batched
 
 # torch-model-archiver --model-name sd3-model -f --version 1.02 --handler sd3_handler.py --extra-files "sd3_model.zip" -r ../requirements.txt --export-path model_store 
 torchserve --start --ts-config config.properties --disable-token-auth  --enable-model-api
