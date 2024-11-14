@@ -1,5 +1,6 @@
 # pytest test_base_pipeline_service.py --benchmark-json benchmark_results.json
 # pytest test_base_pipeline_service.py --benchmark-json benchmark_results_sd3.json
+# pytest test_base_pipeline_service.py --benchmark-json benchmark_results_sd3_compiled.json
 
 import pytest
 import requests

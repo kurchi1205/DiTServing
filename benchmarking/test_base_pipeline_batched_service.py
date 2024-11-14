@@ -1,11 +1,13 @@
 # pytest test_base_pipeline_service.py --benchmark-json benchmark_results.json
+# pytest test_base_pipeline_batched_service.py --benchmark-json benchmark_results_sd3_batched.json
 
 import pytest
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def send_requests_concurrently(prompts):
-    url = "http://localhost:8080/predictions/dit-model/"
+    # url = "http://localhost:8080/predictions/dit-model/"
+    url = "http://localhost:8080/predictions/sd3-model/"
     with ThreadPoolExecutor(max_workers=len(prompts)) as executor:
         # Submit all requests to the thread pool
         futures = [executor.submit(requests.post, url, data=prompt) for prompt in prompts]

@@ -1,0 +1,3 @@
+Group         | Name                   | Min Time | Max Time | Mean Time | Std Dev | Median | Rounds
+----------------------------------------------------------------------------------------------------
+API-Inference | test_inference_latency | 19.198   | 20.027   | 19.596    | 0.294   | 19.533 | 10    
