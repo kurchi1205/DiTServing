@@ -29,9 +29,9 @@ async def test_request_handler():
 
     # List of prompts and their respective timesteps
     prompts = [
-        {"prompt": "Generate image of a cat", "timesteps_left": 5},
-        {"prompt": "Generate image of a dog", "timesteps_left": 3},
-        {"prompt": "Generate image of a car", "timesteps_left": 7},
+        {"prompt": "Generate image of a cat", "timesteps_left": 30},
+        {"prompt": "Generate image of a dog", "timesteps_left": 30},
+        {"prompt": "Generate image of a car", "timesteps_left": 30},
     ]
 
     # Add requests to the handler

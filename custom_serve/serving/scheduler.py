@@ -36,4 +36,14 @@ class Scheduler:
                     await request_pool.attn_queue.put(request_id)
                     request["status"] = "in_progress"
 
-            
+
+    async def shift_to_active_queue_from_attn(self, request_pool):
+        """
+        Transfer requests from the attention queue back to the active queue
+        after attention-specific processing is complete.
+        """
+        async with self.lock:
+            while not request_pool.attn_queue.empty():
+                request_id = await request_pool.attn_queue.get()
+                # Add the request back to the active queue
+                await request_pool.add_to_active_queue(request_id)

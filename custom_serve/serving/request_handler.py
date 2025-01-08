@@ -49,7 +49,7 @@ class RequestHandler:
             "timestamp": datetime.now().isoformat(),
             "status": "pending",
             "timesteps_left": timesteps_left,
-            "cache_interval": 5,  # Default cache interval
+            "cache_interval": 0,  # Default cache interval
             "prompt": prompt
         }
         return request
@@ -57,6 +57,7 @@ class RequestHandler:
     def add_request(self, prompt, timesteps_left):
         request = self.create_request(prompt, timesteps_left)
         self.request_pool.add_request_to_pool(request)
+        self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
 
     
 
@@ -75,7 +76,6 @@ class RequestHandler:
     async def process_request(self, model):
         while True:
             # Step 1: Shift requests to attn_queue using the scheduler
-            print(self.request_pool.requests)
             await self.scheduler.shift_to_attn_queue(self.request_pool)
 
             # Step 2: Process attention requests in a batch
@@ -85,10 +85,8 @@ class RequestHandler:
 
             # Step 3: Process non-attention active requests in a batch
             active_requests = await self.request_pool.get_all_active_requests()
-            print(active_requests)
             if active_requests:
                 await self._process_batch(model, active_requests, requires_attention=False)
-
             await asyncio.sleep(0.01)  # Avoid high CPU usage
 
     async def _process_batch(self, model, batch, requires_attention):
@@ -114,7 +112,6 @@ class RequestHandler:
                 await self.request_pool.add_to_active_queue(request_id)
             elif request["status"] == "completed":
                 del self.request_pool.requests[request_id]
-                return "completed"
 
 
 
