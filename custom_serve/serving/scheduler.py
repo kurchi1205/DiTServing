@@ -1,29 +1,39 @@
+import asyncio
+
 class Scheduler:
     def __init__(self, batch_size):
         self.batch_size = batch_size
+        self.lock = asyncio.Lock()
 
-    def prioritize_requests(self, request_pool):
-        expiring_requests = []
-        new_requests = []
+    async def add_to_active_request_queue(self, request_pool, request_id):
+        async with self.lock: 
+            await request_pool.add_to_active_queue(request_id)
 
-        for request in request_pool.values():
-            if "cache_interval" in request:
-                # Check if the latent is expiring
+    async def shift_to_attn_queue(self, request_pool):
+        async with self.lock:
+            active_requests = []
+            
+            # Step 1: Process active queue first
+            while not request_pool.active_queue.empty():
+                request_id = await request_pool.active_queue.get()
+                request = request_pool.requests[request_id]
+
+                # Check if the request requires attention
                 if request["cache_interval"] == 0:
-                    expiring_requests.append(request)
-            else:    
-                new_requests.append(request)
+                    await request_pool.attn_queue.put(request_id)
+                else:
+                    active_requests.append(request_id)
 
-        if len(expiring_requests) == 0 and len(new_requests) == 0:
-            expiring_requests = request_pool.values()
-            expiring_requests.sort(key=lambda req: req["cache_interval"])
+            # Re-populate active queue with remaining requests
+            for request_id in active_requests:
+                await request_pool.active_queue.put(request_id)
 
-        prioritized_requests = expiring_requests + new_requests
-        return prioritized_requests
+            # Step 2: Add new requests from the pool if attn_queue is not full
+            for request_id, request in request_pool.requests.items():
+                if request_pool.attn_queue.qsize() >= self.batch_size:
+                    break  # Stop if attn_queue is full
+                if request["status"] == "pending":
+                    await request_pool.attn_queue.put(request_id)
+                    request["status"] = "in_progress"
 
-    def create_batch(self, prioritized_requests):
-        return prioritized_requests[:self.batch_size]
-    
-    def schedule(self, request_pool):
-        prioritized_requests = self.prioritize_requests(request_pool)
-        return self.create_batch(prioritized_requests)
+            
