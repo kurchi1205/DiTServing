@@ -81,9 +81,7 @@ class RequestHandler:
     async def add_request(self, prompt, timesteps_left):
         request = self.create_request(prompt, timesteps_left)
         self.request_pool.add_request_to_pool(request)
-        if self.request_pool.active_queue.qsize() < self.max_requests:
-            await self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
-
+        
     def update_timesteps_left(self, request_id):
         if request_id in self.request_pool.requests:
             self.request_pool.requests[request_id]["timesteps_left"] -= 1
@@ -103,6 +101,8 @@ class RequestHandler:
     async def process_request(self, model):
         while True:
             logger.info("Starting request processing cycle...")
+            await self.scheduler.add_to_active_request_queue(self.request_pool, self.max_requests)
+
             # Step 1: Shift requests to attn_queue using the scheduler
             await self.scheduler.shift_to_attn_queue(self.request_pool, self.max_requests)
 
