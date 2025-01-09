@@ -1,0 +1,4 @@
+# Configuration for Request Handling System
+system:
+  batch_size: 1                # Number of requests processed in a batch
+  cache_interval: 5            # Interval for cache expiration in timesteps
