@@ -1,14 +1,22 @@
 
 import asyncio
+from sre_constants import IN
 import uuid
 from datetime import datetime
 from scheduler import Scheduler
+
+class RequestStatus:
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    ERROR = "error"
 
 class RequestPool:
     def __init__(self):
         self.requests = {}
         self.active_queue = asyncio.Queue()
         self.attn_queue = asyncio.Queue()
+        self.output_pool = asyncio.Queue()
         self.lock = asyncio.Lock()
 
     def add_request_to_pool(self, request):
@@ -19,6 +27,11 @@ class RequestPool:
         """Add a request to the active queue."""
         async with self.lock:
             await self.active_queue.put(request_id)
+
+    async def add_to_output_pool(self, request):
+        """Add a completed request to the output pool."""
+        async with self.lock:
+            await self.output_pool.put(request)
 
     async def get_all_active_requests(self):
         """Fetch all non-attention active requests."""
@@ -47,17 +60,17 @@ class RequestHandler:
         request = {
             "request_id": str(uuid.uuid4()),
             "timestamp": datetime.now().isoformat(),
-            "status": "pending",
+            "status": RequestStatus.PENDING,
             "timesteps_left": timesteps_left,
             "cache_interval": 0,  # Default cache interval
             "prompt": prompt
         }
         return request
 
-    def add_request(self, prompt, timesteps_left):
+    async def add_request(self, prompt, timesteps_left):
         request = self.create_request(prompt, timesteps_left)
         self.request_pool.add_request_to_pool(request)
-        self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
+        await self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
 
     
 
@@ -69,9 +82,9 @@ class RequestHandler:
         if request_id in self.request_pool.requests:
             request = self.request_pool.requests[request_id]
             if request["timesteps_left"] == 0:
-                request["status"] = "completed"
+                request["status"] = RequestStatus.COMPLETED
             else:
-                request["status"] = "in_progress"
+                request["status"] = RequestStatus.IN_PROGRESS
 
     async def process_request(self, model):
         while True:
@@ -108,9 +121,11 @@ class RequestHandler:
             self.update_status(request_id)
 
             # Add processed request back to the active queue if not completed
-            if request["status"] != "completed":
+            if request["status"] != RequestStatus.COMPLETED:
                 await self.request_pool.add_to_active_queue(request_id)
-            elif request["status"] == "completed":
+            elif request["status"] == RequestStatus.COMPLETED:
+                print(request["request_id"], request["prompt"], request["status"])
+                await self.request_pool.add_to_output_pool(request)
                 del self.request_pool.requests[request_id]
 
 

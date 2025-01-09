@@ -36,7 +36,7 @@ async def test_request_handler():
 
     # Add requests to the handler
     for request in prompts:
-        handler.add_request(request["prompt"], request["timesteps_left"])
+        await handler.add_request(request["prompt"], request["timesteps_left"])
 
     # Run the handler's processing loop asynchronously
     process_task = asyncio.create_task(handler.process_request(model))
