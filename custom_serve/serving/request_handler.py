@@ -74,7 +74,6 @@ class RequestHandler:
             await self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
 
     
-
     def update_timesteps_left(self, request_id):
         if request_id in self.request_pool.requests:
             self.request_pool.requests[request_id]["timesteps_left"] -= 1
