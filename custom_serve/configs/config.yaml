@@ -2,3 +2,9 @@
 system:
   batch_size: 1                # Number of requests processed in a batch
   cache_interval: 5            # Interval for cache expiration in timesteps
+
+server:
+  url: "http://localhost:8000"
+
+client:
+  poll_interval: 0.5             # Interval for polling for completed requests

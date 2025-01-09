@@ -1,5 +1,8 @@
 import asyncio
-from constants import RequestStatus
+try:
+    from constants import RequestStatus
+except ImportError:
+    from .constants import RequestStatus
 import sys
 sys.path.append("../")
 from utils.logger import get_logger
@@ -38,7 +41,7 @@ class Scheduler:
                         break
 
             if added_requests == 0:
-                logger.info("No pending requests available to add to the active queue.")
+                logger.debug("No pending requests available to add to the active queue.")
             else:
                 logger.info(f"Added {added_requests} requests to the active queue (Batch size: {self.batch_size}).")
 
@@ -56,14 +59,14 @@ class Scheduler:
                 # Check if the request requires attention
                 if request["cache_interval"] == 0:
                     await request_pool.attn_queue.put(request_id)
-                    logger.info(f"Request {request_id} shifted to attention queue.")
+                    logger.debug(f"Request {request_id} shifted to attention queue.")
                 else:
                     active_requests.append(request_id)
 
             # Re-populate active queue with remaining requests
             for request_id in active_requests:
                 await request_pool.active_queue.put(request_id)
-            logger.info(f"Repopulated active queue with {len(active_requests)} requests.")
+            logger.debug(f"Repopulated active queue with {len(active_requests)} requests.")
 
             # Step 2: Add new requests from the pool if attn_queue is not full
             for request_id, request in request_pool.requests.items():
@@ -74,7 +77,7 @@ class Scheduler:
                     if (request_pool.active_queue.qsize() + request_pool.attn_queue.qsize()) < max_active_requests:
                         await request_pool.attn_queue.put(request_id)
                         request["status"] = RequestStatus.IN_PROGRESS
-                        logger.info(f"New request {request_id} added to attention queue.")
+                        logger.debug(f"New request {request_id} added to attention queue.")
 
     async def shift_to_active_queue_from_attn(self, request_pool):
         """
@@ -87,6 +90,6 @@ class Scheduler:
                 request_id = await request_pool.attn_queue.get()
                 # Add the request back to the active queue
                 await request_pool.add_to_active_queue(request_id)
-                logger.info(f"Request {request_id} shifted back to active queue from attention queue.")
+                logger.debug(f"Request {request_id} shifted back to active queue from attention queue.")
                 transferred_requests += 1
-            logger.info(f"Transferred {transferred_requests} requests from attention queue to active queue.")
+            logger.debug(f"Transferred {transferred_requests} requests from attention queue to active queue.")

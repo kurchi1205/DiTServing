@@ -2,8 +2,12 @@ import sys
 import asyncio
 import uuid
 from datetime import datetime
-from scheduler import Scheduler
-from constants import RequestStatus
+try:
+    from scheduler import Scheduler
+    from constants import RequestStatus
+except ImportError:
+    from .scheduler import Scheduler
+    from .constants import RequestStatus
 
 sys.path.append("../")
 from utils.logger import get_logger
@@ -42,7 +46,7 @@ class RequestPool:
         async with self.lock:
             while not self.active_queue.empty():
                 requests.append(await self.active_queue.get())
-        logger.info(f"Fetched {len(requests)} active requests.")
+        logger.debug(f"Fetched {len(requests)} active requests.")
         return requests
 
     async def get_all_attn_requests(self):
@@ -51,7 +55,7 @@ class RequestPool:
         async with self.lock:
             while not self.attn_queue.empty():
                 requests.append(await self.attn_queue.get())
-        logger.info(f"Fetched {len(requests)} attention requests.")
+        logger.debug(f"Fetched {len(requests)} attention requests.")
         return requests
 
 
@@ -85,7 +89,7 @@ class RequestHandler:
     def update_timesteps_left(self, request_id):
         if request_id in self.request_pool.requests:
             self.request_pool.requests[request_id]["timesteps_left"] -= 1
-            logger.info(f"Updated timesteps_left for request {request_id}: "
+            logger.debug(f"Updated timesteps_left for request {request_id}: "
                         f"{self.request_pool.requests[request_id]['timesteps_left']}")
 
     def update_status(self, request_id):
@@ -96,11 +100,11 @@ class RequestHandler:
                 logger.info(f"Request {request_id} marked as COMPLETED.")
             else:
                 request["status"] = RequestStatus.IN_PROGRESS
-                logger.info(f"Request {request_id} marked as IN_PROGRESS.")
+                logger.debug(f"Request {request_id} marked as IN_PROGRESS.")
 
     async def process_request(self, model):
+        logger.info("Starting request processing cycle...")
         while True:
-            logger.info("Starting request processing cycle...")
             await self.scheduler.add_to_active_request_queue(self.request_pool, self.max_requests)
 
             # Step 1: Shift requests to attn_queue using the scheduler
@@ -118,7 +122,10 @@ class RequestHandler:
             await asyncio.sleep(0.01)  # Avoid high CPU usage
 
     async def _process_batch(self, model, batch, requires_attention):
-        for request_id in batch:
+        async def process_batch_conc(request_id):
+            """
+            Process an individual request.
+            """
             request = self.request_pool.requests[request_id]
 
             # Perform attention-specific or general processing
@@ -130,12 +137,12 @@ class RequestHandler:
             else:
                 # General processing: decrement cache interval
                 request["cache_interval"] -= 1
-                logger.info(f"Decremented cache interval for request {request_id}: "
+                logger.debug(f"Decremented cache interval for request {request_id}: "
                             f"{request['cache_interval']}")
 
             # Decrement timesteps left
             request["timesteps_left"] -= 1
-            logger.info(f"Decremented timesteps_left for request {request_id}: "
+            logger.debug(f"Decremented timesteps_left for request {request_id}: "
                         f"{request['timesteps_left']}")
 
             self.update_status(request_id)
@@ -147,3 +154,9 @@ class RequestHandler:
                 logger.info(f"Request {request_id} completed. Moving to output pool.")
                 await self.request_pool.add_to_output_pool(request)
                 del self.request_pool.requests[request_id]
+
+        # Create tasks for all requests in the batch
+        tasks = [process_batch_conc(request_id) for request_id in batch]
+
+        # Run all tasks concurrently
+        await asyncio.gather(*tasks)

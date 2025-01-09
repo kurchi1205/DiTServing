@@ -1,8 +1,10 @@
 import yaml
+from pathlib import Path
 
 
 class ConfigLoader:
     def __init__(self, config_path="../configs/config.yaml"):
+        config_path = (Path(__file__).parent.parent / "configs/config.yaml")
         self.config = self._load_config(config_path)
 
     def _load_config(self, config_path):
