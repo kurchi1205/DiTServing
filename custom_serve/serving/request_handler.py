@@ -1,15 +1,11 @@
 
 import asyncio
 from sre_constants import IN
+from tkinter import N
 import uuid
 from datetime import datetime
 from scheduler import Scheduler
-
-class RequestStatus:
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    ERROR = "error"
+from constants import RequestStatus
 
 class RequestPool:
     def __init__(self):
@@ -52,9 +48,13 @@ class RequestPool:
 
 
 class RequestHandler:
-    def __init__(self):
+    def __init__(self, config=None):
+        if config is None:
+            config = {}
         self.request_pool = RequestPool()
-        self.scheduler = Scheduler(batch_size=1)
+        self.scheduler = Scheduler(batch_size=config.get("batch_size", 1))
+        self.cache_interval = config.get("cache_interval", 5)
+        self.max_requests = config.get("batch_size", 1) * self.cache_interval
 
     def create_request(self, prompt, timesteps_left):
         request = {
@@ -70,7 +70,8 @@ class RequestHandler:
     async def add_request(self, prompt, timesteps_left):
         request = self.create_request(prompt, timesteps_left)
         self.request_pool.add_request_to_pool(request)
-        await self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
+        if self.request_pool.active_queue.qsize() < self.max_requests:
+            await self.scheduler.add_to_active_request_queue(self.request_pool, request["request_id"])
 
     
 
@@ -89,7 +90,7 @@ class RequestHandler:
     async def process_request(self, model):
         while True:
             # Step 1: Shift requests to attn_queue using the scheduler
-            await self.scheduler.shift_to_attn_queue(self.request_pool)
+            await self.scheduler.shift_to_attn_queue(self.request_pool, self.max_requests)
 
             # Step 2: Process attention requests in a batch
             attn_requests = await self.request_pool.get_all_attn_requests()

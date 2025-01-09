@@ -1,4 +1,5 @@
 import asyncio
+from constants import RequestStatus
 
 class Scheduler:
     def __init__(self, batch_size):
@@ -9,7 +10,8 @@ class Scheduler:
         async with self.lock: 
             await request_pool.add_to_active_queue(request_id)
 
-    async def shift_to_attn_queue(self, request_pool):
+    async def shift_to_attn_queue(self, request_pool, max_active_requests):
+        
         async with self.lock:
             active_requests = []
             
@@ -20,6 +22,7 @@ class Scheduler:
 
                 # Check if the request requires attention
                 if request["cache_interval"] == 0:
+                    # print("Shifting to attn queue")
                     await request_pool.attn_queue.put(request_id)
                 else:
                     active_requests.append(request_id)
@@ -32,9 +35,10 @@ class Scheduler:
             for request_id, request in request_pool.requests.items():
                 if request_pool.attn_queue.qsize() >= self.batch_size:
                     break  # Stop if attn_queue is full
-                if request["status"] == "pending":
-                    await request_pool.attn_queue.put(request_id)
-                    request["status"] = "in_progress"
+                if request["status"] == RequestStatus.PENDING:
+                    if (request_pool.active_queue.qsize() + request_pool.attn_queue.qsize()) < max_active_requests:
+                        await request_pool.attn_queue.put(request_id)
+                        request["status"] = RequestStatus.IN_PROGRESS
 
 
     async def shift_to_active_queue_from_attn(self, request_pool):

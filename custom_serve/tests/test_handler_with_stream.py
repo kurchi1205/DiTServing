@@ -2,7 +2,7 @@ import asyncio
 import sys
 from random import randint
 
-sys.path.append("serving/")
+sys.path.append("../serving/")
 from request_handler import RequestHandler
 
 
