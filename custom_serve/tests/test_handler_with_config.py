@@ -12,9 +12,6 @@ async def generate_streaming_requests(handler):
     Continuously send a stream of new requests to the handler.
     """
     prompt_templates = [
-        "Generate image of a cat",
-        "Generate image of a dog",
-        "Generate image of a car",
         "Generate image of a landscape",
         "Generate image of a bird",
     ]
