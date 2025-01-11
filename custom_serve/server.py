@@ -1,10 +1,14 @@
 import asyncio
+from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from serving.request_handler import RequestHandler
 from serving.config_loader import ConfigLoader
 from utils.logger import get_logger
+from contextlib import asynccontextmanager
+from fastapi import BackgroundTasks, FastAPI
+
 
 
 logger = get_logger(__name__)
@@ -23,6 +27,12 @@ app = FastAPI()
 class RequestInput(BaseModel):
     prompt: str
     timesteps_left: int
+
+
+@app.post("/start_background_process")
+async def start_background_process(model, background_tasks: BackgroundTasks):
+    background_tasks.add_task(handler.process_request, model)
+    return {"message": "Background process started."}
 
 
 @app.post("/add_request")
@@ -63,8 +73,9 @@ async def get_output():
         completed_requests = []
         while not handler.request_pool.output_pool.empty():
             request = await handler.request_pool.output_pool.get()
+            time_completed = datetime.now().isoformat()
             completed_requests.append(
-                {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"]}
+                {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"], "time_completed": time_completed}
             )
         logger.info(f"Retrieved {len(completed_requests)} completed requests.")
         return {"completed_requests": completed_requests}
@@ -73,30 +84,31 @@ async def get_output():
         raise HTTPException(status_code=500, detail="Failed to retrieve completed requests.")
 
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Start the background task to monitor and process requests.
-    """
-    try:
-        model = None  # Replace with the actual model if needed
-        asyncio.create_task(handler.process_request(model))
-        logger.info("Background request processing started during server startup.")
-    except Exception as e:
-        logger.error(f"Error during startup: {e}")
-        raise RuntimeError("Failed to initialize background processing.")
+# @app.on_event("startup")
+# async def startup_event():
+#     """
+#     Start the background task to monitor and process requests.
+#     """
+#     try:
+#         model = None  # Replace with the actual model if needed
+#         asyncio.create_task(handler.process_request(model))
+#         logger.info("Background request processing started during server startup.")
+#     except Exception as e:
+#         logger.error(f"Error during startup: {e}")
+#         raise RuntimeError("Failed to initialize background processing.")
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """
-    Clean up resources and log shutdown details.
-    """
-    try:
-        logger.info("Server is shutting down. Cleaning up resources.")
-        # Add any necessary cleanup code here (e.g., releasing model resources)
-    except Exception as e:
-        logger.error(f"Error during shutdown: {e}")
+
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     """
+#     Clean up resources and log shutdown details.
+#     """
+#     try:
+#         logger.info("Server is shutting down. Cleaning up resources.")
+#         # Add any necessary cleanup code here (e.g., releasing model resources)
+#     except Exception as e:
+#         logger.error(f"Error during shutdown: {e}")
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", reload=True)
+    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, log_level="info")

@@ -64,18 +64,43 @@ class Client:
             if isinstance(outputs, list) and outputs:
                 for output in outputs:
                     start_time = datetime.fromisoformat(output["timestamp"])
-                    end_time = datetime.now()
+                    end_time = datetime.fromisoformat(output["time_completed"])
                     time_taken = (end_time - start_time).total_seconds()
                     output["time_taken"] = time_taken
                     print(f"Completed Request: {json.dumps(output, indent=2)}")
             await asyncio.sleep(self.poll_interval)
 
+
+    async def start_background_process(self):
+        """
+        Trigger the background process on the server.
+        """
+        url = f"{self.server_url}/start_background_process"
+        params = {"model": ""}
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, params=params) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        logger.info(f"Background process started: {result}")
+                        return result
+                    else:
+                        error_message = await response.text()
+                        logger.error(f"Failed to start background process. Server response: {error_message}")
+                        return {"error": error_message}
+        except Exception as e:
+            logger.error(f"Error starting background process: {e}")
+            return {"error": str(e)}
+        
+
     async def run(self):
+        await self.start_background_process()
+    
         # Example prompts
         requests = [
             {"prompt": "Generate image of a cat", "timesteps_left": 30},
-            {"prompt": "Generate image of a dog", "timesteps_left": 30},
-            {"prompt": "Generate image of a car", "timesteps_left": 30},
+            {"prompt": "Generate image of a dog", "timesteps_left": 60},
+            {"prompt": "Generate image of a car", "timesteps_left": 60},
         ]
 
         logger.info("Starting request submission.")
