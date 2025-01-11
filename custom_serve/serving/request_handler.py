@@ -9,6 +9,7 @@ except ImportError:
     from .scheduler import Scheduler
     from .constants import RequestStatus
 
+
 sys.path.append("../")
 from utils.logger import get_logger
 
@@ -89,18 +90,16 @@ class RequestHandler:
     def update_timesteps_left(self, request_id):
         if request_id in self.request_pool.requests:
             self.request_pool.requests[request_id]["timesteps_left"] -= 1
-            logger.debug(f"Updated timesteps_left for request {request_id}: "
-                        f"{self.request_pool.requests[request_id]['timesteps_left']}")
+            timesteps_left = self.request_pool.requests[request_id]["timesteps_left"]
+            logger.info(f"Updated timesteps_left for request {request_id}: {timesteps_left}")
 
-    def update_status(self, request_id):
-        if request_id in self.request_pool.requests:
-            request = self.request_pool.requests[request_id]
-            if request["timesteps_left"] == 0:
-                request["status"] = RequestStatus.COMPLETED
-                logger.info(f"Request {request_id} marked as COMPLETED.")
-            else:
-                request["status"] = RequestStatus.IN_PROGRESS
-                logger.debug(f"Request {request_id} marked as IN_PROGRESS.")
+    def update_status(self, request):
+        if request["timesteps_left"] == 0:
+            request["status"] = RequestStatus.COMPLETED
+            logger.info(f"Request {request['request_id']} marked as COMPLETED.")
+        else:
+            request["status"] = RequestStatus.IN_PROGRESS
+            logger.debug(f"Request {request['request_id']} marked as IN_PROGRESS.")
 
     async def process_request(self, model):
         logger.info("Starting request processing cycle...")
@@ -119,44 +118,46 @@ class RequestHandler:
             active_requests = await self.request_pool.get_all_active_requests()
             if active_requests:
                 await self._process_batch(model, active_requests, requires_attention=False)
-            await asyncio.sleep(0.01)  # Avoid high CPU usage
+            await asyncio.sleep(0.01)       
+
+
+    async def process_batch_conc(self, request_id, requires_attention):
+        """
+        Process an individual request.
+        """
+        request = self.request_pool.requests[request_id]
+        logger.info(f"Processing request {request_id} (Prompt: {request['prompt']})")
+        await asyncio.sleep(0.09)
+        # Perform attention-specific or general processing
+        if requires_attention:
+            # Attention-specific processing: recompute latent
+            # request["latent"] = model.compute_latent(request["prompt"])
+            request["cache_interval"] = 5  # Reset cache interval
+            logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
+        else:
+            # General processing: decrement cache interval
+            request["cache_interval"] -= 1
+            logger.debug(f"Decremented cache interval for request {request_id}: "
+                        f"{request['cache_interval']}")
+
+        # Decrement timesteps left
+        request["timesteps_left"] -= 1
+        logger.debug(f"Decremented timesteps_left for request {request_id}: "
+                    f"{request['timesteps_left']}")
+
+        self.update_status(request)
+        self.request_pool.requests[request_id] = request
+
+        # Add processed request back to the active queue if not completed
+        if request["status"] != RequestStatus.COMPLETED:
+            await self.request_pool.add_to_active_queue(request_id)
+        elif request["status"] == RequestStatus.COMPLETED:
+            logger.debug(f"Request {request_id} completed. Moving to output pool.")
+            await self.request_pool.add_to_output_pool(request)
+            del self.request_pool.requests[request_id]
+
 
     async def _process_batch(self, model, batch, requires_attention):
-        async def process_batch_conc(request_id):
-            """
-            Process an individual request.
-            """
-            request = self.request_pool.requests[request_id]
-
-            # Perform attention-specific or general processing
-            if requires_attention:
-                # Attention-specific processing: recompute latent
-                # request["latent"] = model.compute_latent(request["prompt"])
-                request["cache_interval"] = 5  # Reset cache interval
-                logger.info(f"Recomputed latent for request {request_id}. Cache interval reset.")
-            else:
-                # General processing: decrement cache interval
-                request["cache_interval"] -= 1
-                logger.debug(f"Decremented cache interval for request {request_id}: "
-                            f"{request['cache_interval']}")
-
-            # Decrement timesteps left
-            request["timesteps_left"] -= 1
-            logger.debug(f"Decremented timesteps_left for request {request_id}: "
-                        f"{request['timesteps_left']}")
-
-            self.update_status(request_id)
-
-            # Add processed request back to the active queue if not completed
-            if request["status"] != RequestStatus.COMPLETED:
-                await self.request_pool.add_to_active_queue(request_id)
-            elif request["status"] == RequestStatus.COMPLETED:
-                logger.info(f"Request {request_id} completed. Moving to output pool.")
-                await self.request_pool.add_to_output_pool(request)
-                del self.request_pool.requests[request_id]
-
         # Create tasks for all requests in the batch
-        tasks = [process_batch_conc(request_id) for request_id in batch]
-
-        # Run all tasks concurrently
+        tasks = [self.process_batch_conc(request_id, requires_attention) for request_id in batch]
         await asyncio.gather(*tasks)
