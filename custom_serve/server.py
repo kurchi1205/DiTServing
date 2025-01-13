@@ -74,9 +74,11 @@ async def get_output():
         while not handler.request_pool.output_pool.empty():
             request = await handler.request_pool.output_pool.get()
             time_completed = datetime.now().isoformat()
+            request["time_completed"] = datetime.fromisoformat(time_completed) - datetime.fromisoformat(request["timestamp"])
             completed_requests.append(
                 {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"], "time_completed": time_completed}
             )
+            logger.info(f"Retrieved completed request: {request}")
         logger.info(f"Retrieved {len(completed_requests)} completed requests.")
         return {"completed_requests": completed_requests}
     except Exception as e:

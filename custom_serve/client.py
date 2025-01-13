@@ -23,7 +23,7 @@ class Client:
                 async with session.post(url, json=data) as response:
                     if response.status == 200:
                         result = await response.json()
-                        logger.info(f"Request submitted: {result}")
+                        # logger.info(f"Request submitted: {result}")
                         return result
                     else:
                         error_message = await response.text()
@@ -40,7 +40,7 @@ class Client:
                 async with session.get(url) as response:
                     if response.status == 200:
                         result = await response.json()
-                        logger.info(f"Retrieved completed requests: {result}")
+                        # logger.info(f"Retrieved completed requests: {result}")
                         return result.get("completed_requests", [])
                     else:
                         error_message = await response.text()

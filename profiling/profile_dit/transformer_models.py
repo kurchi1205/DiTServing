@@ -203,11 +203,13 @@ class BasicTransformerBlockWithAnnotations(BasicTransformerBlock):
             norm_hidden_states = self.norm2(hidden_states)
             norm_hidden_states = norm_hidden_states * (1 + scale_mlp) + shift_mlp
 
+        tr_rng_2 = nvtx.start_range(message=f"FFN", color="green")
         if self._chunk_size is not None:
             # "feed_forward_chunk_size" can be used to save memory
             ff_output = _chunked_feed_forward(self.ff, norm_hidden_states, self._chunk_dim, self._chunk_size)
         else:
             ff_output = self.ff(norm_hidden_states)
+        nvtx.end_range(tr_rng_2)
 
         if self.norm_type == "ada_norm_zero":
             ff_output = gate_mlp.unsqueeze(1) * ff_output
