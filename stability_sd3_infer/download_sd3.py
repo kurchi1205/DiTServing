@@ -27,8 +27,9 @@ def download_file_with_token(url, access_token, output_file_path):
 # Example usage
 # url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/clip_g.safetensors"
 # url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/clip_l.safetensors"
-url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/t5xxl_fp16.safetensors"
+# url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/t5xxl_fp16.safetensors"
+url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/sd3_medium.safetensors"
 access_token = ""
-output_file_path = "models/t5xxl_fp16.safetensors"
+output_file_path = "models/sd3_medium.safetensors"
 
 download_file_with_token(url, access_token, output_file_path)
