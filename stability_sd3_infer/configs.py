@@ -1,3 +1,5 @@
+import torch
+
 CLIPG_CONFIG = {
     "hidden_act": "gelu",
     "hidden_size": 1280,
@@ -20,4 +22,9 @@ T5_CONFIG = {
     "num_heads": 64,
     "num_layers": 24,
     "vocab_size": 32128,
+}
+
+ACTIVATIONS = {
+    "quick_gelu": lambda a: a * torch.sigmoid(1.702 * a),
+    "gelu": torch.nn.functional.gelu,
 }

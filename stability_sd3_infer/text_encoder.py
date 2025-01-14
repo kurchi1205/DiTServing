@@ -1,6 +1,87 @@
+import torch
 from safetensors import safe_open
 from utils import load_into
-from configs import CLIPG_CONFIG, CLIPL_CONFIG
+from configs import CLIPG_CONFIG, CLIPL_CONFIG, T5_CONFIG
+from t5 import T5
+from clip import CLIPEmbeddings, CLIPEncoder
+
+class ClipTokenWeightEncoder:
+    def encode_token_weights(self, token_weight_pairs):
+        tokens = list(map(lambda a: a[0], token_weight_pairs[0]))
+        out, pooled = self([tokens])
+        if pooled is not None:
+            first_pooled = pooled[0:1].cpu()
+        else:
+            first_pooled = pooled
+        output = [out[0:1]]
+        return torch.cat(output, dim=-2).cpu(), first_pooled
+
+
+class CLIPTextModel_(torch.nn.Module):
+    def __init__(self, config_dict, dtype, device):
+        num_layers = config_dict["num_hidden_layers"]
+        embed_dim = config_dict["hidden_size"]
+        heads = config_dict["num_attention_heads"]
+        intermediate_size = config_dict["intermediate_size"]
+        intermediate_activation = config_dict["hidden_act"]
+        super().__init__()
+        self.embeddings = CLIPEmbeddings(embed_dim, dtype=torch.float32, device=device)
+        self.encoder = CLIPEncoder(
+            num_layers,
+            embed_dim,
+            heads,
+            intermediate_size,
+            intermediate_activation,
+            dtype,
+            device,
+        )
+        self.final_layer_norm = torch.nn.LayerNorm(embed_dim, dtype=dtype, device=device)
+
+    def forward(
+        self, input_tokens, intermediate_output=None, final_layer_norm_intermediate=True
+    ):
+        x = self.embeddings(input_tokens)
+        causal_mask = (
+            torch.empty(x.shape[1], x.shape[1], dtype=x.dtype, device=x.device)
+            .fill_(float("-inf"))
+            .triu_(1)
+        )
+        x, i = self.encoder(
+            x, mask=causal_mask, intermediate_output=intermediate_output
+        )
+        x = self.final_layer_norm(x)
+        if i is not None and final_layer_norm_intermediate:
+            i = self.final_layer_norm(i)
+        pooled_output = x[
+            torch.arange(x.shape[0], device=x.device),
+            input_tokens.to(dtype=torch.int, device=x.device).argmax(dim=-1),
+        ]
+        return x, i, pooled_output
+
+
+class CLIPTextModel(torch.nn.Module):
+    def __init__(self, config_dict, dtype, device):
+        super().__init__()
+        self.num_layers = config_dict["num_hidden_layers"]
+        self.text_model = CLIPTextModel_(config_dict, dtype, device)
+        embed_dim = config_dict["hidden_size"]
+        self.text_projection = torch.nn.Linear(
+            embed_dim, embed_dim, bias=False, dtype=dtype, device=device
+        )
+        # self.text_projection.weight.copy_(torch.eye(embed_dim))
+        self.dtype = dtype
+
+    def get_input_embeddings(self):
+        return self.text_model.embeddings.token_embedding
+
+    def set_input_embeddings(self, embeddings):
+        self.text_model.embeddings.token_embedding = embeddings
+
+    def forward(self, *args, **kwargs):
+        x = self.text_model(*args, **kwargs)
+        out = self.text_projection(x[2])
+        return (x[0], x[1], out, x[2])
+
 
 class SDClipModel(torch.nn.Module, ClipTokenWeightEncoder):
     """Uses the CLIP transformer encoder for text (from huggingface)"""

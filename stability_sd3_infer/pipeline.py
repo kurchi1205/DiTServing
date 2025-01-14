@@ -1,8 +1,14 @@
+import os
 import torch
+import math
+import numpy as np
 from PIL import Image
+from tokenizer import SD3Tokenizer
 from text_encoder import T5XXL, ClipL, ClipG
+import sampling
 from sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
 from vae import VAE
+from tqdm import tqdm
 
 class SD3Inferencer:
 
@@ -15,11 +21,11 @@ class SD3Inferencer:
 
     def load(
         self,
-        model=MODEL,
-        vae=VAEFile,
-        shift=SHIFT,
+        model="models/sd3_medium.safetensors",
+        vae=None,
+        shift=3.0,
         controlnet_ckpt=None,
-        model_folder: str = MODEL_FOLDER,
+        model_folder: str = "models",
         text_encoder_device: str = "cpu",
         verbose=False,
         load_tokenizers: bool = True,
@@ -127,7 +133,7 @@ class SD3Inferencer:
         noise_scaled = self.sd3.model.model_sampling.noise_scaling(
             sigmas[0], noise, latent, self.max_denoise(sigmas)
         )
-        sample_fn = getattr(sd3_impls, f"sample_{sampler}")
+        sample_fn = getattr(sampling, f"sample_{sampler}")
         denoiser = (
             SkipLayerCFGDenoiser
             if skip_layer_config.get("scale", 0) > 0

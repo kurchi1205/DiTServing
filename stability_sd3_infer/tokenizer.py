@@ -1,4 +1,5 @@
 from transformers import CLIPTokenizer, T5TokenizerFast
+from utils import escape_important, unescape_important, token_weights
 
 class SDTokenizer:
     def __init__(

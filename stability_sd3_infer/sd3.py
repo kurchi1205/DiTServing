@@ -1,11 +1,48 @@
+import math
 import torch
+import re
 from safetensors import safe_open
 from utils import load_into
 from mmditx import MMDiTX
 
+
+class ModelSamplingDiscreteFlow(torch.nn.Module):
+    """Helper for sampler scheduling (ie timestep/sigma calculations) for Discrete Flow models"""
+
+    def __init__(self, shift=1.0):
+        super().__init__()
+        self.shift = shift
+        timesteps = 1000
+        ts = self.sigma(torch.arange(1, timesteps + 1, 1))
+        self.register_buffer("sigmas", ts)
+
+    @property
+    def sigma_min(self):
+        return self.sigmas[0]
+
+    @property
+    def sigma_max(self):
+        return self.sigmas[-1]
+
+    def timestep(self, sigma):
+        return sigma * 1000
+
+    def sigma(self, timestep: torch.Tensor):
+        timestep = timestep / 1000.0
+        if self.shift == 1.0:
+            return timestep
+        return self.shift * timestep / (1 + (self.shift - 1) * timestep)
+
+    def calculate_denoised(self, sigma, model_output, model_input):
+        sigma = sigma.view(sigma.shape[:1] + (1,) * (model_output.ndim - 1))
+        return model_input - model_output * sigma
+
+    def noise_scaling(self, sigma, noise, latent_image, max_denoise=False):
+        return sigma * noise + (1.0 - sigma) * latent_image
+
+
 class BaseModel(torch.nn.Module):
     """Wrapper around the core MM-DiT model"""
-
     def __init__(
         self,
         shift=1.0,
@@ -67,6 +104,44 @@ class BaseModel(torch.nn.Module):
             verbose=verbose,
         )
         self.model_sampling = ModelSamplingDiscreteFlow(shift=shift)
+
+
+    def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None):
+        dtype = self.get_dtype()
+        timestep = self.model_sampling.timestep(sigma).float()
+        controlnet_hidden_states = None
+        if controlnet_cond is not None:
+            y_cond = y.to(dtype)
+            controlnet_cond = controlnet_cond.to(dtype=x.dtype, device=x.device)
+            controlnet_cond = controlnet_cond.repeat(x.shape[0], 1, 1, 1)
+
+            if not self.control_model.using_8b_controlnet:
+                y_cond = self.diffusion_model.y_embedder(y)
+            
+            x_controlnet = x
+            if self.control_model.using_8b_controlnet:
+                hw = x.shape[-2:]
+                x_controlnet = self.diffusion_model.x_embedder(x) + self.diffusion_model.cropped_pos_embed(hw)
+            controlnet_hidden_states = self.control_model(
+                x_controlnet, controlnet_cond, y_cond, 1, sigma.to(torch.float32)
+            )
+        model_output = self.diffusion_model(
+            x.to(dtype),
+            timestep,
+            context=c_crossattn.to(dtype),
+            y=y.to(dtype),
+            controlnet_hidden_states=controlnet_hidden_states,
+            skip_layers=skip_layers,
+        ).float()
+        return self.model_sampling.calculate_denoised(sigma, model_output, x)
+
+
+    def forward(self, *args, **kwargs):
+        return self.apply_model(*args, **kwargs)
+
+
+    def get_dtype(self):
+        return self.diffusion_model.dtype
 
 
 class CFGDenoiser(torch.nn.Module):
