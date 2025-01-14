@@ -1,3 +1,4 @@
+from safetensors import safe_open
 from utils import load_into
 from configs import CLIPG_CONFIG, CLIPL_CONFIG
 

@@ -121,6 +121,7 @@ class SDXLClipGTokenizer(SDTokenizer):
     def __init__(self, tokenizer):
         super().__init__(pad_with_end=False, tokenizer=tokenizer)
 
+
 class T5XXLTokenizer(SDTokenizer):
     """Wraps the T5 Tokenizer from HF into the SDTokenizer interface"""
 
