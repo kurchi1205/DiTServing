@@ -1,3 +1,5 @@
+from transformers import CLIPTokenizer, T5TokenizerFast
+
 class SDTokenizer:
     def __init__(
         self,
@@ -134,3 +136,17 @@ class T5XXLTokenizer(SDTokenizer):
             max_length=99999999,
             min_length=77,
         )
+
+class SD3Tokenizer:
+    def __init__(self):
+        clip_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
+        self.clip_l = SDTokenizer(tokenizer=clip_tokenizer)
+        self.clip_g = SDXLClipGTokenizer(clip_tokenizer)
+        self.t5xxl = T5XXLTokenizer()
+
+    def tokenize_with_weights(self, text: str):
+        out = {}
+        out["l"] = self.clip_l.tokenize_with_weights(text)
+        out["g"] = self.clip_g.tokenize_with_weights(text)
+        out["t5xxl"] = self.t5xxl.tokenize_with_weights(text[:226])
+        return out
