@@ -1,6 +1,6 @@
 import torch
-from configs import ACTIVATIONS
-from utils import attention
+from pipeline.configs import ACTIVATIONS
+from pipeline.utils import attention
 
 
 

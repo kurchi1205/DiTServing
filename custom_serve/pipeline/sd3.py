@@ -2,8 +2,8 @@ import math
 import torch
 import re
 from safetensors import safe_open
-from utils import load_into
-from mmditx import MMDiTX
+from pipeline.utils import load_into
+from pipeline.mmditx import MMDiTX
 
 
 class ModelSamplingDiscreteFlow(torch.nn.Module):

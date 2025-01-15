@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from serving.request_handler import RequestHandler
 from serving.config_loader import ConfigLoader
+from pipeline.pipeline import SD3Inferencer
 from utils.logger import get_logger
 from contextlib import asynccontextmanager
 from fastapi import BackgroundTasks, FastAPI
@@ -19,6 +20,7 @@ config = config_loader.config
 
 # Initialize the RequestHandler
 handler = RequestHandler(config)
+inference_handler = None
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -100,6 +102,27 @@ async def get_output():
 #         raise RuntimeError("Failed to initialize background processing.")
 
 
+@app.on_event("startup")
+async def startup_event():
+    """
+    Load the model and start the background task to monitor and process requests.
+    """
+    global inference_handler
+    try:
+        logger.info("Loading model during startup...")
+        inference_handler = SD3Inferencer()
+        model_path = config["model"]["model_path"]
+        model_folder = config["model"]["model_folder"]
+        inference_handler.load(
+            model=model_path,
+            model_folder=model_folder,
+            text_encoder_device="cpu",
+            verbose=True
+        )
+        logger.info("Background request processing started during server startup.")
+    except Exception as e:
+        logger.error(f"Error during startup: {e}")
+        raise RuntimeError("Failed to initialize background processing.")
 
 # @app.on_event("shutdown")
 # async def shutdown_event():

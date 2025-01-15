@@ -1,7 +1,7 @@
 import torch
 import einops
 from safetensors import safe_open
-from utils import load_into
+from pipeline.utils import load_into
 
 def Normalize(in_channels, num_groups=32, dtype=torch.float32, device=None):
     return torch.nn.GroupNorm(

@@ -1,7 +1,7 @@
 import math
 import torch
 import torch.nn as nn
-from utils import attention
+from pipeline.utils import attention
 
 class T5LayerNorm(torch.nn.Module):
     def __init__(self, hidden_size, eps=1e-6, dtype=None, device=None):

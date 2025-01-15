@@ -3,11 +3,12 @@ import torch
 import math
 import numpy as np
 from PIL import Image
-from tokenizer import SD3Tokenizer
-from text_encoder import T5XXL, ClipL, ClipG
-import sampling
-from sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
-from vae import VAE
+import sys
+from pipeline.tokenizer import SD3Tokenizer
+from pipeline.text_encoder import T5XXL, ClipL, ClipG
+import pipeline.sampling
+from pipeline.sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
+from pipeline.vae import VAE
 from tqdm import tqdm
 
 class SD3Inferencer:
