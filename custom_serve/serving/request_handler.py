@@ -5,13 +5,15 @@ from datetime import datetime
 try:
     from scheduler import Scheduler
     from constants import RequestStatus
+    from processor import process_each_timestep
 except ImportError:
     from .scheduler import Scheduler
     from .constants import RequestStatus
-
+    from .processor import process_each_timestep
 
 sys.path.append("../")
 from utils.logger import get_logger
+from pipeline.sd3 import CFGDenoiser
 
 logger = get_logger(__name__)
 
@@ -76,6 +78,7 @@ class RequestHandler:
             "request_id": str(uuid.uuid4()),
             "timestamp": datetime.now().isoformat(),
             "status": RequestStatus.PENDING,
+            "current_timestep": 0
             "timesteps_left": timesteps_left,
             "cache_interval": 0,  # Default cache interval
             "prompt": prompt
@@ -90,6 +93,7 @@ class RequestHandler:
     def update_timesteps_left(self, request_id):
         if request_id in self.request_pool.requests:
             self.request_pool.requests[request_id]["timesteps_left"] -= 1
+            self.request_pool.requests[request_id]["current_timestep"] += 1
             timesteps_left = self.request_pool.requests[request_id]["timesteps_left"]
             logger.info(f"Updated timesteps_left for request {request_id}: {timesteps_left}")
 
@@ -101,8 +105,10 @@ class RequestHandler:
             request["status"] = RequestStatus.IN_PROGRESS
             logger.debug(f"Request {request['request_id']} marked as IN_PROGRESS.")
 
-    async def process_request(self, model):
+    async def process_request(self, inference_handler):
         logger.info("Starting request processing cycle...")
+        inference_handler.denoiser = CFGDenoiser
+
         while True:
             await self.scheduler.add_to_active_request_queue(self.request_pool, self.max_requests)
 
@@ -112,12 +118,12 @@ class RequestHandler:
             # Step 2: Process attention requests in a batch
             attn_requests = await self.request_pool.get_all_attn_requests()
             if attn_requests:
-                await self._process_batch(model, attn_requests, requires_attention=True)
+                await self._process_batch(inference_handler, attn_requests, requires_attention=True)
 
             # Step 3: Process non-attention active requests in a batch
             active_requests = await self.request_pool.get_all_active_requests()
             if active_requests:
-                await self._process_batch(model, active_requests, requires_attention=False)
+                await self._process_batch(inference_handler, active_requests, requires_attention=False)
             await asyncio.sleep(0.01)       
 
 
@@ -132,19 +138,21 @@ class RequestHandler:
         if requires_attention:
             # Attention-specific processing: recompute latent
             # request["latent"] = model.compute_latent(request["prompt"])
+            process_each_timestep(inference_handler, request_id, request_pool):
             request["cache_interval"] = 5  # Reset cache interval
             logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
         else:
             # General processing: decrement cache interval
+            process_each_timestep(inference_handler, request_id, request_pool):
             request["cache_interval"] -= 1
             logger.debug(f"Decremented cache interval for request {request_id}: "
                         f"{request['cache_interval']}")
 
         # Decrement timesteps left
         request["timesteps_left"] -= 1
+        request["current_timestep"] += 1
         logger.debug(f"Decremented timesteps_left for request {request_id}: "
                     f"{request['timesteps_left']}")
-
         self.update_status(request)
         self.request_pool.requests[request_id] = request
 

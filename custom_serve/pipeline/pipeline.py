@@ -104,6 +104,53 @@ class SD3Inferencer:
         cond, pooled = (cond[0].half().cuda(), cond[1].half().cuda())
         return {"c_crossattn": cond, "y": pooled}
 
+
+    def prepare_for_first_timestep(self, width, height, prompt, seed_type="rand", seed=None):
+        controlnet_cond = None
+        latent = self.get_empty_latent(1, width, height, seed, "cpu")
+        latent = latent.cuda()
+        neg_cond = self.get_cond("")
+        seed_num = None
+        if seed_type == "roll":
+            seed_num = seed if seed_num is None else seed_num + 1
+        elif seed_type == "rand":
+            seed_num = torch.randint(0, 100000, (1,)).item()
+        else:  # fixed
+            seed_num = seed
+        conditioning = self.get_cond(prompt)
+        latent = latent.half().cuda()
+        self.sd3.model = self.sd3.model.cuda()
+        noise = self.get_noise(seed, latent).cuda()
+        sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
+        sigmas = sigmas[int(steps * (1 - denoise)) :]
+        conditioning = self.fix_cond(conditioning)
+        neg_cond = self.fix_cond(neg_cond)
+        noise_scaled = self.sd3.model.model_sampling.noise_scaling(
+            sigmas[0], noise, latent, self.max_denoise(sigmas)
+        )
+        old_denoised = None
+        return noise_scaled, sigmas, conditioning, neg_cond, seed_num
+
+
+    def denoise_each_step(self, denoiser, model, x, sigma, prev_sigma, next_sigma, extra_args=None):
+        extra_args = {} if extra_args is None else extra_args
+        s_in = x.new_ones([x.shape[0]])
+        sigma_fn = lambda t: t.neg().exp()
+        t_fn = lambda sigma: sigma.log().neg()
+        denoised = model(x, sigma * s_in, **extra_args)
+        t, t_next = t_fn(sigma), t_fn(next_sigma)
+        h = t_next - t
+        if old_denoised is None or next_sigma == 0:
+            x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised
+        else:
+            h_last = t - t_fn(prev_sigma)
+            r = h_last / h
+            denoised_d = (1 + 1 / (2 * r)) * denoised - (1 / (2 * r)) * old_denoised
+            x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised_d
+        old_denoised = denoised
+        return x
+
+
     def do_sampling(
         self,
         latent,
