@@ -105,8 +105,10 @@ class SD3Inferencer:
         return {"c_crossattn": cond, "y": pooled}
 
 
-    def prepare_for_first_timestep(self, width, height, prompt, seed_type="rand", seed=None):
+    def prepare_for_first_timestep(self, width, height, prompt, steps, seed_type="rand", seed=None):
         controlnet_cond = None
+        if seed is None:
+            seed = 50
         latent = self.get_empty_latent(1, width, height, seed, "cpu")
         latent = latent.cuda()
         neg_cond = self.get_cond("")
@@ -122,7 +124,6 @@ class SD3Inferencer:
         self.sd3.model = self.sd3.model.cuda()
         noise = self.get_noise(seed, latent).cuda()
         sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
-        sigmas = sigmas[int(steps * (1 - denoise)) :]
         conditioning = self.fix_cond(conditioning)
         neg_cond = self.fix_cond(neg_cond)
         noise_scaled = self.sd3.model.model_sampling.noise_scaling(
@@ -132,7 +133,7 @@ class SD3Inferencer:
         return noise_scaled, sigmas, conditioning, neg_cond, seed_num
 
 
-    def denoise_each_step(self, denoiser, model, x, sigma, prev_sigma, next_sigma, extra_args=None):
+    def denoise_each_step(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
         extra_args = {} if extra_args is None else extra_args
         s_in = x.new_ones([x.shape[0]])
         sigma_fn = lambda t: t.neg().exp()

@@ -33,7 +33,7 @@ class Scheduler:
                     # Add request to the active queue
                     await request_pool.add_to_active_queue(request_id)
                     request["status"] = RequestStatus.IN_PROGRESS
-                    logger.info(f"Request {request_id} added to active queue.")
+                    logger.debug(f"Request {request_id} added to active queue.")
                     added_requests += 1
 
                     # Stop if we've added the required number of requests for this batch
@@ -71,7 +71,7 @@ class Scheduler:
             # Step 2: Add new requests from the pool if attn_queue is not full
             for request_id, request in request_pool.requests.items():
                 if request_pool.attn_queue.qsize() >= self.batch_size:
-                    logger.info("Attention queue is full. Stopping shift to attention queue.")
+                    logger.debug("Attention queue is full. Stopping shift to attention queue.")
                     break  # Stop if attn_queue is full
                 if request["status"] == RequestStatus.PENDING:
                     if (request_pool.active_queue.qsize() + request_pool.attn_queue.qsize()) < max_active_requests:

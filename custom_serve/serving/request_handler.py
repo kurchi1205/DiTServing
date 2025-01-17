@@ -13,7 +13,7 @@ except ImportError:
 
 sys.path.append("../")
 from utils.logger import get_logger
-from pipeline.sd3 import CFGDenoiser
+from pipeline.sd3 import CFGDenoiser, SD3LatentFormat
 
 logger = get_logger(__name__)
 
@@ -35,7 +35,7 @@ class RequestPool:
         """Add a request to the active queue."""
         async with self.lock:
             await self.active_queue.put(request_id)
-        logger.info(f"Request added to active queue: {request_id}")
+        logger.debug(f"Request added to active queue: {request_id}")
 
     async def add_to_output_pool(self, request):
         """Add a completed request to the output pool."""
@@ -78,10 +78,11 @@ class RequestHandler:
             "request_id": str(uuid.uuid4()),
             "timestamp": datetime.now().isoformat(),
             "status": RequestStatus.PENDING,
-            "current_timestep": 0
+            "current_timestep": 0,
             "timesteps_left": timesteps_left,
             "cache_interval": 0,  # Default cache interval
-            "prompt": prompt
+            "prompt": prompt,
+            "cfg_scale": 7.5
         }
         logger.info(f"Created new request: {request['request_id']} (Prompt: {request['prompt']})")
         return request
@@ -127,23 +128,23 @@ class RequestHandler:
             await asyncio.sleep(0.01)       
 
 
-    async def process_batch_conc(self, request_id, requires_attention):
+    async def process_batch_conc(self, inference_handler, request_id, requires_attention):
         """
         Process an individual request.
         """
         request = self.request_pool.requests[request_id]
-        logger.info(f"Processing request {request_id} (Prompt: {request['prompt']})")
-        await asyncio.sleep(0.09)
+        logger.debug(f"Processing request {request_id} (Prompt: {request['prompt']})")
+        # await asyncio.sleep(0.09)
         # Perform attention-specific or general processing
         if requires_attention:
             # Attention-specific processing: recompute latent
             # request["latent"] = model.compute_latent(request["prompt"])
-            process_each_timestep(inference_handler, request_id, request_pool):
+            process_each_timestep(inference_handler, request_id, self.request_pool)
             request["cache_interval"] = 5  # Reset cache interval
             logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
         else:
             # General processing: decrement cache interval
-            process_each_timestep(inference_handler, request_id, request_pool):
+            process_each_timestep(inference_handler, request_id, self.request_pool)
             request["cache_interval"] -= 1
             logger.debug(f"Decremented cache interval for request {request_id}: "
                         f"{request['cache_interval']}")
@@ -151,6 +152,15 @@ class RequestHandler:
         # Decrement timesteps left
         request["timesteps_left"] -= 1
         request["current_timestep"] += 1
+        if request["timesteps_left"] == 0:
+            latent = SD3LatentFormat().process_out(request["noise_scaled"])
+            image = inference_handler.vae_decode(latent)
+            request["image"] = image
+            del request["noise_scaled"]
+            del request["sigmas"]
+            del request["conditioning"]
+            del request["neg_cond"]
+
         logger.debug(f"Decremented timesteps_left for request {request_id}: "
                     f"{request['timesteps_left']}")
         self.update_status(request)
@@ -165,7 +175,8 @@ class RequestHandler:
             del self.request_pool.requests[request_id]
 
 
-    async def _process_batch(self, model, batch, requires_attention):
+    async def _process_batch(self, inference_handler, batch, requires_attention):
         # Create tasks for all requests in the batch
-        tasks = [self.process_batch_conc(request_id, requires_attention) for request_id in batch]
-        await asyncio.gather(*tasks)
+        for request_id in batch:
+            await self.process_batch_conc(inference_handler, request_id, requires_attention)
+

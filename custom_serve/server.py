@@ -1,4 +1,5 @@
 import asyncio
+import os
 from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -33,7 +34,8 @@ class RequestInput(BaseModel):
 
 @app.post("/start_background_process")
 async def start_background_process(model, background_tasks: BackgroundTasks):
-    background_tasks.add_task(handler.process_request, model)
+    global inference_handler
+    background_tasks.add_task(handler.process_request, inference_handler)
     return {"message": "Background process started."}
 
 
@@ -77,8 +79,14 @@ async def get_output():
             request = await handler.request_pool.output_pool.get()
             time_completed = datetime.now().isoformat()
             request["time_completed"] = datetime.fromisoformat(time_completed) - datetime.fromisoformat(request["timestamp"])
+            image_data = request.get("image")
+            if image_data:
+                output_dir = "output_images"
+                os.makedirs(output_dir, exist_ok=True)
+                image_path = os.path.join(output_dir, f"request_{request['request_id']}.png")
+                image_data.save(image_path)
             completed_requests.append(
-                {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"], "time_completed": time_completed}
+                {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"], "time_completed": time_completed, "image": image_path}
             )
             logger.info(f"Retrieved completed request: {request}")
         logger.info(f"Retrieved {len(completed_requests)} completed requests.")

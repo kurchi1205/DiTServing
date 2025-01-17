@@ -7,4 +7,10 @@ server:
   url: "http://localhost:8000"
 
 client:
-  poll_interval: 0.5             # Interval for polling for completed requests
+  poll_interval: 8             # Interval for polling for completed requests
+
+model:
+  model_path: "/home/DiTServing/stability_sd3_infer/models/sd3_medium.safetensors"
+  model_folder: "/home/DiTServing/stability_sd3_infer/models/"
+
+  
