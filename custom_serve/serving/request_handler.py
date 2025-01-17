@@ -1,6 +1,8 @@
 import sys
 import asyncio
 import uuid
+import time
+import torch
 from datetime import datetime
 try:
     from scheduler import Scheduler
@@ -18,12 +20,15 @@ from pipeline.sd3 import CFGDenoiser, SD3LatentFormat
 logger = get_logger(__name__)
 
 class RequestPool:
-    def __init__(self):
+    def __init__(self, inference_handler):
         self.requests = {}
         self.active_queue = asyncio.Queue()
         self.attn_queue = asyncio.Queue()
         self.output_pool = asyncio.Queue()
         self.lock = asyncio.Lock()
+        seed = torch.randint(0, 100000, (1,)).item()
+        self.empty_latent = inference_handler.get_empty_latent(1, 1024, 1024, seed, device="cuda")
+        self.neg_cond = inference_handler.fix_cond(inference_handler.get_cond(""))
         logger.info("Initialized RequestPool.")
 
     def add_request_to_pool(self, request):
@@ -63,10 +68,10 @@ class RequestPool:
 
 
 class RequestHandler:
-    def __init__(self, config=None):
+    def __init__(self, config=None, inference_handler=None):
         if config is None:
             config = {}
-        self.request_pool = RequestPool()
+        self.request_pool = RequestPool(inference_handler)
         self.scheduler = Scheduler(batch_size=config.get("batch_size", 1))
         self.cache_interval = config.get("cache_interval", 5)
         self.max_requests = config.get("batch_size", 1) * self.cache_interval
@@ -82,7 +87,7 @@ class RequestHandler:
             "timesteps_left": timesteps_left,
             "cache_interval": 0,  # Default cache interval
             "prompt": prompt,
-            "cfg_scale": 7.5
+            "cfg_scale": 7.5,
         }
         logger.info(f"Created new request: {request['request_id']} (Prompt: {request['prompt']})")
         return request
@@ -128,7 +133,7 @@ class RequestHandler:
             await asyncio.sleep(0.01)       
 
 
-    async def process_batch_conc(self, inference_handler, request_id, requires_attention):
+    def process_batch_seq(self, inference_handler, request_id, requires_attention):
         """
         Process an individual request.
         """
@@ -160,13 +165,18 @@ class RequestHandler:
             del request["sigmas"]
             del request["conditioning"]
             del request["neg_cond"]
+            del request["old_denoised"]
 
         logger.debug(f"Decremented timesteps_left for request {request_id}: "
                     f"{request['timesteps_left']}")
         self.update_status(request)
         self.request_pool.requests[request_id] = request
+        return request
 
+
+    async def process_batch_conc(self, request, requires_attention):
         # Add processed request back to the active queue if not completed
+        request_id = request["request_id"]
         if request["status"] != RequestStatus.COMPLETED:
             await self.request_pool.add_to_active_queue(request_id)
         elif request["status"] == RequestStatus.COMPLETED:
@@ -177,6 +187,9 @@ class RequestHandler:
 
     async def _process_batch(self, inference_handler, batch, requires_attention):
         # Create tasks for all requests in the batch
+        requests = []
         for request_id in batch:
-            await self.process_batch_conc(inference_handler, request_id, requires_attention)
+            requests.append(self.process_batch_seq(inference_handler, request_id, requires_attention))
+        tasks = [self.process_batch_conc(request, requires_attention) for request in requests]
+        await asyncio.gather(*tasks)   
 

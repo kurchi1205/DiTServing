@@ -20,7 +20,7 @@ config_loader = ConfigLoader()
 config = config_loader.config
 
 # Initialize the RequestHandler
-handler = RequestHandler(config)
+handler = None
 inference_handler = None
 
 # Initialize FastAPI app
@@ -116,6 +116,7 @@ async def startup_event():
     Load the model and start the background task to monitor and process requests.
     """
     global inference_handler
+    global handler
     try:
         logger.info("Loading model during startup...")
         inference_handler = SD3Inferencer()
@@ -127,6 +128,7 @@ async def startup_event():
             text_encoder_device="cpu",
             verbose=True
         )
+        handler = RequestHandler(config, inference_handler)
         logger.info("Background request processing started during server startup.")
     except Exception as e:
         logger.error(f"Error during startup: {e}")

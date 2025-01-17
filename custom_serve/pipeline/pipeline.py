@@ -105,13 +105,11 @@ class SD3Inferencer:
         return {"c_crossattn": cond, "y": pooled}
 
 
-    def prepare_for_first_timestep(self, width, height, prompt, steps, seed_type="rand", seed=None):
+    def prepare_for_first_timestep(self, empty_latent, prompt, neg_cond, steps, seed_type="rand", seed=None):
         controlnet_cond = None
         if seed is None:
             seed = 50
-        latent = self.get_empty_latent(1, width, height, seed, "cpu")
-        latent = latent.cuda()
-        neg_cond = self.get_cond("")
+        latent = empty_latent.cuda()
         seed_num = None
         if seed_type == "roll":
             seed_num = seed if seed_num is None else seed_num + 1
@@ -122,14 +120,12 @@ class SD3Inferencer:
         conditioning = self.get_cond(prompt)
         latent = latent.half().cuda()
         self.sd3.model = self.sd3.model.cuda()
-        noise = self.get_noise(seed, latent).cuda()
+        noise = self.get_noise(seed_num, latent).cuda()
         sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
         conditioning = self.fix_cond(conditioning)
-        neg_cond = self.fix_cond(neg_cond)
         noise_scaled = self.sd3.model.model_sampling.noise_scaling(
             sigmas[0], noise, latent, self.max_denoise(sigmas)
         )
-        old_denoised = None
         return noise_scaled, sigmas, conditioning, neg_cond, seed_num
 
 
@@ -149,7 +145,7 @@ class SD3Inferencer:
             denoised_d = (1 + 1 / (2 * r)) * denoised - (1 / (2 * r)) * old_denoised
             x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised_d
         old_denoised = denoised
-        return x
+        return x, old_denoised
 
 
     def do_sampling(
