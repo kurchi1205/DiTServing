@@ -1,6 +1,7 @@
 ### This file contains impls for MM-DiT, the core model component of SD3
 
 import math
+import time
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -589,7 +590,7 @@ class DismantledBlock(nn.Module):
             return self.post_attention(attn, *intermediates)
 
 
-def block_mixing(context, x, context_block, x_block, c, request, compute_attention=True):
+def block_mixing(context, x, context_block, x_block, c, depth_idx, request, compute_attention=True):
     assert context is not None, "block_mixing called with None context"
     context_qkv, context_intermediates = context_block.pre_attention(context, c)
 
@@ -602,7 +603,14 @@ def block_mixing(context, x, context_block, x_block, c, request, compute_attenti
         torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
         for i in range(3)
     )
-    attn = attention(q, k, v, x_block.attn.num_heads)
+    st = time.time()
+    if compute_attention: 
+        attn = attention(q, k, v, x_block.attn.num_heads)
+        # print("time taken for attention: ", time.time() - st)
+        request["attention"][str(depth_idx)] = attn.detach().cpu()
+    else:
+        attn = request["attention"][str(depth_idx)].cuda()
+        # print("time taken without attention: ", time.time() - st)
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],
         attn[:, context_qkv[0].shape[1] :],
@@ -612,8 +620,7 @@ def block_mixing(context, x, context_block, x_block, c, request, compute_attenti
         context = context_block.post_attention(context_attn, *context_intermediates)
     else:
         context = None
-    print(request["current_timestep"])
-    print("compute_attention: ", compute_attention)
+
     if x_block.x_block_self_attn:
         x_q2, x_k2, x_v2 = x_qkv2
         attn2 = attention(x_q2, x_k2, x_v2, x_block.attn2.num_heads)
@@ -642,10 +649,11 @@ class JointBlock(nn.Module):
             x_block_self_attn=x_block_self_attn,
             **kwargs,
         )
+        self.depth_idx =  kwargs.pop("depth_idx")
 
     def forward(self, *args, **kwargs):
         return block_mixing(
-            *args, context_block=self.context_block, x_block=self.x_block, **kwargs
+            *args, context_block=self.context_block, x_block=self.x_block, depth_idx=self.depth_idx, **kwargs
         )
 
 
@@ -804,6 +812,7 @@ class MMDiTX(nn.Module):
                     x_block_self_attn=(i in self.x_block_self_attn_layers),
                     dtype=dtype,
                     device=device,
+                    depth_idx=i
                 )
                 for i in range(depth)
             ]
@@ -914,7 +923,7 @@ class MMDiTX(nn.Module):
 
         context = self.context_embedder(context)
 
-        x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states)
+        x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, request, compute_attention)
 
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x

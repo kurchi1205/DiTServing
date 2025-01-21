@@ -88,6 +88,7 @@ class RequestHandler:
             "cache_interval": 0,  # Default cache interval
             "prompt": prompt,
             "cfg_scale": 7.5,
+            "attention": {}
         }
         logger.info(f"Created new request: {request['request_id']} (Prompt: {request['prompt']})")
         return request
@@ -166,6 +167,7 @@ class RequestHandler:
             del request["conditioning"]
             del request["neg_cond"]
             del request["old_denoised"]
+            del request["attention"]
 
         logger.debug(f"Decremented timesteps_left for request {request_id}: "
                     f"{request['timesteps_left']}")
