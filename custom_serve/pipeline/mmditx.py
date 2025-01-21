@@ -589,7 +589,7 @@ class DismantledBlock(nn.Module):
             return self.post_attention(attn, *intermediates)
 
 
-def block_mixing(context, x, context_block, x_block, c):
+def block_mixing(context, x, context_block, x_block, c, request, compute_attention=True):
     assert context is not None, "block_mixing called with None context"
     context_qkv, context_intermediates = context_block.pre_attention(context, c)
 
@@ -612,7 +612,8 @@ def block_mixing(context, x, context_block, x_block, c):
         context = context_block.post_attention(context_attn, *context_intermediates)
     else:
         context = None
-
+    print(request["current_timestep"])
+    print("compute_attention: ", compute_attention)
     if x_block.x_block_self_attn:
         x_q2, x_k2, x_v2 = x_qkv2
         attn2 = attention(x_q2, x_k2, x_v2, x_block.attn2.num_heads)
@@ -860,6 +861,8 @@ class MMDiTX(nn.Module):
         context: Optional[torch.Tensor] = None,
         skip_layers: Optional[List] = [],
         controlnet_hidden_states: Optional[torch.Tensor] = None,
+        request = None,
+        compute_attention: bool = False,
     ) -> torch.Tensor:
         if self.register_length > 0:
             context = torch.cat(
@@ -875,7 +878,7 @@ class MMDiTX(nn.Module):
         for i, block in enumerate(self.joint_blocks):
             if i in skip_layers:
                 continue
-            context, x = block(context, x, c=c_mod)
+            context, x = block(context, x, c=c_mod, request=request, compute_attention=compute_attention)
             if controlnet_hidden_states is not None:
                 controlnet_block_interval = len(self.joint_blocks) // len(
                     controlnet_hidden_states
@@ -893,6 +896,8 @@ class MMDiTX(nn.Module):
         context: Optional[torch.Tensor] = None,
         controlnet_hidden_states: Optional[torch.Tensor] = None,
         skip_layers: Optional[List] = [],
+        request = None,
+        compute_attention: bool = False,
     ) -> torch.Tensor:
         """
         Forward pass of DiT.

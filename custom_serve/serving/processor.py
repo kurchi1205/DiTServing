@@ -1,7 +1,7 @@
 import time
 from pipeline.sd3 import SD3LatentFormat
 
-def process_each_timestep(handler, request_id, request_pool):
+def process_each_timestep(handler, request_id, request_pool, compute_attention=True):
     denoiser = handler.denoiser
     model = handler.sd3.model
     request = request_pool.requests[request_id]
@@ -36,6 +36,8 @@ def process_each_timestep(handler, request_id, request_pool):
             "uncond": neg_cond,
             "cond_scale": cfg_scale,
             "controlnet_cond": None,
+            "request": request,
+            "compute_attention": compute_attention
         }
     denoiser_model = denoiser(model)
     latent, old_denoised = handler.denoise_each_step(denoiser_model, noise_scaled, sigmas[current_timestep], sigmas[current_timestep - 1], sigmas[current_timestep + 1], old_denoised, extra_args)

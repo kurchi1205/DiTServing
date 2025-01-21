@@ -106,7 +106,7 @@ class BaseModel(torch.nn.Module):
         self.model_sampling = ModelSamplingDiscreteFlow(shift=shift)
 
 
-    def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None):
+    def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None):
         dtype = self.get_dtype()
         timestep = self.model_sampling.timestep(sigma).float()
         controlnet_hidden_states = None
@@ -132,6 +132,8 @@ class BaseModel(torch.nn.Module):
             y=y.to(dtype),
             controlnet_hidden_states=controlnet_hidden_states,
             skip_layers=skip_layers,
+            request=request,
+            compute_attention=compute_attention
         ).float()
         return self.model_sampling.calculate_denoised(sigma, model_output, x)
 

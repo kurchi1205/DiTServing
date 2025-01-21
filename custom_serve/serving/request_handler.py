@@ -144,12 +144,12 @@ class RequestHandler:
         if requires_attention:
             # Attention-specific processing: recompute latent
             # request["latent"] = model.compute_latent(request["prompt"])
-            process_each_timestep(inference_handler, request_id, self.request_pool)
+            process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=True)
             request["cache_interval"] = 5  # Reset cache interval
             logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
         else:
             # General processing: decrement cache interval
-            process_each_timestep(inference_handler, request_id, self.request_pool)
+            process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=False)
             request["cache_interval"] -= 1
             logger.debug(f"Decremented cache interval for request {request_id}: "
                         f"{request['cache_interval']}")
