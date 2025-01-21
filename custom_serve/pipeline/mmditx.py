@@ -599,17 +599,18 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request, comp
     else:
         x_qkv, x_intermediates = x_block.pre_attention(x, c)
 
-    q, k, v = tuple(
-        torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
-        for i in range(3)
-    )
-    st = time.time()
+   
+
     if compute_attention: 
+        q, k, v = tuple(
+            torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
+            for i in range(3)
+        )
         attn = attention(q, k, v, x_block.attn.num_heads)
         # print("time taken for attention: ", time.time() - st)
-        request["attention"][str(depth_idx)] = attn.detach().cpu()
+        request["attention"][str(depth_idx)] = attn
     else:
-        attn = request["attention"][str(depth_idx)].cuda()
+        attn = request["attention"][str(depth_idx)]
         # print("time taken without attention: ", time.time() - st)
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],

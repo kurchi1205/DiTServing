@@ -71,10 +71,11 @@ class RequestHandler:
     def __init__(self, config=None, inference_handler=None):
         if config is None:
             config = {}
+        sys_config = config["system"]
         self.request_pool = RequestPool(inference_handler)
-        self.scheduler = Scheduler(batch_size=config.get("batch_size", 1))
-        self.cache_interval = config.get("cache_interval", 5)
-        self.max_requests = config.get("batch_size", 1) * self.cache_interval
+        self.scheduler = Scheduler(batch_size=sys_config.get("batch_size", 1))
+        self.cache_interval = sys_config.get("cache_interval", 5)
+        self.max_requests = max(sys_config.get("batch_size", 1) * self.cache_interval, 1)
         logger.info(f"Initialized RequestHandler with batch_size={self.scheduler.batch_size}, "
                     f"cache_interval={self.cache_interval}, max_requests={self.max_requests}")
 
@@ -124,11 +125,11 @@ class RequestHandler:
 
             # Step 2: Process attention requests in a batch
             attn_requests = await self.request_pool.get_all_attn_requests()
+            active_requests = await self.request_pool.get_all_active_requests()
             if attn_requests:
                 await self._process_batch(inference_handler, attn_requests, requires_attention=True)
 
             # Step 3: Process non-attention active requests in a batch
-            active_requests = await self.request_pool.get_all_active_requests()
             if active_requests:
                 await self._process_batch(inference_handler, active_requests, requires_attention=False)
             await asyncio.sleep(0.01)       
@@ -141,12 +142,12 @@ class RequestHandler:
         request = self.request_pool.requests[request_id]
         logger.debug(f"Processing request {request_id} (Prompt: {request['prompt']})")
         # await asyncio.sleep(0.09)
-        # Perform attention-specific or general processing
+        # Perform attention-specific or general processing]
         if requires_attention:
             # Attention-specific processing: recompute latent
             # request["latent"] = model.compute_latent(request["prompt"])
             process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=True)
-            request["cache_interval"] = 5  # Reset cache interval
+            request["cache_interval"] = self.cache_interval  # Reset cache interval
             logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
         else:
             # General processing: decrement cache interval
