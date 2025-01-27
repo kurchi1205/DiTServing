@@ -1,11 +1,12 @@
 import os
 import fire
+import time
 from PIL import Image
 from pipeline import SD3Inferencer
 
 # Assuming the SD3Inferencer and necessary classes are already imported
 
-def run_inference(prompt, model_path="models/sd3_medium.safetensors", model_folder="models/", output_dir="outputs", width=512, height=512, steps=30, cfg_scale=7.5, seed=42, sampler="dpmpp_2m"):
+def run_inference(prompt, model_path="models/sd3_medium.safetensors", model_folder="models/", output_dir="outputs", width=1024, height=1024, steps=30, cfg_scale=5.0, seed=42, sampler="dpmpp_2m"):
     """
     Run SD3 model inference to generate an image based on the provided prompt.
 
@@ -35,6 +36,7 @@ def run_inference(prompt, model_path="models/sd3_medium.safetensors", model_fold
 
     # Generate image
     print("Generating image...")
+    st = time.time()
     images = inferencer.gen_image(
         prompts=[prompt],
         width=width,
@@ -42,9 +44,10 @@ def run_inference(prompt, model_path="models/sd3_medium.safetensors", model_fold
         steps=steps,
         cfg_scale=cfg_scale,
         seed=seed,
+        seed_type="fixed",
         sampler=sampler
     )
-
+    print("Time taken:", time.time() - st)
     # Save and display the generated image
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, "generated_image.png")

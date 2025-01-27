@@ -11,6 +11,7 @@ import math
 import os
 import pickle
 import re
+import time
 
 import fire
 import numpy as np
@@ -218,11 +219,11 @@ PROMPT = "a photo of a cat"
 CFG_SCALE = 4.5
 # Different models want different step counts but most will be good at 50, albeit that's slow to run
 # sd3_medium is quite decent at 28 steps
-STEPS = 40
+STEPS = 30
 # Seed
-SEED = 23
-# SEEDTYPE = "fixed"
-SEEDTYPE = "rand"
+SEED = 50
+SEEDTYPE = "fixed"
+# SEEDTYPE = "rand"
 # SEEDTYPE = "roll"
 # Actual model file path
 # MODEL = "models/sd3_medium.safetensors"
@@ -502,7 +503,7 @@ class SD3Inferencer:
 CONFIGS = {
     "sd3_medium": {
         "shift": 1.0,
-        "steps": 50,
+        "steps": 30,
         "cfg": 5.0,
         "sampler": "dpmpp_2m",
     },
@@ -632,7 +633,7 @@ def main(
     )
 
     os.makedirs(out_dir, exist_ok=False)
-
+    st = time.time()
     inferencer.gen_image(
         prompts,
         width,
@@ -648,7 +649,8 @@ def main(
         denoise,
         skip_layer_config,
     )
-
+    et = time.time()
+    print("Time taken: ", et - st)
 
 if __name__ == "__main__":
     fire.Fire(main)

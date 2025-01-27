@@ -1,6 +1,7 @@
 import os
 import torch
 import math
+import time
 import numpy as np
 from PIL import Image
 from tokenizer import SD3Tokenizer
@@ -236,6 +237,7 @@ class SD3Inferencer:
             else:  # fixed
                 seed_num = seed
             conditioning = self.get_cond(prompt)
+            st = time.time()
             sampled_latent = self.do_sampling(
                 latent,
                 seed_num,
@@ -248,6 +250,7 @@ class SD3Inferencer:
                 denoise if init_image else 1.0,
                 skip_layer_config,
             )
+            print("Time for denoising: ", time.time() - st)
             image = self.vae_decode(sampled_latent)
             images.append(image)
             self.print("Done")
