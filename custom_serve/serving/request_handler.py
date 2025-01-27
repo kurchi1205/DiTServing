@@ -88,7 +88,7 @@ class RequestHandler:
             "timesteps_left": timesteps_left,
             "cache_interval": 0,  # Default cache interval
             "prompt": prompt,
-            "cfg_scale": 7.5,
+            "cfg_scale": 5.0,
             "attention": {}
         }
         logger.info(f"Created new request: {request['request_id']} (Prompt: {request['prompt']})")
@@ -126,13 +126,22 @@ class RequestHandler:
             # Step 2: Process attention requests in a batch
             attn_requests = await self.request_pool.get_all_attn_requests()
             active_requests = await self.request_pool.get_all_active_requests()
+            tasks = []
             if attn_requests:
-                await self._process_batch(inference_handler, attn_requests, requires_attention=True)
-
-            # Step 3: Process non-attention active requests in a batch
+                tasks.append(self._process_batch(inference_handler, attn_requests, requires_attention=True))
             if active_requests:
-                await self._process_batch(inference_handler, active_requests, requires_attention=False)
-            await asyncio.sleep(0.01)       
+                tasks.append(self._process_batch(inference_handler, active_requests, requires_attention=False))
+                
+            if tasks:
+                await asyncio.gather(*tasks)
+                
+            # if attn_requests:
+            #     await self._process_batch(inference_handler, attn_requests, requires_attention=True)
+
+            # # Step 3: Process non-attention active requests in a batch
+            # if active_requests:
+            #     await self._process_batch(inference_handler, active_requests, requires_attention=False)
+            await asyncio.sleep(0.001)       
 
 
     def process_batch_seq(self, inference_handler, request_id, requires_attention):
