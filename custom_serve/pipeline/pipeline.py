@@ -84,7 +84,6 @@ class SD3Inferencer:
         ).to(latent.dtype)
 
     def get_cond(self, prompt):
-        self.print("Encode prompt...")
         tokens = self.tokenizer.tokenize_with_weights(prompt)
         l_out, l_pooled = self.clip_l.model.encode_token_weights(tokens["l"])
         g_out, g_pooled = self.clip_g.model.encode_token_weights(tokens["g"])
@@ -148,53 +147,6 @@ class SD3Inferencer:
         return x, old_denoised
 
 
-    def do_sampling(
-        self,
-        latent,
-        seed,
-        conditioning,
-        neg_cond,
-        steps,
-        cfg_scale,
-        sampler="dpmpp_2m",
-        controlnet_cond=None,
-        denoise=1.0,
-        skip_layer_config={},
-    ) -> torch.Tensor:
-        self.print("Sampling...")
-        latent = latent.half().cuda()
-        self.sd3.model = self.sd3.model.cuda()
-        noise = self.get_noise(seed, latent).cuda()
-        sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
-        sigmas = sigmas[int(steps * (1 - denoise)) :]
-        conditioning = self.fix_cond(conditioning)
-        neg_cond = self.fix_cond(neg_cond)
-        extra_args = {
-            "cond": conditioning,
-            "uncond": neg_cond,
-            "cond_scale": cfg_scale,
-            "controlnet_cond": controlnet_cond,
-        }
-        noise_scaled = self.sd3.model.model_sampling.noise_scaling(
-            sigmas[0], noise, latent, self.max_denoise(sigmas)
-        )
-        sample_fn = getattr(sampling, f"sample_{sampler}")
-        denoiser = (
-            SkipLayerCFGDenoiser
-            if skip_layer_config.get("scale", 0) > 0
-            else CFGDenoiser
-        )
-        latent = sample_fn(
-            denoiser(self.sd3.model, steps, skip_layer_config),
-            noise_scaled,
-            sigmas,
-            extra_args=extra_args,
-        )
-        latent = SD3LatentFormat().process_out(latent)
-        self.sd3.model = self.sd3.model.cpu()
-        self.print("Sampling done")
-        return latent
-
     def vae_encode(
         self, image, using_2b_controlnet: bool = False, controlnet_type: int = 0
     ) -> torch.Tensor:
@@ -249,51 +201,3 @@ class SD3Inferencer:
         latent = self.vae_encode(image_data, using_2b_controlnet, controlnet_type)
         latent = SD3LatentFormat().process_in(latent)
         return latent
-
-    def gen_image(
-        self,
-        prompts=[""],
-        width=1024,
-        height=1024,
-        steps=30,
-        cfg_scale=4.5,
-        sampler="dpmpp_2m",
-        seed=50,
-        seed_type="rand",
-        out_dir="outputs",
-        controlnet_cond_image=None,
-        init_image=None,
-        denoise=0,
-        skip_layer_config={},
-    ):
-        controlnet_cond = None
-        latent = self.get_empty_latent(1, width, height, seed, "cpu")
-        latent = latent.cuda()
-        neg_cond = self.get_cond("")
-        seed_num = None
-        pbar = tqdm(enumerate(prompts), total=len(prompts), position=0, leave=True)
-        images = []
-        for i, prompt in pbar:
-            if seed_type == "roll":
-                seed_num = seed if seed_num is None else seed_num + 1
-            elif seed_type == "rand":
-                seed_num = torch.randint(0, 100000, (1,)).item()
-            else:  # fixed
-                seed_num = seed
-            conditioning = self.get_cond(prompt)
-            sampled_latent = self.do_sampling(
-                latent,
-                seed_num,
-                conditioning,
-                neg_cond,
-                steps,
-                cfg_scale,
-                sampler,
-                controlnet_cond,
-                denoise if init_image else 1.0,
-                skip_layer_config,
-            )
-            image = self.vae_decode(sampled_latent)
-            images.append(image)
-            self.print("Done")
-        return images
