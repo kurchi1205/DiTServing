@@ -6,20 +6,10 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import os
 import torch
-from torch import nn
-from torchvision.models import inception_v3
-import cv2
 import json
-from scipy import linalg
-import warnings
 from torchmetrics.image.fid import FrechetInceptionDistance
 
 # Import FID calculation functions
-from calculate_fid import (
-    calculate_fid,
-    load_images,
-)
-
 
 class CacheBenchmarkClient:
     def __init__(self):
