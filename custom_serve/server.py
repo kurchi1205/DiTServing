@@ -39,6 +39,18 @@ async def start_background_process(model, background_tasks: BackgroundTasks):
     return {"message": "Background process started."}
 
 
+@app.post("/change_caching_interval")
+async def change_caching_interval(cache_interval: int):
+    global handler
+    try:
+        handler.cache_interval = cache_interval
+        logger.info(f"Cache interval updated")
+        return {"message": "Updated cache interval"}
+    except Exception as e:
+        logger.error(f"could not change interval")
+        raise HTTPException(status_code=500, detail="Failed to change interval")
+
+
 @app.post("/add_request")
 async def add_request(request: RequestInput):
     """
@@ -83,7 +95,7 @@ async def get_output():
             if image_data:
                 output_dir = "output_images"
                 os.makedirs(output_dir, exist_ok=True)
-                image_path = os.path.join(output_dir, f"request_{request['request_id']}.png")
+                image_path = os.path.abspath(os.path.join(output_dir, f"request_{request['request_id']}.png"))
                 image_data.save(image_path)
             completed_requests.append(
                 {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"], "time_completed": time_completed, "image": image_path}
