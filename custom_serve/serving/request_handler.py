@@ -36,17 +36,34 @@ class RequestPool:
         self.requests[request["request_id"]] = request
         logger.info(f"Request added to pool: {request['request_id']} (Prompt: {request['prompt']})")
 
+    async def check_pending_timeouts(self, pending_timeout):
+        """Check pending requests and mark those exceeding the timeout as failed."""
+        async with self.lock:
+            current_time = datetime.now()
+            for request_id, request in list(self.requests.items()):
+                if request["status"] == RequestStatus.PENDING:
+                    request_time = datetime.fromisoformat(request["timestamp"])
+                    if current_time - request_time > pending_timeout:
+                        request["status"] = RequestStatus.FAILED
+                        await self.add_to_output_pool(request)
+                        logger.info(f"Request {request_id} marked as FAILED due to timeout.")
+
     async def add_to_active_queue(self, request_id):
         """Add a request to the active queue."""
         async with self.lock:
             await self.active_queue.put(request_id)
         logger.debug(f"Request added to active queue: {request_id}")
 
+
     async def add_to_output_pool(self, request):
         """Add a completed request to the output pool."""
         async with self.lock:
             await self.output_pool.put(request)
         logger.info(f"Request added to output pool: {request['request_id']} (Prompt: {request['prompt']})")
+        if request['request_id'] in self.requests:
+            del self.requests[request['request_id']]
+            logger.debug(f"Request removed from active pool: {request['request_id']}")
+
 
     async def get_all_active_requests(self):
         """Fetch all non-attention active requests."""
@@ -78,6 +95,7 @@ class RequestHandler:
         self.max_requests = max(sys_config.get("batch_size", 1) * self.cache_interval, 1)
         logger.info(f"Initialized RequestHandler with batch_size={self.scheduler.batch_size}, "
                     f"cache_interval={self.cache_interval}, max_requests={self.max_requests}")
+        self.pending_timeout_check = 200
 
     def create_request(self, prompt, timesteps_left):
         request = {
@@ -116,7 +134,7 @@ class RequestHandler:
     async def process_request(self, inference_handler):
         logger.info("Starting request processing cycle...")
         inference_handler.denoiser = CFGDenoiser
-
+        last_timeout_check = datetime.now()
         while True:
             await self.scheduler.add_to_active_request_queue(self.request_pool, self.max_requests)
 
@@ -134,7 +152,10 @@ class RequestHandler:
                 
             if tasks:
                 await asyncio.gather(*tasks)
-                
+
+            if (datetime.now() - last_timeout_check).total_seconds() > self.pending_timeout_check:
+                self.request_pool.check_pending_timeouts(self.pending_timeout_check)
+                last_timeout_check = datetime.now()
             # if attn_requests:
             #     await self._process_batch(inference_handler, attn_requests, requires_attention=True)
 
