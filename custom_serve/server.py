@@ -146,16 +146,6 @@ async def startup_event():
         logger.error(f"Error during startup: {e}")
         raise RuntimeError("Failed to initialize background processing.")
 
-# @app.on_event("shutdown")
-# async def shutdown_event():
-#     """
-#     Clean up resources and log shutdown details.
-#     """
-#     try:
-#         logger.info("Server is shutting down. Cleaning up resources.")
-#         # Add any necessary cleanup code here (e.g., releasing model resources)
-#     except Exception as e:
-#         logger.error(f"Error during shutdown: {e}")
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, log_level="info", reload_excludes="client.py")
