@@ -229,7 +229,7 @@ class CacheBenchmarkClient:
         try:
             print("\n=== Starting Benchmark ===")
             print("Initializing background process...")
-            await self.start_background_process()
+            # await self.start_background_process()
             
             results = {}
             

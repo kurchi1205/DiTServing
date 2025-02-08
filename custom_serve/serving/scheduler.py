@@ -51,19 +51,17 @@ class Scheduler:
         """Shift requests requiring attention to the attention queue."""
         async with self.lock:
             active_requests = []
-
             # Step 1: Process active queue first
             while not request_pool.active_queue.empty():
                 request_id = await request_pool.active_queue.get()
                 request = request_pool.requests[request_id]
 
                 # Check if the request requires attention
-                if request["cache_interval"] <= 0:
+                if request["cache_interval"] <= 0 and request_pool.attn_queue.qsize() < self.batch_size:
                     await request_pool.attn_queue.put(request_id)
                     logger.debug(f"Request {request_id} shifted to attention queue.")
                 else:
                     active_requests.append(request_id)
-
             # Re-populate active queue with remaining requests
             for request_id in active_requests:
                 await request_pool.active_queue.put(request_id)

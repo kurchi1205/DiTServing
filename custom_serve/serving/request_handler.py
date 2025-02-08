@@ -3,7 +3,7 @@ import asyncio
 import uuid
 import time
 import torch
-from datetime import datetime
+from datetime import datetime, timedelta
 try:
     from scheduler import Scheduler
     from constants import RequestStatus
@@ -36,14 +36,13 @@ class RequestPool:
         self.requests[request["request_id"]] = request
         logger.info(f"Request added to pool: {request['request_id']} (Prompt: {request['prompt']})")
 
-    async def check_pending_timeouts(self, pending_timeout):
+    async def check_pending_timeouts(self, pending_timeout, current_time):
         """Check pending requests and mark those exceeding the timeout as failed."""
         async with self.lock:
-            current_time = datetime.now()
             for request_id, request in list(self.requests.items()):
                 if request["status"] == RequestStatus.PENDING:
                     request_time = datetime.fromisoformat(request["timestamp"])
-                    if current_time - request_time > pending_timeout:
+                    if current_time - request_time > timedelta(seconds=pending_timeout):
                         request["status"] = RequestStatus.FAILED
                         await self.add_to_output_pool(request)
                         logger.info(f"Request {request_id} marked as FAILED due to timeout.")
@@ -52,7 +51,7 @@ class RequestPool:
             while not self.output_pool.empty():
                 completed_request = await self.output_pool.get()
                 request_time = datetime.fromisoformat(completed_request["completed_timestamp"])
-                if current_time - request_time > pending_timeout:
+                if current_time - request_time > timedelta(seconds=pending_timeout):
                     logger.info(f"Completed request {completed_request['request_id']} removed after timeout.")
                 else:
                     completed_requests.append(completed_request)
@@ -165,10 +164,9 @@ class RequestHandler:
                 
             if tasks:
                 await asyncio.gather(*tasks)
-
-            if (datetime.now() - last_timeout_check).total_seconds() > self.pending_timeout_check:
-                self.request_pool.check_pending_timeouts(self.pending_timeout_check)
-                last_timeout_check = datetime.now()
+            # if (datetime.now() - last_timeout_check).total_seconds() > self.pending_timeout_check:
+            #     await self.request_pool.check_pending_timeouts(self.pending_timeout_check, datetime.now())
+            #     last_timeout_check = datetime.now()
             # if attn_requests:
             #     await self._process_batch(inference_handler, attn_requests, requires_attention=True)
 
@@ -228,7 +226,6 @@ class RequestHandler:
         elif request["status"] == RequestStatus.COMPLETED:
             logger.debug(f"Request {request_id} completed. Moving to output pool.")
             await self.request_pool.add_to_output_pool(request)
-            del self.request_pool.requests[request_id]
 
 
     async def _process_batch(self, inference_handler, batch, requires_attention):
