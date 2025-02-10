@@ -46,3 +46,64 @@ def process_each_timestep(handler, request_id, request_pool, compute_attention=T
     request_pool.requests[request_id] = request
 
 
+
+
+def process_each_timestep_batched(handler, request_ids, request_pool, compute_attention=False):
+    denoiser = handler.denoiser
+    model = handler.sd3.model
+
+    # Prepare batched inputs
+    noise_scaled_batch = []
+    sigma_current_batch = []
+    sigma_prev_batch = []
+    sigma_next_batch = []
+    old_denoised_batch = []
+    conditioning_batch = []
+    neg_cond_batch = []
+
+    current_timestep = request["current_timestep"]
+
+    for request_id in request_ids:
+        request = request_pool.requests[request_id]
+        noise_scaled_batch.append(request["noise_scaled"])
+        sigma_current_batch.append(request["sigmas"][current_timestep])
+        sigma_prev_batch.append(request["sigmas"][current_timestep - 1])
+        sigma_next_batch.append(request["sigmas"][current_timestep + 1])
+        old_denoised_batch.append(request["old_denoised"])
+        conditioning_batch.append(request["conditioning"])
+        neg_cond_batch.append(request_pool.neg_cond)
+
+    # Convert lists to tensors
+    noise_scaled_batch = torch.stack(noise_scaled_batch)
+    sigma_current_batch = torch.stack(sigma_current_batch)
+    sigma_prev_batch = torch.stack(sigma_prev_batch)
+    sigma_next_batch = torch.stack(sigma_next_batch)
+    old_denoised_batch = torch.stack(old_denoised_batch)
+    conditioning_batch = torch.stack(conditioning_batch)
+    neg_cond_batch = torch.stack(neg_cond_batch)
+
+    extra_args = {
+        "cond": conditioning_batch,
+        "uncond": neg_cond_batch,
+        "cond_scale": 7.5,  # Assuming cfg_scale is consistent across all requests
+        "controlnet_cond": None,
+        "compute_attention": compute_attention
+    }
+
+    denoiser_model = denoiser(model)
+    latent_batch, new_old_denoised_batch = handler.denoise_each_step(
+        denoiser_model,
+        noise_scaled_batch,
+        sigma_current_batch,
+        sigma_prev_batch,
+        sigma_next_batch,
+        old_denoised_batch,
+        extra_args
+    )
+
+    # Update each request in the pool
+    for idx, request_id in enumerate(request_ids):
+        request = request_pool.requests[request_id]
+        request["noise_scaled"] = latent_batch[idx]
+        request["old_denoised"] = new_old_denoised_batch[idx]
+        request_pool.requests[request_id] = request
