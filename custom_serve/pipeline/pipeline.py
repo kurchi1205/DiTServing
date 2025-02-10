@@ -145,6 +145,42 @@ class SD3Inferencer:
         old_denoised = denoised
         return x, old_denoised
 
+    def denoise_each_step(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
+        extra_args = extra_args if extra_args is not None else {}
+        s_in = x.new_ones([x.shape[0]])  # Ensure size matches batch size in x
+
+        # Functions to compute sigma and time values
+        sigma_fn = lambda t: t.neg().exp()
+        t_fn = lambda sigma: sigma.log().neg()
+
+        # Model denoising step
+        denoised = model(x, sigma * s_in, **extra_args)
+
+        # Compute time values
+        t = t_fn(sigma)
+        t_next = t_fn(next_sigma)
+
+        # Compute the exponential moving average components
+        h = t_next - t
+        sigma_ratio = (sigma_fn(t_next) / sigma_fn(t)).view(-1, 1, 1, 1)
+        expm1_h = (-h).expm1().view(-1, 1, 1, 1)
+
+        # Calculate the ratio for blending denoised versions if applicable
+        if old_denoised is not None:
+            h_last = t - t_fn(prev_sigma)
+            r = (h_last / h).view(-1, 1, 1, 1)
+            denoised_d = (1 + 1 / (2 * r)) * denoised - (1 / (2 * r)) * old_denoised
+        else:
+            denoised_d = denoised  # Fallback to current denoised if old_denoised is None
+
+        # Compute the new x with conditional checks integrated
+        x = torch.where(next_sigma.view(-1, 1, 1, 1) == 0,
+                        sigma_ratio * x - expm1_h * denoised,
+                        sigma_ratio * x - expm1_h * denoised_d)
+
+        return x, denoised
+
+
 
     def vae_encode(
         self, image, using_2b_controlnet: bool = False, controlnet_type: int = 0
