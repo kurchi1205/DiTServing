@@ -590,7 +590,7 @@ class DismantledBlock(nn.Module):
             return self.post_attention(attn, *intermediates)
 
 
-def block_mixing(context, x, context_block, x_block, c, depth_idx, request, compute_attention=True):
+def block_mixing(context, x, context_block, x_block, c, depth_idx, attention_latent=None, request=None, compute_attention=True):
     assert context is not None, "block_mixing called with None context"
     context_qkv, context_intermediates = context_block.pre_attention(context, c)
 
@@ -610,7 +610,7 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request, comp
         # print("time taken for attention: ", time.time() - st)
         request["attention"][str(depth_idx)] = attn
     else:
-        attn = request["attention"][str(depth_idx)]
+        attn = attention_latent[str(depth_idx)]
         # print("time taken without attention: ", time.time() - st)
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],
@@ -873,6 +873,7 @@ class MMDiTX(nn.Module):
         controlnet_hidden_states: Optional[torch.Tensor] = None,
         request = None,
         compute_attention: bool = False,
+        attention_latent = None
     ) -> torch.Tensor:
         if self.register_length > 0:
             context = torch.cat(
@@ -888,6 +889,8 @@ class MMDiTX(nn.Module):
         for i, block in enumerate(self.joint_blocks):
             if i in skip_layers:
                 continue
+            # print("Joint block x: ", x.size())
+            # print("Joint block c: ", c_mod.size())
             context, x = block(context, x, c=c_mod, request=request, compute_attention=compute_attention)
             if controlnet_hidden_states is not None:
                 controlnet_block_interval = len(self.joint_blocks) // len(
@@ -908,6 +911,7 @@ class MMDiTX(nn.Module):
         skip_layers: Optional[List] = [],
         request = None,
         compute_attention: bool = False,
+        attention_latent = None
     ) -> torch.Tensor:
         """
         Forward pass of DiT.
@@ -924,7 +928,7 @@ class MMDiTX(nn.Module):
 
         context = self.context_embedder(context)
 
-        x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, request, compute_attention)
+        x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, attention_latent, request, compute_attention)
 
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x

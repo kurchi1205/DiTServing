@@ -134,6 +134,7 @@ class BaseModel(torch.nn.Module):
             skip_layers=skip_layers,
             request=request,
             compute_attention=compute_attention
+            attention_latent=attention_latent
         ).float()
         return self.model_sampling.calculate_denoised(sigma, model_output, x)
 
