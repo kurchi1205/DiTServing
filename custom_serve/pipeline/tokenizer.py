@@ -113,7 +113,6 @@ class SDTokenizer:
 
         if not return_word_ids:
             batched_tokens = [[(t, w) for t, w, _ in x] for x in batched_tokens]
-
         return batched_tokens
 
     def untokenize(self, token_weight_pair):

@@ -11,7 +11,7 @@ try:
 except ImportError:
     from .scheduler import Scheduler
     from .constants import RequestStatus
-    from .processor import process_each_timestep
+    from .processor import process_each_timestep, process_each_timestep_batched
 
 sys.path.append("../")
 from utils.logger import get_logger
@@ -119,7 +119,8 @@ class RequestHandler:
             "cache_interval": 0,  # Default cache interval
             "prompt": prompt,
             "cfg_scale": 5.0,
-            "attention": {}
+            "context_latent": {},
+            "x_latent": {}
         }
         logger.info(f"Created new request: {request['request_id']} (Prompt: {request['prompt']})")
         return request
@@ -175,6 +176,14 @@ class RequestHandler:
             #     await self._process_batch(inference_handler, active_requests, requires_attention=False)
             await asyncio.sleep(0.001)       
 
+    def process_batch(self, inference_handler, request_ids, requires_attention):
+        # if requires_attention:
+        #     process_each_timestep_batched(inference_handler, request_ids, self.request_pool, compute_attention=True)
+        # else:
+        requests = process_each_timestep_batched(inference_handler, request_ids, self.request_pool, compute_attention=False)
+        return requests
+        
+
 
     def process_batch_seq(self, inference_handler, request_id, requires_attention):
         """
@@ -184,20 +193,49 @@ class RequestHandler:
         logger.debug(f"Processing request {request_id} (Prompt: {request['prompt']})")
         # await asyncio.sleep(0.09)
         # Perform attention-specific or general processing]
-        if requires_attention:
+        # if requires_attention:
             # Attention-specific processing: recompute latent
             # request["latent"] = model.compute_latent(request["prompt"])
-            process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=True)
-            request["cache_interval"] = self.cache_interval  # Reset cache interval
-            logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
-        else:
-            # General processing: decrement cache interval
-            process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=False)
-            request["cache_interval"] -= 1
-            logger.debug(f"Decremented cache interval for request {request_id}: "
-                        f"{request['cache_interval']}")
+        process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=True)
+            # request["cache_interval"] = self.cache_interval  # Reset cache interval
+        logger.debug(f"Recomputed latent for request {request_id}. Cache interval reset.")
+        # else:
+        #     # General processing: decrement cache interval
+        #     process_each_timestep(inference_handler, request_id, self.request_pool, compute_attention=False)
+        #     # request["cache_interval"] -= 1
+        #     logger.debug(f"Decremented cache interval for request {request_id}: "
+        #                 f"{request['cache_interval']}")
 
         # Decrement timesteps left
+        # request["timesteps_left"] -= 1
+        # request["current_timestep"] += 1
+        # if request["timesteps_left"] == 0:
+        #     latent = SD3LatentFormat().process_out(request["noise_scaled"])
+        #     image = inference_handler.vae_decode(latent)
+        #     request["image"] = image
+        #     del request["noise_scaled"]
+        #     del request["sigmas"]
+        #     del request["conditioning"]
+        #     del request["neg_cond"]
+        #     del request["old_denoised"]
+        #     del request["attention"]
+
+        # logger.debug(f"Decremented timesteps_left for request {request_id}: "
+        #             f"{request['timesteps_left']}")
+        # self.update_status(request)
+        # self.request_pool.requests[request_id] = request
+        return request
+
+
+    async def process_batch_conc(self, inference_handler, request, requires_attention):
+        # Add processed request back to the active queue if not completed
+        # print("Scaled noise: ", request["noise_scaled"].size())
+        # print("old_denoised: ", request["old_denoised"].size())
+        if requires_attention:
+            request["cache_interval"] = self.cache_interval
+        else:
+            request["cache_interval"] -= 1
+        request_id = request["request_id"]
         request["timesteps_left"] -= 1
         request["current_timestep"] += 1
         if request["timesteps_left"] == 0:
@@ -209,18 +247,13 @@ class RequestHandler:
             del request["conditioning"]
             del request["neg_cond"]
             del request["old_denoised"]
-            del request["attention"]
+            del request["context_latent"]
+            del request["x_latent"]
 
         logger.debug(f"Decremented timesteps_left for request {request_id}: "
                     f"{request['timesteps_left']}")
         self.update_status(request)
-        self.request_pool.requests[request_id] = request
-        return request
 
-
-    async def process_batch_conc(self, request, requires_attention):
-        # Add processed request back to the active queue if not completed
-        request_id = request["request_id"]
         if request["status"] != RequestStatus.COMPLETED:
             await self.request_pool.add_to_active_queue(request_id)
         elif request["status"] == RequestStatus.COMPLETED:
@@ -230,9 +263,15 @@ class RequestHandler:
 
     async def _process_batch(self, inference_handler, batch, requires_attention):
         # Create tasks for all requests in the batch
+        # print("Batch: ", batch)
+        # print("requires_attention: ", requires_attention)
         requests = []
-        for request_id in batch:
-            requests.append(self.process_batch_seq(inference_handler, request_id, requires_attention))
-        tasks = [self.process_batch_conc(request, requires_attention) for request in requests]
+        if requires_attention:
+            for request_id in batch:
+                requests.append(self.process_batch_seq(inference_handler, request_id, requires_attention))
+        else:
+            requests = self.process_batch(inference_handler, batch, requires_attention)
+            # requests.append(self.request_pool.requests[request_id] for request_id in batch)
+        tasks = [self.process_batch_conc(inference_handler, request, requires_attention) for request in requests]
         await asyncio.gather(*tasks)   
 

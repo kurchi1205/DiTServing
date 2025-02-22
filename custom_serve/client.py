@@ -98,9 +98,10 @@ class Client:
     
         # Example prompts
         requests = [
-            {"prompt": "Generate image of a cat", "timesteps_left": 30},
-            {"prompt": "Generate image of a dog", "timesteps_left": 30},
-            {"prompt": "Generate image of a car", "timesteps_left": 30},
+            # {"prompt": "Generate image of a cat", "timesteps_left": 30},
+            # {"prompt": "Generate image of a dog", "timesteps_left": 30},
+            {"prompt": "Generate image of a fish", "timesteps_left": 30},
+            # {"prompt": "Generate image of a car", "timesteps_left": 30},
         ]
 
         logger.info("Starting request submission.")

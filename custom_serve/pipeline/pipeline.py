@@ -85,6 +85,7 @@ class SD3Inferencer:
     def get_cond(self, prompt):
         tokens = self.tokenizer.tokenize_with_weights(prompt)
         l_out, l_pooled = self.clip_l.model.encode_token_weights(tokens["l"])
+        # print(l_out.size())
         g_out, g_pooled = self.clip_g.model.encode_token_weights(tokens["g"])
         t5_out, t5_pooled = self.t5xxl.model.encode_token_weights(tokens["t5xxl"])
         lg_out = torch.cat([l_out, g_out], dim=-1)
@@ -127,7 +128,7 @@ class SD3Inferencer:
         return noise_scaled, sigmas, conditioning, neg_cond, seed_num
 
 
-    def denoise_each_step(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
+    def denoise_each_step_1(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
         extra_args = {} if extra_args is None else extra_args
         s_in = x.new_ones([x.shape[0]])
         sigma_fn = lambda t: t.neg().exp()
@@ -135,6 +136,8 @@ class SD3Inferencer:
         denoised = model(x, sigma * s_in, **extra_args)
         t, t_next = t_fn(sigma), t_fn(next_sigma)
         h = t_next - t
+        print("in denoise x:", x.size())
+        print("in denoise denoised:", denoised.size())
         if old_denoised is None or next_sigma == 0:
             x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised
         else:
@@ -145,6 +148,7 @@ class SD3Inferencer:
         old_denoised = denoised
         return x, old_denoised
 
+
     def denoise_each_step(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
         extra_args = extra_args if extra_args is not None else {}
         s_in = x.new_ones([x.shape[0]])  # Ensure size matches batch size in x
@@ -152,7 +156,7 @@ class SD3Inferencer:
         # Functions to compute sigma and time values
         sigma_fn = lambda t: t.neg().exp()
         t_fn = lambda sigma: sigma.log().neg()
-
+        print("Sigma: ", sigma)
         # Model denoising step
         denoised = model(x, sigma * s_in, **extra_args)
 
@@ -166,6 +170,7 @@ class SD3Inferencer:
         expm1_h = (-h).expm1().view(-1, 1, 1, 1)
 
         # Calculate the ratio for blending denoised versions if applicable
+        
         if old_denoised is not None:
             h_last = t - t_fn(prev_sigma)
             r = (h_last / h).view(-1, 1, 1, 1)

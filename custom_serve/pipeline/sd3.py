@@ -106,7 +106,10 @@ class BaseModel(torch.nn.Module):
         self.model_sampling = ModelSamplingDiscreteFlow(shift=shift)
 
 
-    def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None):
+    def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None, context_latent=None, x_latent=None):
+        # print("x shape: ", x.size())
+        # print("sigma shape: ", sigma.size())
+        
         dtype = self.get_dtype()
         timestep = self.model_sampling.timestep(sigma).float()
         controlnet_hidden_states = None
@@ -133,8 +136,9 @@ class BaseModel(torch.nn.Module):
             controlnet_hidden_states=controlnet_hidden_states,
             skip_layers=skip_layers,
             request=request,
-            compute_attention=compute_attention
-            attention_latent=attention_latent
+            compute_attention=compute_attention,
+            context_latent=context_latent,
+            x_latent=x_latent
         ).float()
         return self.model_sampling.calculate_denoised(sigma, model_output, x)
 
@@ -163,7 +167,11 @@ class CFGDenoiser(torch.nn.Module):
         cond_scale,
         **kwargs,
     ):
+        # print("Og size: ", x.size())
+        # print("Og timestep: ", timestep.size())
         # Run cond and uncond in a batch together
+        print("Cond:", cond)
+        print("uncond:", uncond)
         batched = self.model.apply_model(
             torch.cat([x, x]),
             torch.cat([timestep, timestep]),

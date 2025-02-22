@@ -58,6 +58,7 @@ class PatchEmbed(nn.Module):
         )
 
     def forward(self, x):
+        # print("Patch shape: ", x.shape)
         B, C, H, W = x.shape
         x = self.proj(x)
         if self.flatten:
@@ -590,7 +591,9 @@ class DismantledBlock(nn.Module):
             return self.post_attention(attn, *intermediates)
 
 
-def block_mixing(context, x, context_block, x_block, c, depth_idx, attention_latent=None, request=None, compute_attention=True):
+def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None, compute_attention=True):
+    # print("Request: ", request)
+    # print("compute_attention: ", compute_attention)
     assert context is not None, "block_mixing called with None context"
     context_qkv, context_intermediates = context_block.pre_attention(context, c)
 
@@ -601,17 +604,16 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, attention_lat
 
    
 
-    if compute_attention: 
-        q, k, v = tuple(
-            torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
-            for i in range(3)
-        )
-        attn = attention(q, k, v, x_block.attn.num_heads)
-        # print("time taken for attention: ", time.time() - st)
-        request["attention"][str(depth_idx)] = attn
-    else:
-        attn = attention_latent[str(depth_idx)]
-        # print("time taken without attention: ", time.time() - st)
+    q, k, v = tuple(
+        torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
+        for i in range(3)
+    )
+    attn = attention(q, k, v, x_block.attn.num_heads)
+    # print("time taken for attention: ", time.time() - st)
+    # request["attention"][str(depth_idx)] = attn
+    # else:
+    #     attn = attention_latent[str(depth_idx)]
+    #     # print("time taken without attention: ", time.time() - st)
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],
         attn[:, context_qkv[0].shape[1] :],
@@ -628,7 +630,13 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, attention_lat
         x = x_block.post_attention_x(x_attn, attn2, *x_intermediates)
     else:
         x = x_block.post_attention(x_attn, *x_intermediates)
-
+    # if context is not None:
+    #     print("Context: ", context.size())
+    #     print("X: ", x.size())
+    # else:
+    #     print("Context is NOne")
+    request["context_latent"][str(depth_idx)] = context
+    request["x_latent"][str(depth_idx)] = x
     return context, x
 
 
@@ -698,6 +706,8 @@ class FinalLayer(nn.Module):
 
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
         shift, scale = self.adaLN_modulation(c).chunk(2, dim=1)
+        print(shift.size())
+        print(scale.size())
         x = modulate(self.norm_final(x), shift, scale)
         x = self.linear(x)
         return x
@@ -873,8 +883,12 @@ class MMDiTX(nn.Module):
         controlnet_hidden_states: Optional[torch.Tensor] = None,
         request = None,
         compute_attention: bool = False,
-        attention_latent = None
+        context_latent = None,
+        x_latent = None
     ) -> torch.Tensor:
+        # print("In forward")
+        # print("Request: ", request)
+        # print("compute_attention: ", compute_attention)
         if self.register_length > 0:
             context = torch.cat(
                 (
@@ -886,18 +900,24 @@ class MMDiTX(nn.Module):
 
         # context is B, L', D
         # x is B, L, D
-        for i, block in enumerate(self.joint_blocks):
-            if i in skip_layers:
-                continue
-            # print("Joint block x: ", x.size())
-            # print("Joint block c: ", c_mod.size())
-            context, x = block(context, x, c=c_mod, request=request, compute_attention=compute_attention)
-            if controlnet_hidden_states is not None:
-                controlnet_block_interval = len(self.joint_blocks) // len(
-                    controlnet_hidden_states
-                )
-                x = x + controlnet_hidden_states[i // controlnet_block_interval]
+        if compute_attention:
+            for i, block in enumerate(self.joint_blocks):
+                if i in skip_layers:
+                    continue
+                # print("Joint block x: ", x.size())
+                # print("Joint block c: ", c_mod.size())
+                # if compute_attention:
+                context, x = block(context, x, c=c_mod, request=request, compute_attention=compute_attention)
+                # else:
+                #     context, x = context_latent[str(block.depth_idx)], x_latent[str(block.depth_idx)]
 
+                if controlnet_hidden_states is not None:
+                    controlnet_block_interval = len(self.joint_blocks) // len(
+                        controlnet_hidden_states
+                    )
+                    x = x + controlnet_hidden_states[i // controlnet_block_interval]
+        else:
+            x = x_latent[str(self.joint_blocks[-1].depth_idx)]
         x = self.final_layer(x, c_mod)  # (N, T, patch_size ** 2 * out_channels)
         return x
 
@@ -911,7 +931,8 @@ class MMDiTX(nn.Module):
         skip_layers: Optional[List] = [],
         request = None,
         compute_attention: bool = False,
-        attention_latent = None
+        context_latent = None,
+        x_latent = None
     ) -> torch.Tensor:
         """
         Forward pass of DiT.
@@ -922,13 +943,16 @@ class MMDiTX(nn.Module):
         hw = x.shape[-2:]
         x = self.x_embedder(x) + self.cropped_pos_embed(hw)
         c = self.t_embedder(t, dtype=x.dtype)  # (N, D)
+        print("c: ", c.size())
         if y is not None:
+            print(y)
             y = self.y_embedder(y)  # (N, D)
+            print("y: ", y.size())
             c = c + y  # (N, D)
 
         context = self.context_embedder(context)
-
-        x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, attention_latent, request, compute_attention)
+        print("context: ", context.size())
+        x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, request, compute_attention, context_latent, x_latent)
 
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x
