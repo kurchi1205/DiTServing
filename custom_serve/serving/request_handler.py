@@ -4,6 +4,8 @@ import uuid
 import time
 import torch
 from datetime import datetime, timedelta
+from concurrent.futures import ProcessPoolExecutor
+
 try:
     from scheduler import Scheduler
     from constants import RequestStatus
@@ -159,9 +161,9 @@ class RequestHandler:
             active_requests = await self.request_pool.get_all_active_requests()
             tasks = []
             if attn_requests:
-                tasks.append(self._process_batch(inference_handler, attn_requests, requires_attention=True))
+                self._process_batch(inference_handler, attn_requests, requires_attention=True)
             if active_requests:
-                tasks.append(self._process_batch(inference_handler, active_requests, requires_attention=False))
+                self._process_batch(inference_handler, active_requests, requires_attention=False)
                 
             if tasks:
                 await asyncio.gather(*tasks)
@@ -261,7 +263,7 @@ class RequestHandler:
             await self.request_pool.add_to_output_pool(request)
 
 
-    async def _process_batch(self, inference_handler, batch, requires_attention):
+    def _process_batch(self, inference_handler, batch, requires_attention):
         # Create tasks for all requests in the batch
         # print("Batch: ", batch)
         # print("requires_attention: ", requires_attention)
@@ -273,5 +275,5 @@ class RequestHandler:
             requests = self.process_batch(inference_handler, batch, requires_attention)
             # requests.append(self.request_pool.requests[request_id] for request_id in batch)
         tasks = [self.process_batch_conc(inference_handler, request, requires_attention) for request in requests]
-        await asyncio.gather(*tasks)   
+        asyncio.gather(*tasks)   
 

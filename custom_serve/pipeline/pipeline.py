@@ -136,8 +136,7 @@ class SD3Inferencer:
         denoised = model(x, sigma * s_in, **extra_args)
         t, t_next = t_fn(sigma), t_fn(next_sigma)
         h = t_next - t
-        print("in denoise x:", x.size())
-        print("in denoise denoised:", denoised.size())
+        
         if old_denoised is None or next_sigma == 0:
             x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised
         else:
@@ -156,7 +155,6 @@ class SD3Inferencer:
         # Functions to compute sigma and time values
         sigma_fn = lambda t: t.neg().exp()
         t_fn = lambda sigma: sigma.log().neg()
-        print("Sigma: ", sigma)
         # Model denoising step
         denoised = model(x, sigma * s_in, **extra_args)
 

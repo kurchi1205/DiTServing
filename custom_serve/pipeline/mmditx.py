@@ -591,7 +591,85 @@ class DismantledBlock(nn.Module):
             return self.post_attention(attn, *intermediates)
 
 
-def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None, compute_attention=True):
+# def block_mixing_1(context, x, context_block, x_block, c, depth_idx, request=None, compute_attention=True, x_latent=None):
+#     assert context is not None, "block_mixing called with None context"
+#     # print(f"Context size before splitting: {context.size()}")  # Debugging
+#     # print(f"x size before splitting: {x.size()}")  # Debugging
+
+#     batch_size = context.shape[0]
+#     split_size = 2  # Process in chunks of 2
+
+#     # **Compute batched attention (entire batch at once)**
+#     context_qkv, context_intermediates = context_block.pre_attention(context, c)
+#     x_qkv, x_intermediates = x_block.pre_attention(x, c)
+
+#     q, k, v = tuple(
+#         torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
+#         for i in range(3)
+#     )
+#     batched_attn = attention(q, k, v, x_block.attn.num_heads)
+
+#     # **Compute attention in chunks of `bs=2`**
+#     split_attentions = []
+#     for start in range(0, batch_size, split_size):
+#         end = min(start + split_size, batch_size)
+#         context_chunk = context[start:end]
+#         x_chunk = x[start:end]
+#         c_chunk = c[start:end]
+
+#         # Compute attention for this chunk
+#         context_qkv_chunk, _ = context_block.pre_attention(context_chunk, c_chunk)
+#         x_qkv_chunk, _ = x_block.pre_attention(x_chunk, c_chunk)
+#         q_chunk = q[start:end]
+#         k_chunk = k[start:end]
+#         v_chunk = v[start:end]
+#         # q_chunk, k_chunk, v_chunk = tuple(
+#         #     torch.cat(tuple(qkv[i] for qkv in [context_qkv_chunk, x_qkv_chunk]), dim=1)
+#         #     for i in range(3)
+#         # )
+#         attn_chunk = attention(q_chunk, k_chunk, v_chunk, x_block.attn.num_heads)
+#         split_attentions.append(attn_chunk)
+
+#     # **Concatenate split attention results**
+#     split_attn = torch.cat(split_attentions, dim=0)
+
+#     # **Compare Batched vs. Chunked Attention**
+#     is_equal = torch.allclose(batched_attn, split_attn, atol=1e-6)
+#     # print(f"Are batched attention and chunked attention equal? {is_equal}")
+
+#     # **Store in request if needed**
+#     if depth_idx == 0:
+#         print("depth idx: ", depth_idx)
+#         print("x: ", x)
+#         print("c: ", c)
+#         print("Context: ", context)
+#         print("Attn in mmditx: ", batched_attn)
+#     if request is not None:
+#         request["x_latent"][str(depth_idx)] = batched_attn  # Store batched version
+#     else:
+#         is_equal = torch.allclose(batched_attn, x_latent[str(depth_idx)], atol=1e-3)
+#         # print(batched_attn)
+#         # print(x_latent[str(depth_idx)])
+#         if not is_equal and depth_idx==0:
+#              print("Attn in cache: ", x_latent[str(depth_idx)])
+#         print(f"Are batched attention and chunked attention equal? {is_equal}")
+
+#     # **Continue with normal processing**
+#     context_attn, x_attn = (
+#         batched_attn[:, : context_qkv[0].shape[1]],
+#         batched_attn[:, context_qkv[0].shape[1]:],
+#     )
+
+#     if not context_block.pre_only:
+#         context = context_block.post_attention(context_attn, *context_intermediates)
+#     else:
+#         context = None
+
+#     x = x_block.post_attention(x_attn, *x_intermediates)
+    
+#     return context, x
+
+def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None, compute_attention=True, x_latent=None):
     # print("Request: ", request)
     # print("compute_attention: ", compute_attention)
     assert context is not None, "block_mixing called with None context"
@@ -608,12 +686,13 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None,
         torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
         for i in range(3)
     )
-    attn = attention(q, k, v, x_block.attn.num_heads)
-    # print("time taken for attention: ", time.time() - st)
-    # request["attention"][str(depth_idx)] = attn
-    # else:
-    #     attn = attention_latent[str(depth_idx)]
-    #     # print("time taken without attention: ", time.time() - st)
+    if compute_attention:
+        attn = attention(q, k, v, x_block.attn.num_heads)
+        if request is not None:
+            request["x_latent"][str(depth_idx)] = attn
+    else:
+        attn = x_latent[str(depth_idx)]
+    
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],
         attn[:, context_qkv[0].shape[1] :],
@@ -630,13 +709,6 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None,
         x = x_block.post_attention_x(x_attn, attn2, *x_intermediates)
     else:
         x = x_block.post_attention(x_attn, *x_intermediates)
-    # if context is not None:
-    #     print("Context: ", context.size())
-    #     print("X: ", x.size())
-    # else:
-    #     print("Context is NOne")
-    request["context_latent"][str(depth_idx)] = context
-    request["x_latent"][str(depth_idx)] = x
     return context, x
 
 
@@ -900,24 +972,22 @@ class MMDiTX(nn.Module):
 
         # context is B, L', D
         # x is B, L, D
-        if compute_attention:
-            for i, block in enumerate(self.joint_blocks):
-                if i in skip_layers:
-                    continue
-                # print("Joint block x: ", x.size())
-                # print("Joint block c: ", c_mod.size())
-                # if compute_attention:
-                context, x = block(context, x, c=c_mod, request=request, compute_attention=compute_attention)
-                # else:
-                #     context, x = context_latent[str(block.depth_idx)], x_latent[str(block.depth_idx)]
+        for i, block in enumerate(self.joint_blocks):
+            if i in skip_layers:
+                continue
+            # print("Joint block x: ", x.size())
+            # print("Joint block c: ", c_mod.size())
+            # if compute_attention:
+            if compute_attention:
+                context, x = block(context, x, c=c_mod, request=request, x_latent=None, compute_attention=compute_attention)
+            else:
+                context, x = block(context, x, c=c_mod, request=request, x_latent=x_latent, compute_attention=compute_attention)
 
-                if controlnet_hidden_states is not None:
-                    controlnet_block_interval = len(self.joint_blocks) // len(
-                        controlnet_hidden_states
-                    )
-                    x = x + controlnet_hidden_states[i // controlnet_block_interval]
-        else:
-            x = x_latent[str(self.joint_blocks[-1].depth_idx)]
+            if controlnet_hidden_states is not None:
+                controlnet_block_interval = len(self.joint_blocks) // len(
+                    controlnet_hidden_states
+                )
+                x = x + controlnet_hidden_states[i // controlnet_block_interval]
         x = self.final_layer(x, c_mod)  # (N, T, patch_size ** 2 * out_channels)
         return x
 
@@ -943,15 +1013,12 @@ class MMDiTX(nn.Module):
         hw = x.shape[-2:]
         x = self.x_embedder(x) + self.cropped_pos_embed(hw)
         c = self.t_embedder(t, dtype=x.dtype)  # (N, D)
-        print("c: ", c.size())
         if y is not None:
-            print(y)
             y = self.y_embedder(y)  # (N, D)
-            print("y: ", y.size())
             c = c + y  # (N, D)
 
         context = self.context_embedder(context)
-        print("context: ", context.size())
+        
         x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, request, compute_attention, context_latent, x_latent)
 
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)

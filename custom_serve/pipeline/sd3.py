@@ -170,8 +170,8 @@ class CFGDenoiser(torch.nn.Module):
         # print("Og size: ", x.size())
         # print("Og timestep: ", timestep.size())
         # Run cond and uncond in a batch together
-        print("Cond:", cond)
-        print("uncond:", uncond)
+        # print("Cond:", cond)
+        # print("uncond:", uncond)
         batched = self.model.apply_model(
             torch.cat([x, x]),
             torch.cat([timestep, timestep]),
