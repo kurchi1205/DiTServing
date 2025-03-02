@@ -1,5 +1,6 @@
 import math
 import torch
+import time
 import re
 from safetensors import safe_open
 from pipeline.utils import load_into
@@ -140,7 +141,10 @@ class BaseModel(torch.nn.Module):
             context_latent=context_latent,
             x_latent=x_latent
         ).float()
-        return self.model_sampling.calculate_denoised(sigma, model_output, x)
+        # st = time.time()
+        denoised = self.model_sampling.calculate_denoised(sigma, model_output, x)
+        # print("denoise calculate: ", time.time() - st)
+        return denoised
 
 
     def forward(self, *args, **kwargs):
@@ -172,6 +176,7 @@ class CFGDenoiser(torch.nn.Module):
         # Run cond and uncond in a batch together
         # print("Cond:", cond)
         # print("uncond:", uncond)
+        # st = time.time()
         batched = self.model.apply_model(
             torch.cat([x, x]),
             torch.cat([timestep, timestep]),
@@ -179,6 +184,7 @@ class CFGDenoiser(torch.nn.Module):
             y=torch.cat([cond["y"], uncond["y"]]),
             **kwargs,
         )
+        # print("Apply model: ", time.time() - st)
         # Then split and apply CFG Scaling
         pos_out, neg_out = batched.chunk(2)
         scaled = neg_out + (pos_out - neg_out) * cond_scale

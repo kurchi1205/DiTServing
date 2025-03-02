@@ -3,7 +3,7 @@ import torch
 from pipeline.sd3 import SD3LatentFormat
 
 def process_each_timestep(handler, request_id, request_pool, compute_attention=True):
-    st = time.time()
+    # st = time.time()
     denoiser = handler.denoiser
     model = handler.sd3.model
     request = request_pool.requests[request_id]
@@ -15,24 +15,24 @@ def process_each_timestep(handler, request_id, request_pool, compute_attention=T
     old_denoised = None
     width = 1024
     height = 1024
-    if request["current_timestep"] == 0:
-        noise_scaled, sigmas, conditioning, neg_cond, seed_num = handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="rand")
-        # request["noise_scaled"] = torch.cat([noise_scaled, noise_scaled], dim=0)
-        # noise_scaled = request["noise_scaled"]
-        request["noise_scaled"] = noise_scaled
-        request["sigmas"] = sigmas
-        request["conditioning"] = conditioning
-        request["neg_cond"] = neg_cond
-        request["seed_num"] = seed_num
-        request["old_denoised"] = old_denoised
+    # if request["current_timestep"] == 0:
+    #     noise_scaled, sigmas, conditioning, neg_cond, seed_num = handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="rand")
+    #     # request["noise_scaled"] = torch.cat([noise_scaled, noise_scaled], dim=0)
+    #     # noise_scaled = request["noise_scaled"]
+    #     request["noise_scaled"] = noise_scaled
+    #     request["sigmas"] = sigmas
+    #     request["conditioning"] = conditioning
+    #     request["neg_cond"] = neg_cond
+    #     request["seed_num"] = seed_num
+    #     request["old_denoised"] = old_denoised
 
-    else:
-        noise_scaled = request["noise_scaled"]
-        sigmas = request["sigmas"]
-        conditioning = request["conditioning"]
-        neg_cond = request["neg_cond"]
-        seed_num = request["seed_num"]
-        old_denoised = request["old_denoised"]
+    # else:
+    noise_scaled = request["noise_scaled"]
+    sigmas = request["sigmas"]
+    conditioning = request["conditioning"]
+    neg_cond = request["neg_cond"]
+    seed_num = request["seed_num"]
+    old_denoised = request["old_denoised"]
 
     current_timestep = request["current_timestep"]
     extra_args = {
@@ -52,13 +52,13 @@ def process_each_timestep(handler, request_id, request_pool, compute_attention=T
     # old_denoised = torch.stack([old_denoised, old_denoised], dim=0)
     # print("Noise shape: ", noise_batch.size())
     # latent, old_denoised = handler.denoise_each_step(denoiser_model, noise_scaled, sigmas[current_timestep], sigmas[current_timestep - 1], sigmas[current_timestep + 1], old_denoised, extra_args)
-    st_2 = time.time()
+    # st_2 = time.time()
     latent, old_denoised = handler.denoise_each_step(denoiser_model, noise_scaled, sigma_current, sigma_prev, sigma_next, old_denoised, extra_args)
     request["noise_scaled"] = latent
     request["old_denoised"] = old_denoised
     request_pool.requests[request_id] = request
-    print("Time taken with attention", time.time() - st)
-    print("Time taken with attention computation", time.time() - st_2)
+    # print("Time taken with attention", time.time() - st)
+    # print("Time taken with attention computation", time.time() - st_2)
 
 
 
@@ -161,6 +161,7 @@ def process_each_timestep_batched_1(handler, request_ids, request_pool, compute_
     latent_chunks = torch.chunk(latent_batch, num_requests, dim=0)
     old_denoised_chunks = torch.chunk(new_old_denoised_batch, num_requests, dim=0)
     # Assign each chunk to its respective request
+    st_3 = time.time()
     for idx, request_id in enumerate(request_ids):
         request = request_pool.requests[request_id]
         request["noise_scaled"] = latent_chunks[idx]
@@ -168,15 +169,16 @@ def process_each_timestep_batched_1(handler, request_ids, request_pool, compute_
         requests.append(request)
     print(f"Time taken without attention of {num_requests}: {time.time() - st}")
     print(f"Time taken without attention computation of {num_requests}: {time.time() - st_2}")
+    print(f"Time taken unbatching {num_requests}: {time.time() - st_3}")
     return requests
 
 
 def process_each_timestep_batched(handler, request_ids, request_pool, compute_attention=False):
-    st = time.time()
+    # st = time.time()
     denoiser = handler.denoiser
     model = handler.sd3.model
     num_requests = len(request_ids)
-    print("Num requests: ", len(request_ids))
+    # print("Num requests: ", len(request_ids))
     # Get first request to determine tensor shapes
     first_request = request_pool.requests[request_ids[0]]
     noise_shape = first_request["noise_scaled"].shape
@@ -261,7 +263,7 @@ def process_each_timestep_batched(handler, request_ids, request_pool, compute_at
     }
 
     # Run denoising
-    st_2 = time.time()
+    # st_2 = time.time()
     denoiser_model = denoiser(model)
     latent_batch, new_old_denoised_batch = handler.denoise_each_step(
         denoiser_model,
@@ -275,12 +277,14 @@ def process_each_timestep_batched(handler, request_ids, request_pool, compute_at
 
     # Update requests directly
     requests = []
+    # st_3 = time.time()
     for idx, request_id in enumerate(request_ids):
         request = request_pool.requests[request_id]
         request["noise_scaled"] = latent_batch[idx:idx+1]
         request["old_denoised"] = new_old_denoised_batch[idx:idx+1]
         requests.append(request)
 
-    print(f"Time taken without attention of {num_requests}: {time.time() - st}")
-    print(f"Time taken without attention computation of {num_requests}: {time.time() - st_2}")
+    # print(f"Time taken without attention of {num_requests}: {time.time() - st}")
+    # print(f"Time taken without attention computation of {num_requests}: {time.time() - st_2}")
+    # print(f"Time taken unbatching {num_requests}: {time.time() - st_3}")
     return requests

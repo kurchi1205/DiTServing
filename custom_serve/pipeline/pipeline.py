@@ -9,6 +9,7 @@ from pipeline.text_encoder import T5XXL, ClipL, ClipG
 from pipeline.sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
 from pipeline.vae import VAE
 from tqdm import tqdm
+import time
 
 class SD3Inferencer:
 
@@ -149,6 +150,7 @@ class SD3Inferencer:
 
 
     def denoise_each_step(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
+        # st = time.time()
         extra_args = extra_args if extra_args is not None else {}
         s_in = x.new_ones([x.shape[0]])  # Ensure size matches batch size in x
 
@@ -156,8 +158,10 @@ class SD3Inferencer:
         sigma_fn = lambda t: t.neg().exp()
         t_fn = lambda sigma: sigma.log().neg()
         # Model denoising step
+        # st_2 = time.time()
         denoised = model(x, sigma * s_in, **extra_args)
-
+        # print("Denoised: ", time.time() - st)
+        # print("Just Denoising: ", time.time() - st_2)
         # Compute time values
         t = t_fn(sigma)
         t_next = t_fn(next_sigma)
@@ -180,7 +184,6 @@ class SD3Inferencer:
         x = torch.where(next_sigma.view(-1, 1, 1, 1) == 0,
                         sigma_ratio * x - expm1_h * denoised,
                         sigma_ratio * x - expm1_h * denoised_d)
-
         return x, denoised
 
 

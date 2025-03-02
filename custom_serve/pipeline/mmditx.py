@@ -686,6 +686,7 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None,
         torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
         for i in range(3)
     )
+    # attn = attention(q, k, v, x_block.attn.num_heads)
     if compute_attention:
         attn = attention(q, k, v, x_block.attn.num_heads)
         if request is not None:
@@ -709,6 +710,7 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None,
         x = x_block.post_attention_x(x_attn, attn2, *x_intermediates)
     else:
         x = x_block.post_attention(x_attn, *x_intermediates)
+    # request["x_latent"][str(depth_idx)] = x
     return context, x
 
 
@@ -981,6 +983,7 @@ class MMDiTX(nn.Module):
             if compute_attention:
                 context, x = block(context, x, c=c_mod, request=request, x_latent=None, compute_attention=compute_attention)
             else:
+                # x = x_latent[str(block.depth_idx)]
                 context, x = block(context, x, c=c_mod, request=request, x_latent=x_latent, compute_attention=compute_attention)
 
             if controlnet_hidden_states is not None:
@@ -1010,6 +1013,7 @@ class MMDiTX(nn.Module):
         t: (N,) tensor of diffusion timesteps
         y: (N,) tensor of class labels
         """
+        # st = time.time()
         hw = x.shape[-2:]
         x = self.x_embedder(x) + self.cropped_pos_embed(hw)
         c = self.t_embedder(t, dtype=x.dtype)  # (N, D)
@@ -1018,8 +1022,9 @@ class MMDiTX(nn.Module):
             c = c + y  # (N, D)
 
         context = self.context_embedder(context)
-        
+        # print("time for embedding: ", time.time() - st)
+        # st_2 = time.time()
         x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states, request, compute_attention, context_latent, x_latent)
-
+        # print(f"time for forward with attention {compute_attention}: {time.time() - st_2}")
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x

@@ -59,7 +59,7 @@ class Scheduler:
                 # Check if the request requires attention
                 if request["cache_interval"] <= 0 and request_pool.attn_queue.qsize() < self.batch_size:
                     await request_pool.attn_queue.put(request_id)
-                    logger.debug(f"Request {request_id} shifted to attention queue.")
+                    logger.info(f"Request {request_id} shifted to attention queue.")
                 else:
                     active_requests.append(request_id)
             # Re-populate active queue with remaining requests
@@ -73,7 +73,7 @@ class Scheduler:
                     logger.debug("Attention queue is full. Stopping shift to attention queue.")
                     break  # Stop if attn_queue is full
                 if request["status"] == RequestStatus.PENDING:
-                    if (request_pool.active_queue.qsize() + request_pool.attn_queue.qsize()) < max_active_requests:
+                    if (request_pool.active_queue.qsize() + request_pool.attn_queue.qsize()) < max_active_requests and request_pool.attn_queue.qsize() < self.batch_size:
                         await request_pool.attn_queue.put(request_id)
                         request["status"] = RequestStatus.IN_PROGRESS
                         logger.debug(f"New request {request_id} added to attention queue.")
