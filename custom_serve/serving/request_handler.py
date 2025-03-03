@@ -27,6 +27,7 @@ class RequestPool:
         self.requests = {}
         self.active_queue = asyncio.Queue()
         self.attn_queue = asyncio.Queue()
+        self.decode_queue = asyncio.Queue()
         self.output_pool = asyncio.Queue()
         self.lock = asyncio.Lock()
         seed = torch.randint(0, 100000, (1,)).item()
@@ -210,15 +211,20 @@ class RequestHandler:
             # Execute both batches concurrently
             if tasks:
                 await asyncio.gather(*tasks)
+                # print("Each iteration time: ", time.time() - st)
             
+            while not self.request_pool.decode_queue.empty():
+                request_id = await self.request_pool.decode_queue.get()
+                asyncio.create_task(self._decode_request(inference_handler, request_id))
+
             # Update queue statuses after processing
             for request_id in attn_requests + active_requests:
                 if request_id in self.request_pool.requests:
                     if self.request_pool.requests[request_id]["status"] != RequestStatus.COMPLETED:
                         await self.request_pool.add_to_active_queue(request_id)
-                    elif self.request_pool.requests[request_id]["status"] == RequestStatus.COMPLETED:
-                        logger.debug(f"Request {request_id} completed. Moving to output pool.")
-                        await self.request_pool.add_to_output_pool(self.request_pool.requests[request_id])
+                    # elif self.request_pool.requests[request_id]["status"] == RequestStatus.COMPLETED:
+                    #     logger.debug(f"Request {request_id} completed. Moving to output pool.")
+                    #     await self.request_pool.add_to_output_pool(self.request_pool.requests[request_id])
             
             # Check for timeouts periodically
             # if (datetime.now() - last_timeout_check).total_seconds() > self.pending_timeout_check:
@@ -228,6 +234,26 @@ class RequestHandler:
             await asyncio.sleep(0.001)      
 
     
+    async def _decode_request(self, inference_handler, request_id):
+        """
+        Decodes the image for a request asynchronously without blocking the main process.
+        """
+        request = self.request_pool.requests[request_id]
+
+        # Run decoding in a separate thread (prevents blocking)
+        latent = SD3LatentFormat().process_out(request["noise_scaled"])
+        image = inference_handler.vae_decode(latent)
+        request["image"] = image  # Store decoded image
+
+        # Clean up memory
+        for key in ["noise_scaled", "sigmas", "conditioning", "neg_cond", "old_denoised", "context_latent", "x_latent"]:
+            if key in request:
+                del request[key]
+
+        # Move request to output pool
+        await self.request_pool.add_to_output_pool(request)
+
+
     async def _process_attention_batch(self, inference_handler, request_ids):
         """Process a batch of attention requests asynchronously."""
         processed_requests = []
@@ -253,13 +279,7 @@ class RequestHandler:
             
             # Handle completion
             if request["timesteps_left"] == 0:
-                latent = SD3LatentFormat().process_out(request["noise_scaled"])
-                image = inference_handler.vae_decode(latent)
-                request["image"] = image
-                # Clean up memory
-                for key in ["noise_scaled", "sigmas", "conditioning", "neg_cond", "old_denoised", "context_latent", "x_latent"]:
-                    if key in request:
-                        del request[key]
+                await self.request_pool.decode_queue.put(request_id)
             
             self.update_status(request)
             processed_requests.append(request)
@@ -286,14 +306,7 @@ class RequestHandler:
             
             # Handle completion
             if request["timesteps_left"] == 0:
-                latent = SD3LatentFormat().process_out(request["noise_scaled"])
-                image = inference_handler.vae_decode(latent)
-                request["image"] = image
-                # Clean up memory
-                for key in ["noise_scaled", "sigmas", "conditioning", "neg_cond", "old_denoised", "context_latent", "x_latent"]:
-                    if key in request:
-                        del request[key]
-            
+                await self.request_pool.decode_queue.put(request_id)
             self.update_status(request)
             self.request_pool.requests[request_id] = request
         

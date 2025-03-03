@@ -686,13 +686,13 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None,
         torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
         for i in range(3)
     )
-    # attn = attention(q, k, v, x_block.attn.num_heads)
-    if compute_attention:
-        attn = attention(q, k, v, x_block.attn.num_heads)
-        if request is not None:
-            request["x_latent"][str(depth_idx)] = attn
-    else:
-        attn = x_latent[str(depth_idx)]
+    attn = attention(q, k, v, x_block.attn.num_heads)
+    # if compute_attention:
+    #     attn = attention(q, k, v, x_block.attn.num_heads)
+    #     if request is not None:
+    #         request["x_latent"][str(depth_idx)] = attn
+    # else:
+    #     attn = x_latent[str(depth_idx)]
     
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],
@@ -710,7 +710,7 @@ def block_mixing(context, x, context_block, x_block, c, depth_idx, request=None,
         x = x_block.post_attention_x(x_attn, attn2, *x_intermediates)
     else:
         x = x_block.post_attention(x_attn, *x_intermediates)
-    # request["x_latent"][str(depth_idx)] = x
+    request["x_latent"][str(depth_idx)] = x
     return context, x
 
 
@@ -780,8 +780,6 @@ class FinalLayer(nn.Module):
 
     def forward(self, x: torch.Tensor, c: torch.Tensor) -> torch.Tensor:
         shift, scale = self.adaLN_modulation(c).chunk(2, dim=1)
-        print(shift.size())
-        print(scale.size())
         x = modulate(self.norm_final(x), shift, scale)
         x = self.linear(x)
         return x
@@ -983,8 +981,8 @@ class MMDiTX(nn.Module):
             if compute_attention:
                 context, x = block(context, x, c=c_mod, request=request, x_latent=None, compute_attention=compute_attention)
             else:
-                # x = x_latent[str(block.depth_idx)]
-                context, x = block(context, x, c=c_mod, request=request, x_latent=x_latent, compute_attention=compute_attention)
+                x = x_latent[str(block.depth_idx)]
+                # context, x = block(context, x, c=c_mod, request=request, x_latent=x_latent, compute_attention=compute_attention)
 
             if controlnet_hidden_states is not None:
                 controlnet_block_interval = len(self.joint_blocks) // len(
