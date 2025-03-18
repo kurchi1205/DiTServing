@@ -13,8 +13,6 @@ def process_each_timestep(handler, request_id, request_pool, compute_attention=T
     empty_latent = request_pool.empty_latent
     neg_cond = request_pool.neg_cond
     old_denoised = None
-    width = 1024
-    height = 1024
     # if request["current_timestep"] == 0:
     #     noise_scaled, sigmas, conditioning, neg_cond, seed_num = handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="rand")
     #     # request["noise_scaled"] = torch.cat([noise_scaled, noise_scaled], dim=0)
@@ -138,7 +136,7 @@ def process_each_timestep_batched_1(handler, request_ids, request_pool, compute_
     extra_args = {
         "cond": conditioning_batch,
         "uncond": neg_cond_batch,
-        "cond_scale": 7.5,  # Assuming cfg_scale is consistent across all requests
+        "cond_scale": 5,  # Assuming cfg_scale is consistent across all requests
         "controlnet_cond": None,
         "compute_attention": compute_attention,
         "context_latent": None,
@@ -255,7 +253,7 @@ def process_each_timestep_batched(handler, request_ids, request_pool, compute_at
     extra_args = {
         "cond": conditioning_batch,
         "uncond": neg_cond_batch,
-        "cond_scale": 7.5,
+        "cond_scale": 5,
         "controlnet_cond": None,
         "compute_attention": compute_attention,
         "context_latent": None,

@@ -3,6 +3,7 @@ import asyncio
 import uuid
 import time
 import torch
+import os
 from datetime import datetime, timedelta
 from concurrent.futures import ProcessPoolExecutor
 
@@ -144,7 +145,7 @@ class RequestHandler:
         timesteps_left = request["timesteps_left"]
         empty_latent = self.request_pool.empty_latent
         neg_cond = self.request_pool.neg_cond
-        noise_scaled, sigmas, conditioning, neg_cond, seed_num = inference_handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="rand")
+        noise_scaled, sigmas, conditioning, neg_cond, seed_num = inference_handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="fixed", seed=50)
         request["noise_scaled"] = noise_scaled
         request["sigmas"] = sigmas
         request["conditioning"] = conditioning
@@ -281,6 +282,12 @@ class RequestHandler:
             if request["timesteps_left"] == 0:
                 await self.request_pool.decode_queue.put(request_id)
             
+
+            # Run decoding in a separate thread (prevents blocking)
+            latent = SD3LatentFormat().process_out(request["noise_scaled"])
+            image = inference_handler.vae_decode(latent)
+            os.makedirs("gen_images", exist_ok=True)
+            image.save(f"gen_images/t_{request["current_timestep"]}.jpeg")
             self.update_status(request)
             processed_requests.append(request)
         
@@ -296,7 +303,7 @@ class RequestHandler:
             self.request_pool,
             compute_attention=False
         )
-        
+        os.makedirs("gen_images", exist_ok=True)
         # Update all processed requests
         for request in processed_requests:
             request_id = request["request_id"]
@@ -304,6 +311,11 @@ class RequestHandler:
             request["timesteps_left"] -= 1
             request["current_timestep"] += 1
             
+            latent = SD3LatentFormat().process_out(request["noise_scaled"])
+            image = inference_handler.vae_decode(latent)
+            
+            image.save(f"gen_images/t_{request["current_timestep"]}.jpeg")
+
             # Handle completion
             if request["timesteps_left"] == 0:
                 await self.request_pool.decode_queue.put(request_id)

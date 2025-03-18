@@ -32,7 +32,7 @@ class ModelSamplingDiscreteFlow(torch.nn.Module):
         timestep = timestep / 1000.0
         if self.shift == 1.0:
             return timestep
-        return self.shift * timestep / (1 + (self.shift - 1) * timestep)
+        return (self.shift * (timestep ** 1.2))/ (1 + (self.shift  - 1) * (timestep ** 1.2))
 
     def calculate_denoised(self, sigma, model_output, model_input):
         sigma = sigma.view(sigma.shape[:1] + (1,) * (model_output.ndim - 1))
