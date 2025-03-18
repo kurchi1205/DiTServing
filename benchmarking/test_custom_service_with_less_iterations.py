@@ -4,6 +4,7 @@ from datetime import datetime
 import aiohttp
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+# import cv2
 import os
 import torch
 import json
@@ -111,7 +112,7 @@ class CacheBenchmarkClient:
 
     def reset_fid(self):
         """Reset FID metric for new calculation"""
-        self.fid = FrechetInceptionDistance(feature=64)
+        self.fid = FrechetInceptionDistance(feature=192)
 
     def calculate_fid(self, generated_image_path, prompt_index):
         """Calculate FID score between generated image and references"""
@@ -159,6 +160,22 @@ class CacheBenchmarkClient:
             print(f"Error calculating FID: {e}")
             return None
 
+    def calculate_psnr(self, img_path, prompt_index, max_value=255):
+        """"Calculating peak signal-to-noise ratio (PSNR) between two images."""
+        img = cv2.imread(img_path, 1)
+        reference_folder = os.path.join("/home/DiTServing/assets/fid", f"prompt_{prompt_index}")
+        for ref_img_name in os.listdir(reference_folder):
+            if ref_img_name.endswith(('.png', '.jpg', '.jpeg')):
+                ref_img_path = os.path.join(reference_folder, ref_img_name)
+                ref_img = cv2.imread(ref_img_path, 1)
+                # ref_img = Image.open(ref_img_path).convert('RGB')
+                break
+        mse = np.mean((img - ref_img) ** 2)
+        # mse = np.mean((np.array(img, dtype=np.float64) - np.array(ref_img, dtype=np.float64)) ** 2)
+        if mse == 0:
+            return 100
+        return 20 * np.log10(max_value / (np.sqrt(mse)))
+        
     def create_grid_image(self, image_paths, prompts, cache_interval):
         """Create a grid of images with their prompts"""
         num_images = len(image_paths)
@@ -210,13 +227,14 @@ class CacheBenchmarkClient:
         print(f"Grid image created successfully")
         return result
 
-    def log_metrics(self, cache_interval, prompt, fid_score, image_path):
+    def log_metrics(self, cache_interval, prompt, fid_score, psnr, image_path):
         """Log metrics to the JSON metrics file"""
         if prompt not in self.metrics['prompts']:
             self.metrics['prompts'][prompt] = {}
         
         self.metrics['prompts'][prompt][f'cache_{cache_interval}'] = {
             'fid_score': fid_score,
+            'psnr': psnr,
             'image_path': image_path
         }
         
@@ -229,12 +247,12 @@ class CacheBenchmarkClient:
         try:
             print("\n=== Starting Benchmark ===")
             print("Initializing background process...")
-            # await self.start_background_process()
+            await self.start_background_process()
             
             results = {}
             
             # Test each cache interval
-            for interval in range(1, 11):
+            for interval in range(2, 3):
                 print(f"\n--- Testing Cache Interval: {interval} ---")
                 
                 # Change cache interval
@@ -257,11 +275,13 @@ class CacheBenchmarkClient:
                         image_path = result[0]["image"]
                         print(f"Calculating FID score for image: {image_path}")
                         fid = self.calculate_fid(image_path, i-1)
-                        
+                        # psnr = self.calculate_psnr(image_path, i-1)
+                        psnr = 0
                         # Log metrics
-                        if fid is not None:
+                        if fid is not None and psnr is not None:
                             print(f"FID Score: {fid:.2f}")
-                            self.log_metrics(interval, prompt, fid, image_path)
+                            # print(f"psnr Score: {psnr:.2f}")
+                            self.log_metrics(interval, prompt, fid, psnr, image_path)
                         else:
                             print("Failed to calculate FID score")
                     else:
@@ -312,8 +332,8 @@ class CacheBenchmarkClient:
 async def main():
     # Test prompts
     prompts = [
-        "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami clouds",
-        "A silhouette of a grand piano overlooking a dusky cityscape viewed from a top-floor penthouse, rendered in the bold and vivid sytle of a vintage travel poster",
+        # "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami clouds",
+        # "A silhouette of a grand piano overlooking a dusky cityscape viewed from a top-floor penthouse, rendered in the bold and vivid sytle of a vintage travel poster",
         '''stars, water, brilliantly
 gorgeous large scale scene,
 a little girl, in the style of
@@ -321,26 +341,25 @@ dreamy realism, light gold
 and amber, blue and pink,
 brilliantly illuminated in the
 background''',
-         '''Pirate ship trapped in a
-cosmic maelstrom nebula,
-rendered in cosmic beach
-whirlpool engine,
-volumetric lighting,
-spectacular, ambient lights,
-light pollution, cinematic
-atmosphere, art nouveau
-style, illustration art artwork
-by SenseiJaye, intricate
-detail''', 
-'''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues'''
-        # "A painter study hard to learn how to draw with many concepts in the air, white background",
+#  '''Pirate ship trapped in a
+# cosmic maelstrom nebula,
+# rendered in cosmic beach
+# whirlpool engine,
+# volumetric lighting,
+# spectacular, ambient lights,
+# light pollution, cinematic
+# atmosphere, art nouveau
+# style, illustration art artwork
+# by SenseiJaye, intricate
+# detail''', 
+# '''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues''',
         # "8k uhd A man looks up at the starry sky, lonely and ethereal, Minimalism, Chaotic composition Op Art"
     ]
 
     print("\nStarting Cache Interval Benchmark")
     print(f"Number of test prompts: {len(prompts)}")
     client = CacheBenchmarkClient()
-    results = await client.run_benchmark(prompts)
+    results = await client.run_benchmark(prompts, 30)
     
     if results:
         print("\nBenchmark Results Summary:")

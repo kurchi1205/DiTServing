@@ -118,7 +118,7 @@ class BenchmarkClient:
     async def run_benchmark(self, iterations=10, batch_size=2, base_prompt="Generate an image of", timesteps=30):
         try:
             # Start the background process
-            # await self.start_background_process()
+            await self.start_background_process()
             
             
             for i in range(iterations):
@@ -159,7 +159,7 @@ class BenchmarkClient:
 async def main():
     # Configure these parameters as needed
     ITERATIONS = 10
-    BATCH_SIZE = 2
+    BATCH_SIZE = 3
     BASE_PROMPT = "Generate an image of a cat"
     TIMESTEPS = 30
 
