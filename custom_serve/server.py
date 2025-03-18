@@ -138,7 +138,8 @@ async def startup_event():
             model=model_path,
             model_folder=model_folder,
             text_encoder_device="cpu",
-            verbose=True
+            verbose=True,
+            shift=5
         )
         handler = RequestHandler(config, inference_handler)
         logger.info("Background request processing started during server startup.")
