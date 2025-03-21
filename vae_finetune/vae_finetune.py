@@ -2,19 +2,31 @@ import argparse
 import logging
 import math
 import os
-from pathlib import Path
+import wandb
 
 import numpy as np
 import torch
+import torchvision
+from datasets import load_dataset
 import torch.nn.functional as F
+from torchvision.transforms import v2  # from vision transforms
+
 
 import lpips
 from PIL import Image
 from pytorch_optimizer import CAME
-import accelerate
 from accelerate import Accelerator
 from accelerate.utils import ProjectConfiguration, set_seed
 from diffusers.optimization import get_scheduler
+from tqdm.auto import tqdm
+
+
+from arg_parser import parse_basic_args
+from ..custom_serve.pipeline.vae import VAE
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.INFO)
+
 
 def get_dtype(str_type=None):
     # return torch dtype
@@ -24,32 +36,6 @@ def get_dtype(str_type=None):
     elif str_type == "bf16":
         torch_type = torch.bfloat16
     return torch_type
-
-
-train_transforms = v2.Compose(
-        [
-            v2.Resize(
-                args.resolution, interpolation=v2.InterpolationMode.BILINEAR
-            ),
-            v2.RandomCrop(args.resolution),
-            #v2.ToTensor(), # this is apparently going to be depreciated in the future, replacing with the following 2 lines
-            v2.ToImage(), 
-            v2.ToDtype(weight_dtype, scale=True),
-            v2.Normalize([0.5], [0.5]),
-            #v2.ToDtype(weight_dtype)
-        ]
-    )
-
-def preprocess(examples):
-    images = [image.convert("RGB") for image in examples[image_column]]
-    examples["pixel_values"] = [train_transforms(image) for image in images]
-    return examples
-
-
-def collate_fn(examples):
-        pixel_values = torch.stack([example["pixel_values"] for example in examples])
-        pixel_values = pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)  # .float()
-        return {"pixel_values": pixel_values}
 
 
 def parse_args():
@@ -123,12 +109,97 @@ def parse_args():
 
     return args
 
+def acc_unwrap_model(model):
+    """
+    Recursively unwraps a model from potential containers (e.g., DDP, FSDP, etc.).
+
+    Args:
+        model (torch.nn.Module): The model to unwrap.
+
+    Returns:
+        torch.nn.Module: The unwrapped model.
+    """
+    # If the model is wrapped by torch's DDP (DistributedDataParallel), return the original model.
+    if hasattr(model, "module"):
+        return unwrap_model(model.module)
+    # If the model is wrapped by torch's FSDP (FullyShardedDataParallel), return the original model.
+    elif hasattr(model, "_fsdp_wrapped_module"):
+        return unwrap_model(model._fsdp_wrapped_module)
+    # If the model is wrapped by torch's AMP (Automatic Mixed Precision) or other wrappers, return the original model.
+    else:
+        return model
+
+def extract_patches(image, patch_size, stride):
+    # Unfold the image into patches
+    patches = image.unfold(2, patch_size, stride).unfold(3, patch_size, stride)
+    # Reshape to get a batch of patches
+    patches = patches.contiguous().view(image.size(0), image.size(1), -1, patch_size, patch_size)
+    return patches
+
+def patch_based_mse_loss(real_images, recon_images, patch_size=32, stride=16):
+    real_patches = extract_patches(real_images, patch_size, stride)
+    recon_patches = extract_patches(recon_images, patch_size, stride)
+    mse_loss = F.mse_loss(real_patches, recon_patches)
+    return mse_loss
+
+def patch_based_lpips_loss(lpips_model, real_images, recon_images, patch_size=32, stride=16):
+    with torch.no_grad():
+        real_patches = extract_patches(real_images, patch_size, stride)
+        recon_patches = extract_patches(recon_images, patch_size, stride)
+        
+        lpips_loss = 0
+        # Iterate over each patch and accumulate LPIPS loss
+        for i in range(real_patches.size(2)):  # Loop over number of patches
+            real_patch = real_patches[:, :, i, :, :].contiguous()
+            recon_patch = recon_patches[:, :, i, :, :].contiguous()
+            patch_lpips_loss = lpips_model(real_patch, recon_patch).mean()
+            
+            # Handle non-finite values
+            if not torch.isfinite(patch_lpips_loss):
+                patch_lpips_loss = torch.tensor(0, device=real_patch.device)
+            
+            lpips_loss += patch_lpips_loss
+
+    return lpips_loss / real_patches.size(2)  # Normalize by the number of patches
+
+
+def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 0, max_validation_sample=20):
+    logger.info("Running validation... ")
+
+    vae_model = acc_unwrap_model(vae.model)
+    images = []
+    
+    for i, sample in enumerate(test_dataloader):
+        if i < max_validation_sample:
+            x = sample["pixel_values"].to(weight_dtype)
+            reconstructions = vae_model(x).sample
+            images.append(
+                torch.cat([sample["pixel_values"].cpu(), reconstructions.cpu()], axis=0)
+            )
+
+    for tracker in accelerator.trackers:
+        if tracker.name == "wandb":
+            tracker.log(
+                {
+                    "Original (left), Reconstruction (right)": [
+                        wandb.Image(torchvision.utils.make_grid(image))
+                        for _, image in enumerate(images)
+                    ]
+                },
+                step=curr_step
+            )
+        else:
+            logger.warn(f"image logging not implemented for {tracker.gen_images}")
+    del vae_model
+    torch.cuda.empty_cache()
 
 def main():
     # clear any chache
     torch.cuda.empty_cache()
     debug = False # need to find the use
     args = parse_args()
+
+    
 
     # if not os.path.exists(os.path.join(args.dataset_name, "train\\metadata.jsonl")):
     #    fnames = get_all_images_in_folder(args.dataset_name)
@@ -162,19 +233,14 @@ def main():
 
     if accelerator.is_main_process:
         if args.output_dir is not None:
-            os.makedirs(args.output_dir, exist_ok=True)
-        repo_id = None 
-        if args.push_to_hub:
-            repo_id = create_repo(
-                repo_id=Path(args.huggingface_repo).name, exist_ok=True, token=args.hub_token
-            ).repo_id
+            os.makedirs(args.output_dir, exist_ok=True)    
 
     weight_dtype = get_dtype(accelerator.mixed_precision)
     print("num process", accelerator.num_processes)
     print("working with", weight_dtype)
 
         
-    vae = VAE(args.vae_model, torch.dtype=torch.float32)
+    vae = VAE(args.vae_model, dtype=torch.float32)
     vae.model.requires_grad_(True)
 
     if True:
@@ -273,7 +339,31 @@ def main():
             raise ValueError(
                 f"--image_column' value '{args.image_column}' needs to be one of: {', '.join(column_names)}"
             )
+        
+    train_transforms = v2.Compose(
+        [
+            v2.Resize(
+                args.resolution, interpolation=v2.InterpolationMode.BILINEAR
+            ),
+            v2.RandomCrop(args.resolution),
+            #v2.ToTensor(), # this is apparently going to be depreciated in the future, replacing with the following 2 lines
+            v2.ToImage(), 
+            v2.ToDtype(weight_dtype, scale=True),
+            v2.Normalize([0.5], [0.5]),
+            #v2.ToDtype(weight_dtype)
+        ]
+    )
+
+    def preprocess(examples):
+        images = [image.convert("RGB") for image in examples[image_column]]
+        examples["pixel_values"] = [train_transforms(image) for image in images]
+        return examples
     
+    def collate_fn(examples):
+        pixel_values = torch.stack([example["pixel_values"] for example in examples])
+        pixel_values = pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)  # .float()
+        return {"pixel_values": pixel_values}
+
     
     with accelerator.main_process_first():
         # Load test data from test_data_dir
@@ -500,8 +590,6 @@ def main():
                     logger.warning("Loss not defined, skipping gathering.")
                     
                 if accelerator.sync_gradients:
-                    if args.use_ema:
-                        ema_vae.step(vae.parameters())
                     progress_bar.update(1)
                     global_step += 1
                     accelerator.log({"train_loss": train_loss}, step=global_step)
@@ -529,7 +617,7 @@ def main():
         if accelerator.is_main_process:
             if epoch % args.validation_epochs == 0:
                 with torch.no_grad():
-                    log_validation(args, test_dataloader, vae, accelerator, weight_dtype, epoch, repo_id, global_step)
+                    log_validation(test_dataloader, vae, accelerator, weight_dtype, global_step)
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()
