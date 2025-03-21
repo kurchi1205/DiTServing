@@ -68,8 +68,11 @@ class CLIPTextModel(torch.nn.Module):
         self.text_projection = torch.nn.Linear(
             embed_dim, embed_dim, bias=False, dtype=dtype, device=device
         )
+        print("EMbed dim: ", embed_dim, "text proj: ", self.text_projection)
         self.text_projection.requires_grad_(False)
+        print(device)
         self.text_projection.weight.copy_(torch.eye(embed_dim))
+        self.text_projection.requires_grad_(True)
         self.dtype = dtype
 
     def get_input_embeddings(self):

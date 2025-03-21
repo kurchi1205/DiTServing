@@ -2,7 +2,7 @@
 
 import math
 from typing import Dict, List, Optional
-
+import time
 import numpy as np
 import torch
 import torch.nn as nn
@@ -590,36 +590,39 @@ class DismantledBlock(nn.Module):
 
 def block_mixing(context, x, context_block, x_block, c):
     assert context is not None, "block_mixing called with None context"
+    st = time.time()
     context_qkv, context_intermediates = context_block.pre_attention(context, c)
 
     if x_block.x_block_self_attn:
         x_qkv, x_qkv2, x_intermediates = x_block.pre_attention_x(x, c)
     else:
         x_qkv, x_intermediates = x_block.pre_attention(x, c)
-
+    preattn = time.time() - st
     q, k, v = tuple(
         torch.cat(tuple(qkv[i] for qkv in [context_qkv, x_qkv]), dim=1)
         for i in range(3)
     )
+    st  = time.time()
     attn = attention(q, k, v, x_block.attn.num_heads)
+    attn_time = time.time() - st
     context_attn, x_attn = (
         attn[:, : context_qkv[0].shape[1]],
         attn[:, context_qkv[0].shape[1] :],
     )
-
+    st = time.time()
     if not context_block.pre_only:
         context = context_block.post_attention(context_attn, *context_intermediates)
     else:
         context = None
-
+    
     if x_block.x_block_self_attn:
         x_q2, x_k2, x_v2 = x_qkv2
         attn2 = attention(x_q2, x_k2, x_v2, x_block.attn2.num_heads)
         x = x_block.post_attention_x(x_attn, attn2, *x_intermediates)
     else:
         x = x_block.post_attention(x_attn, *x_intermediates)
-
-    return context, x
+    post_attn = time.time() - st
+    return context, x, attn_time, preattn, post_attn
 
 
 class JointBlock(nn.Module):
@@ -871,16 +874,25 @@ class MMDiTX(nn.Module):
 
         # context is B, L', D
         # x is B, L, D
+        preattn_time = 0
+        postattn_time = 0
+        attn_time = 0
         for i, block in enumerate(self.joint_blocks):
             if i in skip_layers:
                 continue
-            context, x = block(context, x, c=c_mod)
+            context, x, attn, preattn, post_attn = block(context, x, c=c_mod)
+
+            attn_time += attn
+            preattn_time += preattn
+            postattn_time += post_attn
             if controlnet_hidden_states is not None:
                 controlnet_block_interval = len(self.joint_blocks) // len(
                     controlnet_hidden_states
                 )
                 x = x + controlnet_hidden_states[i // controlnet_block_interval]
-
+        print("attn: ", attn_time)
+        print("pre attn: ", preattn_time)
+        print("post attn: ", postattn_time)
         x = self.final_layer(x, c_mod)  # (N, T, patch_size ** 2 * out_channels)
         return x
 
@@ -900,15 +912,16 @@ class MMDiTX(nn.Module):
         y: (N,) tensor of class labels
         """
         hw = x.shape[-2:]
+        st = time.time()
         x = self.x_embedder(x) + self.cropped_pos_embed(hw)
         c = self.t_embedder(t, dtype=x.dtype)  # (N, D)
         if y is not None:
             y = self.y_embedder(y)  # (N, D)
             c = c + y  # (N, D)
-
+        print("embedding time: ", time.time() - st)
         context = self.context_embedder(context)
-
+        st = time.time()
         x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states)
-
+        print("forward time: ", time.time() - st)
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x

@@ -214,7 +214,32 @@ SHIFT = 3.0
 WIDTH = 1024
 HEIGHT = 1024
 # Pick your prompt
-PROMPT = "a photo of a cat"
+PROMPT = [
+#     '''stars, water, brilliantly
+# gorgeous large scale scene,
+# a little girl, in the style of
+# dreamy realism, light gold
+# and amber, blue and pink,
+# brilliantly illuminated in the
+# background''',] 
+# "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami clouds",]
+#         "A silhouette of a grand piano overlooking a dusky cityscape viewed from a top-floor penthouse, rendered in the bold and vivid sytle of a vintage travel poster",
+        '''Pirate ship trapped in a
+cosmic maelstrom nebula,
+rendered in cosmic beach
+whirlpool engine,
+volumetric lighting,
+spectacular, ambient lights,
+light pollution, cinematic
+atmosphere, art nouveau
+style, illustration art artwork
+by SenseiJaye, intricate
+detail''', ]
+# '''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues''',]
+# '''A painter study hard to
+# learn how to draw with
+# many concepts in the air,
+# white background''']
 # Most models prefer the range of 4-5, but still work well around 7
 CFG_SCALE = 4.5
 # Different models want different step counts but most will be good at 50, albeit that's slow to run
@@ -356,6 +381,7 @@ class SD3Inferencer:
         self.sd3.model = self.sd3.model.cuda()
         noise = self.get_noise(seed, latent).cuda()
         sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
+        print(denoise, cfg_scale)
         sigmas = sigmas[int(steps * (1 - denoise)) :]
         conditioning = self.fix_cond(conditioning)
         neg_cond = self.fix_cond(neg_cond)
@@ -374,12 +400,17 @@ class SD3Inferencer:
             if skip_layer_config.get("scale", 0) > 0
             else CFGDenoiser
         )
-        latent = sample_fn(
+        latent, all_latent = sample_fn(
             denoiser(self.sd3.model, steps, skip_layer_config),
             noise_scaled,
             sigmas,
             extra_args=extra_args,
         )
+        for l, lat in enumerate(all_latent):
+            pro_lat = SD3LatentFormat().process_out(lat)
+            image = self.vae_decode(pro_lat)
+            image.save(f"gen_images_ship_og/t_{l+1}.jpeg")
+
         latent = SD3LatentFormat().process_out(latent)
         self.sd3.model = self.sd3.model.cpu()
         self.print("Sampling done")
@@ -442,7 +473,7 @@ class SD3Inferencer:
 
     def gen_image(
         self,
-        prompts=[PROMPT],
+        prompts=PROMPT,
         width=WIDTH,
         height=HEIGHT,
         steps=STEPS,
@@ -460,6 +491,7 @@ class SD3Inferencer:
         if init_image:
             latent = self._image_to_latent(init_image, width, height)
         else:
+            print("Seed for latent: ", seed)
             latent = self.get_empty_latent(1, width, height, seed, "cpu")
             latent = latent.cuda()
         if controlnet_cond_image:
@@ -481,6 +513,7 @@ class SD3Inferencer:
             else:  # fixed
                 seed_num = seed
             conditioning = self.get_cond(prompt)
+            print("seed num: ", seed_num)
             sampled_latent = self.do_sampling(
                 latent,
                 seed_num,
@@ -580,7 +613,7 @@ def main(
     _steps = steps or config.get("steps", 50)
     _cfg = cfg or config.get("cfg", 5)
     _sampler = sampler or config.get("sampler", "dpmpp_2m")
-
+    print("Config: ", config)
     if skip_layer_cfg:
         skip_layer_config = CONFIGS.get(
             os.path.splitext(os.path.basename(model))[0], {}
@@ -615,24 +648,26 @@ def main(
             with open(prompt, "r") as f:
                 prompts = [l.strip() for l in f.readlines()]
         else:
-            prompts = [prompt]
+            prompts = prompt
+    else:
+        prompts = prompt
 
-    sanitized_prompt = re.sub(r"[^\w\-\.]", "_", prompt)
-    out_dir = os.path.join(
-        out_dir,
-        (
-            os.path.splitext(os.path.basename(model))[0]
-            + (
-                "_" + os.path.splitext(os.path.basename(controlnet_ckpt))[0]
-                if controlnet_ckpt is not None
-                else ""
-            )
-        ),
-        os.path.splitext(os.path.basename(sanitized_prompt))[0][:50]
-        + (postfix or datetime.datetime.now().strftime("_%Y-%m-%dT%H-%M-%S")),
-    )
+    # sanitized_prompt = re.sub(r"[^\w\-\.]", "_", prompt)
+    # out_dir = os.path.join(
+    #     out_dir,
+    #     (
+    #         os.path.splitext(os.path.basename(model))[0]
+    #         + (
+    #             "_" + os.path.splitext(os.path.basename(controlnet_ckpt))[0]
+    #             if controlnet_ckpt is not None
+    #             else ""
+    #         )
+    #     ),
+    #     os.path.splitext(os.path.basename(sanitized_prompt))[0][:50]
+    #     + (postfix or datetime.datetime.now().strftime("_%Y-%m-%dT%H-%M-%S")),
+    # )
 
-    os.makedirs(out_dir, exist_ok=False)
+    os.makedirs(out_dir, exist_ok=True)
     st = time.time()
     inferencer.gen_image(
         prompts,

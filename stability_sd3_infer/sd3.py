@@ -4,7 +4,7 @@ import re
 from safetensors import safe_open
 from utils import load_into
 from mmditx import MMDiTX
-
+import time
 
 class ModelSamplingDiscreteFlow(torch.nn.Module):
     """Helper for sampler scheduling (ie timestep/sigma calculations) for Discrete Flow models"""
@@ -161,6 +161,7 @@ class CFGDenoiser(torch.nn.Module):
         **kwargs,
     ):
         # Run cond and uncond in a batch together
+        st = time.time()
         batched = self.model.apply_model(
             torch.cat([x, x]),
             torch.cat([timestep, timestep]),
@@ -168,6 +169,7 @@ class CFGDenoiser(torch.nn.Module):
             y=torch.cat([cond["y"], uncond["y"]]),
             **kwargs,
         )
+        print("Apply model", time.time() - st)
         # Then split and apply CFG Scaling
         pos_out, neg_out = batched.chunk(2)
         scaled = neg_out + (pos_out - neg_out) * cond_scale
