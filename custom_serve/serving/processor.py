@@ -138,7 +138,7 @@ def process_each_timestep_batched_1(handler, request_ids, request_pool, compute_
     extra_args = {
         "cond": conditioning_batch,
         "uncond": neg_cond_batch,
-        "cond_scale": 7.5,  # Assuming cfg_scale is consistent across all requests
+        "cond_scale": 5,  # Assuming cfg_scale is consistent across all requests
         "controlnet_cond": None,
         "compute_attention": compute_attention,
         "context_latent": None,
@@ -255,7 +255,7 @@ def process_each_timestep_batched(handler, request_ids, request_pool, compute_at
     extra_args = {
         "cond": conditioning_batch,
         "uncond": neg_cond_batch,
-        "cond_scale": 7.5,
+        "cond_scale": 5,
         "controlnet_cond": None,
         "compute_attention": compute_attention,
         "context_latent": None,
