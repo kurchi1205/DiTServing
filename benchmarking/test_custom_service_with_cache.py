@@ -229,12 +229,12 @@ class CacheBenchmarkClient:
         try:
             print("\n=== Starting Benchmark ===")
             print("Initializing background process...")
-            # await self.start_background_process()
+            await self.start_background_process()
             
             results = {}
             
             # Test each cache interval
-            for interval in range(1, 11):
+            for interval in range(1, 2):
                 print(f"\n--- Testing Cache Interval: {interval} ---")
                 
                 # Change cache interval

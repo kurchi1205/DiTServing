@@ -331,7 +331,6 @@ class VAEDecoder(torch.nn.Module):
 
     def forward(self, z):
         # z to block_in
-        print("z: ",  z.size())
         hidden = self.conv_in(z)
         # middle
         hidden = self.mid.block_1(hidden)
