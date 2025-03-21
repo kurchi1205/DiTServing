@@ -229,12 +229,12 @@ class CacheBenchmarkClient:
         try:
             print("\n=== Starting Benchmark ===")
             print("Initializing background process...")
-            # await self.start_background_process()
+            await self.start_background_process()
             
             results = {}
             
             # Test each cache interval
-            for interval in range(1, 11):
+            for interval in range(1, 4):
                 print(f"\n--- Testing Cache Interval: {interval} ---")
                 
                 # Change cache interval
@@ -314,7 +314,26 @@ async def main():
     prompts = [
         "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami clouds",
         "A silhouette of a grand piano overlooking a dusky cityscape viewed from a top-floor penthouse, rendered in the bold and vivid sytle of a vintage travel poster",
-        "A painter study hard to learn how to draw with many concepts in the air, white background",
+        '''stars, water, brilliantly
+gorgeous large scale scene,
+a little girl, in the style of
+dreamy realism, light gold
+and amber, blue and pink,
+brilliantly illuminated in the
+background''',
+         '''Pirate ship trapped in a
+cosmic maelstrom nebula,
+rendered in cosmic beach
+whirlpool engine,
+volumetric lighting,
+spectacular, ambient lights,
+light pollution, cinematic
+atmosphere, art nouveau
+style, illustration art artwork
+by SenseiJaye, intricate
+detail''', 
+'''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues'''
+        # "A painter study hard to learn how to draw with many concepts in the air, white background",
         # "8k uhd A man looks up at the starry sky, lonely and ethereal, Minimalism, Chaotic composition Op Art"
     ]
 
