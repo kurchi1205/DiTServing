@@ -377,3 +377,12 @@ class VAE:
             if any(k.startswith("first_stage_model.") for k in f.keys()):
                 prefix = "first_stage_model."
             load_into(f, self.model, prefix, "cpu", dtype)
+
+
+    def save(self, output_path: str = "ckpt/finetuned_vae.pth"):
+        """
+        Save the VAE model's state_dict to the specified path.
+        """
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        torch.save(self.model.state_dict(), output_path)
+        print(f"VAE weights saved to: {output_path}")
