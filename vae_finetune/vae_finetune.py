@@ -2,6 +2,9 @@ import argparse
 import logging
 import math
 import os
+os.environ["HF_HUB_ETAG_TIMEOUT"] = "5000"
+os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "1000"
+
 import wandb
 
 import numpy as np
@@ -22,10 +25,12 @@ from tqdm.auto import tqdm
 
 
 from arg_parser import parse_basic_args
-from ..custom_serve.pipeline.vae import VAE
+import sys
+sys.path.insert(0, "../")
+from custom_serve.pipeline.vae import VAE
 import logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.INFO)
+logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
 
 def get_dtype(str_type=None):
@@ -45,11 +50,13 @@ def parse_args():
 
     # default setting I'm using:
     args.pretrained_model_name_or_path = r"pretrained_model/sdxl_vae"
+    args.vae_model = "/home/DiTServing/stability_sd3_infer/models/sd3_medium.safetensors"
     # args.revision
-    #args.dataset_name = None
-    #args.dataset_config_name
+    # args.dataset_name = "ideepankarsharma2003/MidJourney-generated-images"
+    args.dataset_name = "ehristoforu/midjourney-images"
+    args.dataset_config_name = "default"
     
-    #args.image_column
+    args.image_column = "image"
     args.output_dir = r"outputs/models_v4_fp16"
     #args.huggingface_repo
     #cache_dir =
@@ -57,8 +64,8 @@ def parse_args():
     args.resolution = 1024
     args.train_batch_size = 2 # batch 2 was the best for a single rtx3090
     args.num_train_epochs = 1
-    args.gradient_accumulation_steps = 3
-    args.gradient_checkpointing = True
+    args.gradient_accumulation_steps = 4
+    args.gradient_checkpointing = False
     args.learning_rate = 1e-04
     args.scale_lr = True
     args.lr_scheduler = "constant"
@@ -84,15 +91,15 @@ def parse_args():
     args.lpips_start = 50001 # this doesn't do anything?
     
     #args.train_data_dir = r"/home/wasabi/Documents/Projects/data/vae/sample"
-    args.train_data_dir = r"/home/wasabi/Documents/Projects/data/vae/train"
-    args.test_data_dir = r"/home/wasabi/Documents/Projects/data/vae/test"
+    # args.train_data_dir = r"/home/wasabi/Documents/Projects/data/vae/train"
+    # args.test_data_dir = r"/home/wasabi/Documents/Projects/data/vae/test"
     args.checkpointing_steps = 5000# return to 5000
     args.report_to = 'wandb'
 
     #following are new parameters
-    args.use_came = True
-    args.diffusers_xformers = True
-    args.save_for_SD = True # need to check tjis
+    args.use_came = False
+    args.diffusers_xformers = False
+    args.save_for_SD = False # need to check tjis
     args.save_precision = "fp16"
     args.train_only_decoder = True
     # args.comment = "VAE finetune by Wasabi, test model using patched MSE"
@@ -193,6 +200,10 @@ def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 
     del vae_model
     torch.cuda.empty_cache()
 
+def compute_kl(mu, logvar):
+    return -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1).mean()
+
+
 def main():
     # clear any chache
     torch.cuda.empty_cache()
@@ -226,7 +237,7 @@ def main():
         datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO,
     )
-    logger.info(accelerator.state, main_process_only=False)
+    # logger.info(accelerator.state, main_process_only=False)
 
     if args.seed is not None:
         set_seed(args.seed)
@@ -243,12 +254,7 @@ def main():
     vae = VAE(args.vae_model, dtype=torch.float32)
     vae.model.requires_grad_(True)
 
-    if True:
-        for param in vae.model.parameters():
-            if param.requires_grad:
-                param.data.copy_(param.data.to(torch.float32))
-    else:
-        vae.model = vae.model.half()
+    
 
     # # Load ema vae
     # if args.use_ema:
@@ -261,9 +267,9 @@ def main():
     #     ema_vae = EMAModel(ema_vae.parameters(), model_cls=AutoencoderKL, model_config=ema_vae.config)
     #     # no need to do special loading
 
-    vae.model.to(accelerator.device)#, dtype=weight_dtype)
-    vae.model.encoder.to(accelerator.device)#, dtype=weight_dtype)
-    vae.model.decoder.to(accelerator.device)#, dtype=weight_dtype)
+    # vae.model.to(accelerator.device)#, dtype=weight_dtype)
+    # vae.model.encoder.to(accelerator.device)#, dtype=weight_dtype)
+    # vae.model.decoder.to(accelerator.device)#, dtype=weight_dtype)
 
     if args.gradient_checkpointing:
         vae.model.enable_gradient_checkpointing()
@@ -274,6 +280,14 @@ def main():
             param.requires_grad = False
         # set encoder to eval mode
         #vae.encoder.eval()
+
+    # if True:
+
+    #     for param in vae.model.parameters():
+    #         if param.requires_grad:
+    #             param.data.copy_(param.data.to(torch.float32))
+    # else:
+    #     vae.model = vae.model.half()
 
     if args.scale_lr:
         args.learning_rate = (args.learning_rate * args.gradient_accumulation_steps * args.train_batch_size * accelerator.num_processes)
@@ -297,7 +311,7 @@ def main():
     elif args.use_came:
         optimizer_cls = CAME
         optimizer = optimizer_cls(
-            vae.parameters(),
+            vae.model.parameters(),
             lr=args.learning_rate,
             betas=(0.9, 0.999, 0.9999),
             weight_decay=0.01
@@ -305,7 +319,7 @@ def main():
     else:
         optimizer_cls = torch.optim.AdamW
         optimizer = optimizer_cls(
-            vae.parameters(),
+            vae.model.parameters(),
             lr=args.learning_rate,
             betas=(args.adam_beta1, args.adam_beta2),
             weight_decay=args.adam_weight_decay,
@@ -319,6 +333,8 @@ def main():
             args.dataset_name,
             args.dataset_config_name,
             cache_dir=args.cache_dir,
+            num_proc=4,
+            token=""
         )
     else:
         data_files = {}
@@ -520,14 +536,15 @@ def main():
                         z = posterior.sample().to(weight_dtype)
                         pred = vae.model.decode(z).sample.to(weight_dtype)
                     else:
-                        posterior = vae.model.encode(target).latent_dist#.to(weight_dtype)
+                        z, mu, logvar = vae.model.encode(target)#.to(weight_dtype)
                         # z = mean                      if posterior.mode()
                         # z = mean + variable*epsilon   if posterior.sample()
-                        z = posterior.sample().to(weight_dtype) # Not mode()
-                        pred = vae.model.decode(z).sample.to(weight_dtype)
+                        z = z.to(weight_dtype) # Not mode()
+                        pred = vae.model.decode(z).to(weight_dtype)
 
                     # pred = pred#.to(dtype=weight_dtype)
-                    kl_loss = posterior.kl().mean().to(weight_dtype)
+                    kl_loss = compute_kl(mu, logvar).to(weight_dtype)
+                    # kl_loss = posterior.kl().mean().to(weight_dtype)
 
                     # mse_loss = F.mse_loss(pred.float(), target.float(), reduction="mean")
                     
@@ -628,3 +645,7 @@ def main():
         vae.save(os.path.join(args.output_dir, "finetuned.pth"))
 
     accelerator.end_training()
+
+
+if __name__ == "__main__":
+    main()

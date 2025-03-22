@@ -1,0 +1,10 @@
+wandb
+numpy
+torch
+torchvision
+datasets
+lpips
+pytorch_optimizer
+accelerate
+diffusers
+einops

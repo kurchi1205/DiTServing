@@ -366,7 +366,7 @@ class SDVAE(torch.nn.Module):
         mean, logvar = torch.chunk(hidden, 2, dim=1)
         logvar = torch.clamp(logvar, -30.0, 20.0)
         std = torch.exp(0.5 * logvar)
-        return mean + std * torch.randn_like(mean)
+        return mean + std * torch.randn_like(mean), mean, logvar
 
 
 class VAE:

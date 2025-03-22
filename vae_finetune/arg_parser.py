@@ -7,6 +7,12 @@ def parse_basic_args(parser):
         help="Path to pretrained model or model identifier from huggingface.co/models.",
     )
     parser.add_argument(
+        "--vae_model",
+        type=str,
+        default=None,
+        required=False,
+    )
+    parser.add_argument(
         "--revision",
         type=str,
         default=None,
