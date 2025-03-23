@@ -79,6 +79,7 @@ def parse_args():
     #args.resume_from_checkpoint
     args.test_samples = 20
     args.validation_epochs = 1
+    args.validation_steps = 2
     args.tracker_project_name = "vae-fine-tune"
     args.use_8bit_adam = False
     # args.use_ema = True # this will drastically slow your training, check speed vs performance
@@ -94,6 +95,7 @@ def parse_args():
     # args.train_data_dir = r"/home/wasabi/Documents/Projects/data/vae/train"
     # args.test_data_dir = r"/home/wasabi/Documents/Projects/data/vae/test"
     args.checkpointing_steps = 5000# return to 5000
+    args.model_saving_steps = 2
     args.report_to = 'wandb'
 
     #following are new parameters
@@ -170,7 +172,7 @@ def patch_based_lpips_loss(lpips_model, real_images, recon_images, patch_size=32
     return lpips_loss / real_patches.size(2)  # Normalize by the number of patches
 
 
-def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 0, max_validation_sample=20):
+def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 0, max_validation_sample=4):
     logger.info("Running validation... ")
 
     vae_model = acc_unwrap_model(vae.model)
@@ -179,7 +181,11 @@ def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 
     for i, sample in enumerate(test_dataloader):
         if i < max_validation_sample:
             x = sample["pixel_values"].to(weight_dtype)
-            reconstructions = vae_model(x).sample
+            # encoded = vae_model.encode(x)
+            # reconstructions = vae_model.decode(encoded)
+            z, mu, logvar = vae.model.encode(x)#.to(weight_dtype)
+            z = z.to(weight_dtype) # Not mode()
+            reconstructions = vae.model.decode(z).to(weight_dtype)
             images.append(
                 torch.cat([sample["pixel_values"].cpu(), reconstructions.cpu()], axis=0)
             )
@@ -629,6 +635,13 @@ def main():
                 }
                 accelerator.log(logs, step=global_step)
                 progress_bar.set_postfix(**logs)
+                if accelerator.is_main_process:
+                    if global_step % args.validation_steps == 0:
+                        with torch.no_grad():
+                            log_validation(test_dataloader, vae, accelerator, weight_dtype, global_step)
+                    if global_step % args.model_saving_steps == 0:
+                        vae.model = accelerator.unwrap_model(vae.model)
+                        vae.save(os.path.join(args.output_dir, f"{global_step}-finetuned.pth"))
 
 
         if accelerator.is_main_process:

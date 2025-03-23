@@ -207,6 +207,12 @@ def parse_basic_args(parser):
         help="Run validation every X epochs.",
     )
     parser.add_argument(
+        "--validation_steps",
+        type=int,
+        default=5,
+        help="Run validation every X steps.",
+    )
+    parser.add_argument(
         "--tracker_project_name",
         type=str,
         default="vae-fine-tune",
