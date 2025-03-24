@@ -1,0 +1,6 @@
+outs:
+- md5: e8c714b7eaf2429a4cca0675d007ee98.dir
+  size: 792772285
+  nfiles: 6160
+  hash: md5
+  path: Midjourney-dataset
