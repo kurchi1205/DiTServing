@@ -144,7 +144,7 @@ class RequestHandler:
         timesteps_left = request["timesteps_left"]
         empty_latent = self.request_pool.empty_latent
         neg_cond = self.request_pool.neg_cond
-        noise_scaled, sigmas, conditioning, neg_cond, seed_num = inference_handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="rand")
+        noise_scaled, sigmas, conditioning, neg_cond, seed_num = inference_handler.prepare_for_first_timestep(empty_latent, prompt, neg_cond, timesteps_left, seed_type="fixed")
         request["noise_scaled"] = noise_scaled
         request["sigmas"] = sigmas
         request["conditioning"] = conditioning
