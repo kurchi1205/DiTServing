@@ -13,6 +13,7 @@ import torchvision
 from datasets import load_dataset
 import torch.nn.functional as F
 from torchvision.transforms import v2  # from vision transforms
+from torchvision import transforms
 
 
 import lpips
@@ -28,10 +29,14 @@ from arg_parser import parse_basic_args
 import sys
 sys.path.insert(0, "../")
 from custom_serve.pipeline.vae import VAE
+from custom_serve.pipeline.sd3 import ModelSamplingDiscreteFlow
 import logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(encoding='utf-8', level=logging.INFO)
-
+logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        datefmt="%m/%d/%Y %H:%M:%S",
+        level=logging.INFO,
+    )
 
 def get_dtype(str_type=None):
     # return torch dtype
@@ -69,7 +74,7 @@ def parse_args():
     args.learning_rate = 1e-04
     args.scale_lr = True
     args.lr_scheduler = "constant"
-    args.max_data_loader_n_workers = 4
+    args.max_data_loader_n_workers = 1
     args.lr_warmup_steps = 0
     args.logging_dir = r"outputs/vae_log"
     args.mixed_precision = 'fp16'
@@ -79,7 +84,7 @@ def parse_args():
     #args.resume_from_checkpoint
     args.test_samples = 20
     args.validation_epochs = 1
-    args.validation_steps = 2
+    args.validation_steps = 10
     args.tracker_project_name = "vae-fine-tune"
     args.use_8bit_adam = False
     # args.use_ema = True # this will drastically slow your training, check speed vs performance
@@ -94,8 +99,8 @@ def parse_args():
     #args.train_data_dir = r"/home/wasabi/Documents/Projects/data/vae/sample"
     # args.train_data_dir = r"/home/wasabi/Documents/Projects/data/vae/train"
     # args.test_data_dir = r"/home/wasabi/Documents/Projects/data/vae/test"
-    args.checkpointing_steps = 5000# return to 5000
-    args.model_saving_steps = 2
+    args.checkpointing_steps = 5000 # return to 5000
+    args.model_saving_steps = 50
     args.report_to = 'wandb'
 
     #following are new parameters
@@ -173,28 +178,26 @@ def patch_based_lpips_loss(lpips_model, real_images, recon_images, patch_size=32
 
 
 def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 0, max_validation_sample=4):
-    logger.info("Running validation... ")
-
     vae_model = acc_unwrap_model(vae.model)
     images = []
     
     for i, sample in enumerate(test_dataloader):
         if i < max_validation_sample:
-            x = sample["pixel_values"].to(weight_dtype)
+            x = sample["src_pixel_values"].to(weight_dtype)
             # encoded = vae_model.encode(x)
             # reconstructions = vae_model.decode(encoded)
             z, mu, logvar = vae.model.encode(x)#.to(weight_dtype)
             z = z.to(weight_dtype) # Not mode()
             reconstructions = vae.model.decode(z).to(weight_dtype)
             images.append(
-                torch.cat([sample["pixel_values"].cpu(), reconstructions.cpu()], axis=0)
+                torch.cat([sample["src_pixel_values"].cpu(), sample["tgt_pixel_values"].cpu(), reconstructions.cpu()], axis=0)
             )
 
     for tracker in accelerator.trackers:
         if tracker.name == "wandb":
             tracker.log(
                 {
-                    "Original (left), Reconstruction (right)": [
+                    "Original (left), Target (center), Reconstruction (right)": [
                         wandb.Image(torchvision.utils.make_grid(image))
                         for _, image in enumerate(images)
                     ]
@@ -208,6 +211,16 @@ def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 
 
 def compute_kl(mu, logvar):
     return -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1).mean()
+
+def add_noise_to_image(pil_image, model_sampling):
+    image_tensor = transforms.ToTensor()(pil_image)
+    t = torch.randint(30, 50, (1,))
+    sigma = model_sampling.sigma(t).view(1, 1, 1, 1).to(image_tensor.device)
+    noise = torch.randn_like(image_tensor)
+    noisy_image = sigma * noise + (1.0 - sigma) * image_tensor
+    noised = noisy_image.squeeze().clamp(0, 1)
+    noised_img = transforms.ToPILImage()(noised.cpu())
+    return noised_img
 
 
 def main():
@@ -238,13 +251,7 @@ def main():
     )
 
     # Make one log on every process with the configuration for debugging.
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO,
-    )
-    # logger.info(accelerator.state, main_process_only=False)
-
+    
     if args.seed is not None:
         set_seed(args.seed)
 
@@ -332,14 +339,13 @@ def main():
             eps=args.adam_epsilon,
         )
 
-
     if args.dataset_name is not None:
         # Downloading and loading a dataset from the hub.
         dataset = load_dataset(
             args.dataset_name,
             args.dataset_config_name,
             cache_dir=args.cache_dir,
-            num_proc=4,
+            num_proc=1,
             token=""
         )
     else:
@@ -367,7 +373,7 @@ def main():
             v2.Resize(
                 args.resolution, interpolation=v2.InterpolationMode.BILINEAR
             ),
-            v2.RandomCrop(args.resolution),
+            v2.CenterCrop(args.resolution),
             #v2.ToTensor(), # this is apparently going to be depreciated in the future, replacing with the following 2 lines
             v2.ToImage(), 
             v2.ToDtype(weight_dtype, scale=True),
@@ -376,17 +382,43 @@ def main():
         ]
     )
 
+    model_sampling = ModelSamplingDiscreteFlow()
+
     def preprocess(examples):
         images = [image.convert("RGB") for image in examples[image_column]]
-        examples["pixel_values"] = [train_transforms(image) for image in images]
+
+        src_pixel_values = []
+        tgt_pixel_values = []
+
+        for img in images:
+            # Add noise using your function
+            noisy_pil = add_noise_to_image(img, model_sampling)
+
+            # Apply transforms
+            src = train_transforms(noisy_pil)  # Noised input
+            tgt = train_transforms(img)        # Clean target
+
+            src_pixel_values.append(src)
+            tgt_pixel_values.append(tgt)
+
+        examples["src_pixel_values"] = src_pixel_values
+        examples["tgt_pixel_values"] = tgt_pixel_values
         return examples
     
-    def collate_fn(examples):
-        pixel_values = torch.stack([example["pixel_values"] for example in examples])
-        pixel_values = pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)  # .float()
-        return {"pixel_values": pixel_values}
 
+    def collate_fn(examples):
+        src_pixel_values = torch.stack([example["src_pixel_values"] for example in examples])
+        tgt_pixel_values = torch.stack([example["tgt_pixel_values"] for example in examples])
+
+        src_pixel_values = src_pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)
+        tgt_pixel_values = tgt_pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)
+
+        return {
+            "src_pixel_values": src_pixel_values,
+            "tgt_pixel_values": tgt_pixel_values
+        }
     
+
     with accelerator.main_process_first():
         # Load test data from test_data_dir
         if (args.test_data_dir is not None and args.train_data_dir is not None):
@@ -435,7 +467,7 @@ def main():
         num_warmup_steps=args.lr_warmup_steps * args.gradient_accumulation_steps,
         num_training_steps=args.num_train_epochs * args.gradient_accumulation_steps,
     )
-
+    
     
     # We need to initialize the trackers we use, and also store our configuration.
     # The trackers initializes automatically on the main process.
@@ -534,15 +566,16 @@ def main():
                         progress_bar.update(1)
                     continue
                 with accelerator.accumulate(vae):
-                    target = batch["pixel_values"]#.to(accelerator.device, dtype=weight_dtype)
+                    src = batch["src_pixel_values"]
+                    target = batch["tgt_pixel_values"]#.to(accelerator.device, dtype=weight_dtype)
                     # https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/autoencoder_kl.py
 
                     if accelerator.num_processes > 1:
-                        posterior = vae.model.encode(target).latent_dist
+                        posterior = vae.model.encode(src).latent_dist
                         z = posterior.sample().to(weight_dtype)
                         pred = vae.model.decode(z).sample.to(weight_dtype)
                     else:
-                        z, mu, logvar = vae.model.encode(target)#.to(weight_dtype)
+                        z, mu, logvar = vae.model.encode(src)#.to(weight_dtype)
                         # z = mean                      if posterior.mode()
                         # z = mean + variable*epsilon   if posterior.sample()
                         z = z.to(weight_dtype) # Not mode()
@@ -637,6 +670,7 @@ def main():
                 progress_bar.set_postfix(**logs)
                 if accelerator.is_main_process:
                     if global_step % args.validation_steps == 0:
+                        logger.info("Validating model....")
                         with torch.no_grad():
                             log_validation(test_dataloader, vae, accelerator, weight_dtype, global_step)
                     if global_step % args.model_saving_steps == 0:
