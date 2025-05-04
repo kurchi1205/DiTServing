@@ -13,5 +13,6 @@ client:
 model:
   model_path: "/home/DiTServing/stability_sd3_infer/models/sd3_medium.safetensors"
   model_folder: "/home/DiTServing/stability_sd3_infer/models/"
+  vae_path: "/home/DiTServing/vae_finetune/outputs/models_v4_fp16/400-finetuned.pth"
 
   

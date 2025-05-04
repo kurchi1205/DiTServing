@@ -371,12 +371,26 @@ class SDVAE(torch.nn.Module):
 
 class VAE:
     def __init__(self, model, dtype: torch.dtype = torch.float16):
-        with safe_open(model, framework="pt", device="cpu") as f:
+        print(model)
+        if model.endswith(".safetensors"):
+            # Load using safetensors
+            with safe_open(model, framework="pt", device="cpu") as f:
+                self.model = SDVAE(device="cpu", dtype=dtype).eval().cpu()
+                prefix = ""
+                if any(k.startswith("first_stage_model.") for k in f.keys()):
+                    prefix = "first_stage_model."
+                load_into(f, self.model, prefix, "cpu", dtype)
+
+        elif model.endswith(".pt") or model.endswith(".pth"):
+            # Load using PyTorch
             self.model = SDVAE(device="cpu", dtype=dtype).eval().cpu()
-            prefix = ""
-            if any(k.startswith("first_stage_model.") for k in f.keys()):
-                prefix = "first_stage_model."
-            load_into(f, self.model, prefix, "cpu", dtype)
+            state_dict = torch.load(model, map_location="cpu")
+            
+            # Optional: remove "first_stage_model." prefix if present
+            if any(k.startswith("first_stage_model.") for k in state_dict.keys()):
+                state_dict = {k.replace("first_stage_model.", ""): v for k, v in state_dict.items()}
+            
+            self.model.load_state_dict(state_dict)
 
 
     def save(self, output_path: str = "ckpt/finetuned_vae.pth"):
