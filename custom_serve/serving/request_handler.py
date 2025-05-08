@@ -179,7 +179,7 @@ class RequestHandler:
             request["status"] = RequestStatus.IN_PROGRESS
             logger.debug(f"Request {request['request_id']} marked as IN_PROGRESS.")
 
-    async def process_request(self, inference_handler):
+    async def process_request(self, inference_handler, save_latents):
         logger.info("Starting request processing cycle...")
         inference_handler.denoiser = CFGDenoiser
         last_timeout_check = datetime.now()
@@ -202,11 +202,11 @@ class RequestHandler:
             
             if attn_requests:
                 # Process all attention requests in one task
-                tasks.append(self._process_attention_batch(inference_handler, attn_requests))
+                tasks.append(self._process_attention_batch(inference_handler, attn_requests, save_latents))
                 
             if active_requests:
                 # Process all non-attention requests in another task
-                tasks.append(self._process_active_batch(inference_handler, active_requests))
+                tasks.append(self._process_active_batch(inference_handler, active_requests, save_latents))
             
             # Execute both batches concurrently
             if tasks:
@@ -254,7 +254,7 @@ class RequestHandler:
         await self.request_pool.add_to_output_pool(request)
 
 
-    async def _process_attention_batch(self, inference_handler, request_ids):
+    async def _process_attention_batch(self, inference_handler, request_ids, save_latents):
         """Process a batch of attention requests asynchronously."""
         processed_requests = []
         
@@ -269,7 +269,9 @@ class RequestHandler:
                 inference_handler,
                 request_id,
                 self.request_pool,
-                compute_attention=True
+                cache_interval=self.cache_interval,
+                compute_attention=True,
+                save_latents=save_latents
             )
             
             # Update request state
@@ -286,7 +288,7 @@ class RequestHandler:
         
         return processed_requests
 
-    async def _process_active_batch(self, inference_handler, request_ids):
+    async def _process_active_batch(self, inference_handler, request_ids, save_latents):
         """Process a batch of non-attention requests asynchronously."""
         # Use the existing batch processing for active requests
         processed_requests = await asyncio.to_thread(
@@ -294,7 +296,9 @@ class RequestHandler:
             inference_handler,
             request_ids,
             self.request_pool,
-            compute_attention=False
+            cache_interval=self.cache_interval,
+            compute_attention=False,
+            save_latents=save_latents
         )
         
         # Update all processed requests

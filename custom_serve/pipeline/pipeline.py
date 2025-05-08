@@ -223,7 +223,7 @@ class SD3Inferencer:
         image = image.float()
         self.vae.model = self.vae.model.cpu()
         image = torch.clamp((image + 1.0) / 2.0, min=0.0, max=1.0)[0]
-        decoded_np = 255.0 * np.moveaxis(image.cpu().numpy(), 0, 2)
+        decoded_np = 255.0 * np.moveaxis(image.detach().cpu().numpy(), 0, 2)
         decoded_np = decoded_np.astype(np.uint8)
         out_image = Image.fromarray(decoded_np)
         self.print("Decoded")

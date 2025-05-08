@@ -1,8 +1,9 @@
 import time
 import torch
+import os
 from pipeline.sd3 import SD3LatentFormat
 
-def process_each_timestep(handler, request_id, request_pool, compute_attention=True):
+def process_each_timestep(handler, request_id, request_pool, cache_interval, compute_attention=True, save_latents=False):
     # st = time.time()
     denoiser = handler.denoiser
     model = handler.sd3.model
@@ -57,6 +58,12 @@ def process_each_timestep(handler, request_id, request_pool, compute_attention=T
     request["noise_scaled"] = latent
     request["old_denoised"] = old_denoised
     request_pool.requests[request_id] = request
+
+    if save_latents:
+        save_dir = f"../saved_latents_{cache_interval}"
+        os.makedirs(save_dir, exist_ok=True)
+        latent_path = os.path.join(save_dir, f"latent_request{request_id}_step{current_timestep:04d}.pt")
+        torch.save(request["noise_scaled"].detach().cpu(), latent_path)
     # print("Time taken with attention", time.time() - st)
     # print("Time taken with attention computation", time.time() - st_2)
 
@@ -173,7 +180,7 @@ def process_each_timestep_batched_1(handler, request_ids, request_pool, compute_
     return requests
 
 
-def process_each_timestep_batched(handler, request_ids, request_pool, compute_attention=False):
+def process_each_timestep_batched(handler, request_ids, request_pool, cache_interval, compute_attention=False, save_latents=False):
     # st = time.time()
     denoiser = handler.denoiser
     model = handler.sd3.model
@@ -284,6 +291,11 @@ def process_each_timestep_batched(handler, request_ids, request_pool, compute_at
         request["old_denoised"] = new_old_denoised_batch[idx:idx+1]
         requests.append(request)
 
+        if save_latents:
+            save_dir = f"../saved_latents_{cache_interval}"
+            os.makedirs(save_dir, exist_ok=True)
+            latent_path = os.path.join(save_dir, f"latent_request{request_id}_step{current_timestep:04d}.pt")
+            torch.save(request["noise_scaled"].detach().cpu(), latent_path)
     # print(f"Time taken without attention of {num_requests}: {time.time() - st}")
     # print(f"Time taken without attention computation of {num_requests}: {time.time() - st_2}")
     # print(f"Time taken unbatching {num_requests}: {time.time() - st_3}")
