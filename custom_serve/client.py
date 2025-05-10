@@ -100,7 +100,8 @@ class Client:
         requests = [
             # {"prompt": "Generate image of a cat", "timesteps_left": 30},
             # {"prompt": "Generate image of a dog", "timesteps_left": 30},
-            {"prompt": "Generate image of a fish", "timesteps_left": 30},
+            {"prompt": '''pinkfantasybabes, 
+Close-up of a woman's face, focusing on her right side, wearing an ornate, intricate masquerade mask that covers her eyes and upper nose. The mask is detailed with lace-like patterns, embedded with small glowing lights and tiny luminescent butterflies, primarily in blue and orange hues. The mask has an elaborate design that merges seamlessly with her skin, which is illuminated with bioluminescent patterns glowing in shades of blue and orange, covering her neck, shoulders, and chest. Her lips are slightly parted, showing a natural yet f. B_6, An enchanting scene filled with heart-shaped bokeh lights that sparkle against a deep black background. The lights are arranged in a visually appealing pattern, with some glowing softly and others shining brightly, creating a magical and romantic ambiance. The heart shapes are interspersed with smaller, round light orbs, adding depth and variety to the composition. The overall effect is a beautiful, dreamy display of love and light. ''', "timesteps_left": 30},
             # {"prompt": "Generate image of a car", "timesteps_left": 30},
         ]
 

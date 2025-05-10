@@ -35,7 +35,7 @@ class RequestInput(BaseModel):
 @app.post("/start_background_process")
 async def start_background_process(model, background_tasks: BackgroundTasks):
     global inference_handler
-    background_tasks.add_task(handler.process_request, inference_handler)
+    background_tasks.add_task(handler.process_request, inference_handler, save_latents=True)
     return {"message": "Background process started."}
 
 
@@ -134,8 +134,10 @@ async def startup_event():
         inference_handler = SD3Inferencer()
         model_path = config["model"]["model_path"]
         model_folder = config["model"]["model_folder"]
+        vae_path = config["model"]["vae_path"]
         inference_handler.load(
             model=model_path,
+            vae=vae_path,
             model_folder=model_folder,
             text_encoder_device="cpu",
             verbose=True,
@@ -149,5 +151,5 @@ async def startup_event():
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, log_level="info", reload_excludes="client.py")
+    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, log_level="info")
     
