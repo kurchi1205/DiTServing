@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from torchmetrics.image import PeakSignalNoiseRatio
 
 def compute_psnr(x: torch.Tensor, y: torch.Tensor, max_val=1.0):
-    print(x.min(), x.max(), y.max(), y.min())
     mse = F.mse_loss(x, y)
     return float('inf') if mse == 0 else 20 * torch.log10(max_val / torch.sqrt(mse))
 
@@ -43,7 +42,7 @@ def get_psnr_list(src_dir, target_dir, src_id, target_id, psnr_metric):
     psnrs = []
     for i in range(num_steps):
         a, b = latents_src[i], latents_target[i]
-        psnrs.append(compute_psnr_torchmetrics(psnr_metric, a, b))
+        psnrs.append(compute_psnr(a, b))
     return list(range(num_steps)), psnrs
 
 
@@ -51,11 +50,11 @@ if __name__=="__main__":
     # ---- Define paths ----
     src_path = "/home/DiTServing/saved_latents_0"
     target_paths = [
-        "/home/DiTServing/saved_latents_0",
+        # "/home/DiTServing/saved_latents_0",
         "/home/DiTServing/saved_latents_1",
-        "/home/DiTServing/saved_latents_2",
-        "/home/DiTServing/saved_latents_4",
-        "/home/DiTServing/saved_latents_3",
+        # "/home/DiTServing/saved_latents_2",
+        # "/home/DiTServing/saved_latents_4",
+        # "/home/DiTServing/saved_latents_3",
     ]
     psnr_metric = PeakSignalNoiseRatio(data_range=12.0)
     # ---- Select source request ID ----
@@ -73,8 +72,10 @@ if __name__=="__main__":
         if not target_ids:
             print(f"⚠️ No request IDs in {target_path}, skipping.")
             continue
-
-        target_id = target_ids[0]
+        if len(target_ids) > 1:
+            target_id = target_ids[1]
+        else:
+            target_id = target_ids[0]
         try:
             steps, psnrs = get_psnr_list(src_path, target_path, src_id, target_id, psnr_metric)
             label = os.path.basename(target_path)
@@ -90,4 +91,4 @@ if __name__=="__main__":
     plt.legend()
     plt.tight_layout()
     plt.locator_params(axis='y', nbins=40)
-    plt.savefig("psnr_comparisons.jpeg")
+    plt.savefig("psnr_comparisons_shift_4.jpeg")

@@ -2,13 +2,15 @@ import asyncio
 import aiohttp
 import json
 from datetime import datetime
-from utils.logger import get_logger
-from serving.config_loader import ConfigLoader
+import sys
+sys.path.insert(0, "../")
+from custom_serve.utils.logger import get_logger
+from custom_serve.serving.config_loader import ConfigLoader
 
 logger = get_logger(__name__)
 
 class CachingClient:
-    def __init__(self, config_path="../configs/config.yaml"):
+    def __init__(self, config_path="../cystom_serve/configs/config.yaml"):
         self.config = ConfigLoader(config_path).config
         self.server_url = self.config["server"]["url"]
         self.poll_interval = self.config["client"]["poll_interval"]
@@ -96,8 +98,8 @@ class CachingClient:
             await asyncio.sleep(self.poll_interval)
 
     async def run(self, interval: int, prompt: str, timesteps_left: int):
-        logger.info("Starting background process...")
-        await self.start_background_process()
+        # logger.info("Starting background process...")
+        # await self.start_background_process()
 
         logger.info(f"Setting caching interval to {interval}")
         await self.change_caching_interval(interval)
@@ -109,17 +111,22 @@ class CachingClient:
         await self.poll_for_outputs()
 
 
+    async def start_bg_process(self):
+        logger.info("Starting background process...")
+        await self.start_background_process()
+
 if __name__ == "__main__":
-    interval = 1  # Set desired caching interval
-    prompt = '''pinkfantasybabes, 
-Close-up of a woman's face, focusing on her right side, wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...'''
-    timesteps_left = 30
-
     client = CachingClient()
-
-    try:
-        asyncio.run(client.run(interval, prompt, timesteps_left))
-    except KeyboardInterrupt:
-        logger.info("Client stopped by user.")
-    except Exception as e:
-        logger.error(f"Client error: {e}")
+    asyncio.run(client.start_bg_process())
+    interval_list = [0, 1, 2, 3, 4]
+    for interval in interval_list:
+        # interval = 0  # Set desired caching interval
+        prompt = '''pinkfantasybabes, 
+    Close-up of a woman's face, focusing on her right side, wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...'''
+        timesteps_left = 30
+        try:
+            asyncio.run(client.run(interval, prompt, timesteps_left))
+        except KeyboardInterrupt:
+            logger.info("Client stopped by user.")
+        except Exception as e:
+            logger.error(f"Client error: {e}")
