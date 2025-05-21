@@ -5,6 +5,7 @@ import re
 from safetensors import safe_open
 from pipeline.utils import load_into
 from pipeline.mmditx import MMDiTX
+from pipeline.sd3_samplers import KarrasScheduler, ExponentialScheduler, WarmupCosineScheduler
 
 
 class ModelSamplingDiscreteFlow(torch.nn.Module):
@@ -104,7 +105,7 @@ class BaseModel(torch.nn.Module):
             dtype=dtype,
             verbose=verbose,
         )
-        self.model_sampling = ModelSamplingDiscreteFlow(shift=shift)
+        self.model_sampling = WarmupCosineScheduler(warmup_steps=10)
 
 
     def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None, context_latent=None, x_latent=None):
