@@ -20,7 +20,8 @@ class KarrasScheduler(nn.Module):
 
     def _create_schedule(self):
         # Build reversed time: t = 1 to 0 to ensure t=0 → sigma_min, t=T-1 → sigma_max
-        t = torch.linspace(1, 0, self.num_steps)
+        t = torch.linspace(0, 1, self.num_steps)
+        t = torch.flip(t, dims=[0])
         sigma_schedule = (
             (self.sigma_max_val ** (1 / self.rho)) +
             t * (self.sigma_min_val ** (1 / self.rho) - self.sigma_max_val ** (1 / self.rho))
@@ -35,8 +36,17 @@ class KarrasScheduler(nn.Module):
     def sigma_max(self):
         return self.sigmas[0]
 
-    def get_schedule(self):
-        return self.sigmas.clone()
+    def get_schedule(self, num_steps):
+        start = self.timestep(self.sigmas[0])
+        end = self.timestep(self.sigmas[-1])
+        timesteps = torch.linspace(start, end, num_steps)
+        sigs = []
+        for x in range(len(timesteps)):
+            ts = timesteps[x]
+            sigs.append(self.sigma(ts))
+        # sigs += [0.0]
+        return torch.FloatTensor(sigs)
+
 
     def timestep(self, sigma):
         """
@@ -75,7 +85,7 @@ class ModelSamplingDiscreteFlow(torch.nn.Module):
         super().__init__()
         self.shift = shift
         timesteps = 1000
-        ts = self.sigma(torch.arange(1, timesteps + 1, 1))
+        ts = self.sigma(torch.arange(0, timesteps, 1))
         self.register_buffer("sigmas", ts)
 
     @property
@@ -88,8 +98,15 @@ class ModelSamplingDiscreteFlow(torch.nn.Module):
     
 
     def get_schedule(self, num_steps):
-        req_sigmas = self.sigmas.clone()[:num_steps]
-        return req_sigmas
+        start = self.timestep(self.sigmas[0])
+        end = self.timestep(self.sigmas[-1])
+        timesteps = torch.linspace(start, end, num_steps)
+        sigs = []
+        for x in range(len(timesteps)):
+            ts = timesteps[x]
+            sigs.append(self.sigma(ts))
+        # sigs += [0.0]
+        return torch.FloatTensor(sigs)
 
     def timestep(self, sigma):
         return sigma * 1000
@@ -123,8 +140,13 @@ class ExponentialScheduler(nn.Module):
         return self.sigma_max * (self.sigma_min / self.sigma_max) ** (1 - t)
     
     def get_schedule(self, num_steps):
-        req_sigmas = self.sigmas.clone()[:num_steps]
-        return req_sigmas
+        timesteps = torch.linspace(self.num_steps, -1, num_steps)
+        sigs = []
+        for x in range(len(timesteps)):
+            ts = timesteps[x]
+            sigs.append(self.sigma(ts))
+        # sigs += [0.0]
+        return torch.FloatTensor(sigs)
 
     def sigma(self, timestep: torch.Tensor):
         # Accepts raw step index [0, T], normalizes internally
@@ -211,9 +233,13 @@ class WarmupCosineScheduler(nn.Module):
         return self.sigmas[-1]  # Now this is the maximum (at the end)
     
     def get_schedule(self, num_steps):
-        """Return the full sigma schedule"""
-        req_sigmas = self.sigmas.clone()[:num_steps]
-        return req_sigmas
+        timesteps = torch.linspace(0, self.num_steps, num_steps)
+        sigs = []
+        for x in range(len(timesteps)):
+            ts = timesteps[x]
+            sigs.append(self.sigma(ts))
+        # sigs += [0.0]
+        return torch.FloatTensor(sigs)
     
     def timestep(self, sigma):
         """Convert sigma to timestep value"""
@@ -259,20 +285,21 @@ class WarmupCosineScheduler(nn.Module):
         return sigma * noise + (1.0 - sigma) * latent_image
     
 
+
 if __name__ == "__main__":
-    scheduler_karras = KarrasScheduler(num_steps=30, rho=2)
+    scheduler_karras = KarrasScheduler(num_steps=1000, rho=2)
     scheduler_exp = ExponentialScheduler(num_steps=1000)
     scheduler_warmcosine = WarmupCosineScheduler(num_steps=1000, warmup_steps=10)
-    scheduler = ModelSamplingDiscreteFlow(shift=5)
+    scheduler = ModelSamplingDiscreteFlow(shift=1)
 
-    sigmas_karras = scheduler_karras.get_schedule()
+    sigmas_karras = scheduler_karras.get_schedule(num_steps=30)
     sigmas_exp = scheduler_exp.get_schedule(num_steps=30)
     sigmas_warmcosine = scheduler_warmcosine.get_schedule(num_steps=30)
     sigmas = scheduler.get_schedule(num_steps=30)
 
     plt.plot(sigmas_karras.cpu().numpy(), label='Karras Scheduler')
     plt.plot(sigmas_exp.cpu().numpy(), label='Exponential Scheduler')
-    # plt.plot(sigmas_warmcosine.cpu().numpy(), label='Warm Cosine Scheduler')
+    plt.plot(sigmas_warmcosine.cpu().numpy(), label='Warm Cosine Scheduler')
     plt.plot(sigmas.cpu().numpy(), label='Discrete Flow Scheduler')
 
     # Add labels and legend
