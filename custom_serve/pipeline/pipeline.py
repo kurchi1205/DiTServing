@@ -159,7 +159,12 @@ class SD3Inferencer:
         t_fn = lambda sigma: sigma.log().neg()
         # Model denoising step
         # st_2 = time.time()
-        denoised = model(x, sigma * s_in, **extra_args)
+        # adaptive_sigma = sigma
+        adaptive_sigma = model.model.model_sampling.sigma_from_latent(x, sigma)
+        print("Sigma: ", sigma, " Adaptive: ", adaptive_sigma)
+        adaptive_sigma = adaptive_sigma.view(-1, 1, 1, 1)
+
+        denoised = model(x, adaptive_sigma * s_in, sigma * s_in, **extra_args)
         # print("Denoised: ", time.time() - st)
         # print("Just Denoising: ", time.time() - st_2)
         # Compute time values

@@ -6,6 +6,7 @@ from safetensors import safe_open
 from pipeline.utils import load_into
 from pipeline.mmditx import MMDiTX
 from pipeline.sd3_samplers import KarrasScheduler, ExponentialScheduler, WarmupCosineScheduler
+from pipeline.sd3_sampler_with_latent import ModelSamplingDiscreteFlowAdaptive
 
 
 class ModelSamplingDiscreteFlow(torch.nn.Module):
@@ -105,15 +106,16 @@ class BaseModel(torch.nn.Module):
             dtype=dtype,
             verbose=verbose,
         )
-        self.model_sampling = WarmupCosineScheduler(warmup_steps=10)
+        self.model_sampling = ModelSamplingDiscreteFlowAdaptive(shift=shift)
 
 
-    def apply_model(self, x, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None, context_latent=None, x_latent=None):
+    def apply_model(self, x, adaptive_sigma, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None, context_latent=None, x_latent=None):
         # print("x shape: ", x.size())
         # print("sigma shape: ", sigma.size())
         
         dtype = self.get_dtype()
         timestep = self.model_sampling.timestep(sigma).float()
+        print("Timestep: ", timestep)
         controlnet_hidden_states = None
         if controlnet_cond is not None:
             y_cond = y.to(dtype)
@@ -143,7 +145,7 @@ class BaseModel(torch.nn.Module):
             x_latent=x_latent
         ).float()
         # st = time.time()
-        denoised = self.model_sampling.calculate_denoised(sigma, model_output, x)
+        denoised = self.model_sampling.calculate_denoised(adaptive_sigma, model_output, x)
         # print("denoise calculate: ", time.time() - st)
         return denoised
 
@@ -166,6 +168,7 @@ class CFGDenoiser(torch.nn.Module):
     def forward(
         self,
         x,
+        adaptive_timestep,
         timestep,
         cond,
         uncond,
@@ -180,6 +183,7 @@ class CFGDenoiser(torch.nn.Module):
         # st = time.time()
         batched = self.model.apply_model(
             torch.cat([x, x]),
+            torch.cat([adaptive_timestep, adaptive_timestep]),
             torch.cat([timestep, timestep]),
             c_crossattn=torch.cat([cond["c_crossattn"], uncond["c_crossattn"]]),
             y=torch.cat([cond["y"], uncond["y"]]),
