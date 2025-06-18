@@ -35,7 +35,7 @@ class RequestInput(BaseModel):
 @app.post("/start_background_process")
 async def start_background_process(model, background_tasks: BackgroundTasks):
     global inference_handler
-    background_tasks.add_task(handler.process_request, inference_handler, save_latents=True)
+    background_tasks.add_task(handler.process_request, inference_handler, save_latents=False)
     return {"message": "Background process started."}
 
 
@@ -58,7 +58,7 @@ async def add_request(request: RequestInput):
     """
     try:
         await handler.add_request(request.prompt, request.timesteps_left)
-        logger.info(f"New request added: Prompt={request.prompt}, Timesteps={request.timesteps_left}")
+        logger.info(f"New request added: Timesteps={request.timesteps_left}")
         return {"message": "Request added successfully."}
     except Exception as e:
         logger.error(f"Error adding request: {e}")
@@ -134,13 +134,11 @@ async def startup_event():
         inference_handler = SD3Inferencer()
         model_path = config["model"]["model_path"]
         model_folder = config["model"]["model_folder"]
-        vae_path = config["model"]["vae_path"]
         inference_handler.load(
             model=model_path,
-            vae=vae_path,
             model_folder=model_folder,
-            text_encoder_device="cpu",
-            verbose=True,
+            text_encoder_device="cuda",
+            verbose=False,
             shift=5
         )
         handler = RequestHandler(config, inference_handler)

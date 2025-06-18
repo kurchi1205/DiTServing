@@ -185,7 +185,6 @@ class RequestHandler:
         last_timeout_check = datetime.now()
         
         while True:
-            st = time.time()
             if self.request_pool.raw_requests:
                 self.prefill(inference_handler)
             await self.scheduler.add_to_active_request_queue(self.request_pool, self.max_requests)
@@ -195,7 +194,6 @@ class RequestHandler:
             attn_requests = await self.request_pool.get_all_attn_requests()
             active_requests = await self.request_pool.get_all_active_requests()
             
-            st = time.time()
             
             # Create two parallel tasks - one for attention requests, one for active requests
             tasks = []

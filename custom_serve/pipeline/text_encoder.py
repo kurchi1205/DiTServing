@@ -217,13 +217,13 @@ class ClipL:
             self.model = SDClipModel(
                 layer="hidden",
                 layer_idx=-2,
-                device="cpu",
+                device="cuda",
                 dtype=torch.float32,
                 layer_norm_hidden_state=False,
                 return_projected_pooled=False,
                 textmodel_json_config=CLIPL_CONFIG,
             )
-            load_into(f, self.model.transformer, "", "cpu", torch.float32)
+            load_into(f, self.model.transformer, "", "cuda", torch.float32)
 
 
 class T5XXL:
