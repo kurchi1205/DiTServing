@@ -108,7 +108,7 @@ class SD3Inferencer:
     def prepare_for_first_timestep(self, empty_latent, prompt, neg_cond, steps, seed_type="rand", seed=None):
         controlnet_cond = None
         if seed is None:
-            seed = 50
+            seed = 42
         latent = empty_latent.cuda()
         seed_num = None
         if seed_type == "roll":
@@ -160,8 +160,8 @@ class SD3Inferencer:
         # Model denoising step
         # st_2 = time.time()
         # adaptive_sigma = sigma
-        adaptive_sigma = model.model.model_sampling.sigma_from_latent(x, sigma)
-        print("Sigma: ", sigma, " Adaptive: ", adaptive_sigma)
+        adaptive_sigma, x = model.model.model_sampling.sigma_from_latent(x, sigma)
+        # print("Sigma: ", sigma, " Adaptive: ", adaptive_sigma)
         adaptive_sigma = adaptive_sigma.view(-1, 1, 1, 1)
 
         denoised = model(x, adaptive_sigma * s_in, sigma * s_in, **extra_args)

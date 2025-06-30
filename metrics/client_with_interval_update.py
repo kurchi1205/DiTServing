@@ -99,9 +99,9 @@ class CachingClient:
 
     async def run(self, interval: int, prompt: str, timesteps_left: int):
         # logger.info("Starting background process...")
-        # await self.start_background_process()
+        await self.start_background_process()
 
-        logger.info(f"Setting caching interval to {interval}")
+        # logger.info(f"Setting caching interval to {interval}")
         await self.change_caching_interval(interval)
 
         logger.info("Submitting inference request...")
@@ -117,13 +117,41 @@ class CachingClient:
 
 if __name__ == "__main__":
     client = CachingClient()
-    asyncio.run(client.start_bg_process())
-    interval_list = [0, 1, 2, 3, 4]
+    # asyncio.run(client.start_bg_process())
+    interval_list = [5]
     for interval in interval_list:
         # interval = 0  # Set desired caching interval
-        prompt = '''pinkfantasybabes, 
-    Close-up of a woman's face, focusing on her right side, wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...'''
-        timesteps_left = 30
+    #     prompt = '''pinkfantasybabes, 
+    # Close-up of a woman's face wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...'''
+#         prompt = '''stars, water, brilliantly
+# gorgeous large scale scene,
+# a little girl, in the style of
+# dreamy realism, light gold
+# and amber, blue and pink,
+# brilliantly illuminated in the
+# background'''
+        prompt = '''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, 
+        long loose platinum hair,
+         sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues'''
+        # prompt = '''Serene Young Woman Portrait with Iridescent Shawl Art'''
+        prompt = '''Vintage Portrait of a Young Person with Quill Illustration Art'''
+        # prompt = '''Brave Acorn Knight Defending Miniature Art'''
+        # prompt = '''Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art'''
+        prompt = '''Cheerful Cartoon Character running in Vibrant  Illustration Art'''
+        prompt = '''Whimsical Garden Gnome with Flowers and Butterflies Poster'''
+        prompt = '''Pirate ship trapped in a
+cosmic maelstrom nebula,
+rendered in cosmic beach
+whirlpool engine,
+volumetric lighting,
+spectacular, ambient lights,
+light pollution, cinematic
+atmosphere, art nouveau
+style, illustration art artwork
+by SenseiJaye, intricate
+detail'''
+
+        timesteps_left = 50
         try:
             asyncio.run(client.run(interval, prompt, timesteps_left))
         except KeyboardInterrupt:

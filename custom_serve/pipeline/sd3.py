@@ -5,7 +5,6 @@ import re
 from safetensors import safe_open
 from pipeline.utils import load_into
 from pipeline.mmditx import MMDiTX
-from pipeline.sd3_samplers import KarrasScheduler, ExponentialScheduler, WarmupCosineScheduler
 from pipeline.sd3_sampler_with_latent import ModelSamplingDiscreteFlowAdaptive
 
 
@@ -115,7 +114,7 @@ class BaseModel(torch.nn.Module):
         
         dtype = self.get_dtype()
         timestep = self.model_sampling.timestep(sigma).float()
-        print("Timestep: ", timestep)
+        # print("Timestep: ", timestep)
         controlnet_hidden_states = None
         if controlnet_cond is not None:
             y_cond = y.to(dtype)
