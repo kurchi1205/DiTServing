@@ -1,7 +1,9 @@
 import asyncio
 import aiohttp
+import os
 import json
 from datetime import datetime
+from PIL import Image
 import sys
 sys.path.insert(0, "../")
 from custom_serve.utils.logger import get_logger
@@ -84,9 +86,12 @@ class CachingClient:
             logger.error(f"Error retrieving outputs: {e}")
             return {"error": str(e)}
 
-    async def poll_for_outputs(self):
+    async def poll_for_outputs(self, path):
         while True:
             outputs = await self.get_output()
+            directory = os.path.dirname(path)
+            if not os.path.isdir(directory):
+                os.makedirs(directory)
             if isinstance(outputs, list) and outputs:
                 for output in outputs:
                     start_time = datetime.fromisoformat(output["timestamp"])
@@ -94,10 +99,13 @@ class CachingClient:
                     time_taken = (end_time - start_time).total_seconds()
                     output["time_taken"] = time_taken
                     print(f"Completed Request: {json.dumps(output, indent=2)}")
+                    image_path = output["image"]
+                    img = Image.open(image_path)
+                    img.save(path)
                 break
             await asyncio.sleep(self.poll_interval)
 
-    async def run(self, interval: int, prompt: str, timesteps_left: int):
+    async def run(self, interval: int, prompt: str, timesteps_left: int, key: str):
         # logger.info("Starting background process...")
         await self.start_background_process()
 
@@ -108,17 +116,31 @@ class CachingClient:
         await self.add_request(prompt, timesteps_left)
 
         logger.info("Polling for output...")
-        await self.poll_for_outputs()
+        path = f"/home/DiTServing/assets/our_outputs/{key}.png"
+        await self.poll_for_outputs(path)
 
 
     async def start_bg_process(self):
         logger.info("Starting background process...")
         await self.start_background_process()
 
+
+async def process_prompts(client, prompts, interval):
+    for key, prompt in prompts.items():
+        timesteps_left = 50
+        path = f"/home/DiTServing/assets/our_outputs/{key}.png"
+        print(f"Processing {key}")
+        try:
+            await client.run(interval, prompt, timesteps_left, key)
+        except Exception as e:
+            logger.error(f"Error processing {key}: {e}")
+
+
 if __name__ == "__main__":
     client = CachingClient()
     # asyncio.run(client.start_bg_process())
     interval_list = [5]
+    prompts = json.load(open("/home/DiTServing/metrics/testing_prompts.json"))
     for interval in interval_list:
         # interval = 0  # Set desired caching interval
     #     prompt = '''pinkfantasybabes, 
@@ -130,31 +152,36 @@ if __name__ == "__main__":
 # and amber, blue and pink,
 # brilliantly illuminated in the
 # background'''
-        prompt = '''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, 
-        long loose platinum hair,
-         sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues'''
-        # prompt = '''Serene Young Woman Portrait with Iridescent Shawl Art'''
-        prompt = '''Vintage Portrait of a Young Person with Quill Illustration Art'''
-        # prompt = '''Brave Acorn Knight Defending Miniature Art'''
-        # prompt = '''Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art'''
-        prompt = '''Cheerful Cartoon Character running in Vibrant  Illustration Art'''
-        prompt = '''Whimsical Garden Gnome with Flowers and Butterflies Poster'''
-        prompt = '''Pirate ship trapped in a
-cosmic maelstrom nebula,
-rendered in cosmic beach
-whirlpool engine,
-volumetric lighting,
-spectacular, ambient lights,
-light pollution, cinematic
-atmosphere, art nouveau
-style, illustration art artwork
-by SenseiJaye, intricate
-detail'''
+        # prompt = '''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, 
+        # long loose platinum hair,
+        #  sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues'''
+        # # prompt = '''Serene Young Woman Portrait with Iridescent Shawl Art'''
+        # prompt = '''Vintage Portrait of a Young Person with Quill Illustration Art'''
+        # # prompt = '''Brave Acorn Knight Defending Miniature Art'''
+        # # prompt = '''Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art'''
+        # prompt = '''Cheerful Cartoon Character running in Vibrant  Illustration Art'''
+        # prompt = '''Whimsical Garden Gnome with Flowers and Butterflies Poster'''
+        # prompt = '''Pirate ship trapped in a
+        #         cosmic maelstrom nebula,
+        #         rendered in cosmic beach
+        #         whirlpool engine,
+        #         volumetric lighting,
+        #         spectacular, ambient lights,
+        #         light pollution, cinematic
+        #         atmosphere, art nouveau
+        #         style, illustration art artwork
+        #         by SenseiJaye, intricate
+        #         detail'''
+        # prompt = '''A painter study hard to learn how to draw with many concepts in the air, white background'''
+        # for key, prompt in prompts.items():
+        #     if key != "prompt_1":
+        #         continue
+        #     timesteps_left = 50
+        #     try:
+        #         asyncio.run(client.run(interval, prompt, timesteps_left, key))
+        #     except KeyboardInterrupt:
+        #         logger.info("Client stopped by user.")
+        #     except Exception as e:
+        #         logger.error(f"Client error: {e}")
+        asyncio.run(process_prompts(client, prompts, interval))
 
-        timesteps_left = 50
-        try:
-            asyncio.run(client.run(interval, prompt, timesteps_left))
-        except KeyboardInterrupt:
-            logger.info("Client stopped by user.")
-        except Exception as e:
-            logger.error(f"Client error: {e}")
