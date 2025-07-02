@@ -39,7 +39,7 @@ class ModelSamplingDiscreteFlowAdaptive(nn.Module):
             return timestep
         return (self.shift * (timestep ** 1.2)) / (1 + (self.shift - 1) * (timestep ** 1.2))
 
-    def sigma_from_latent(self, latent: torch.Tensor, base_sigma: float, min_factor=0.7, max_factor=1.05):
+    def sigma_from_latent(self, latent: torch.Tensor, base_sigma: float, min_factor=0.7, max_factor=1):
         """
         Simplified version with just the most effective metrics.
         """
@@ -55,12 +55,10 @@ class ModelSamplingDiscreteFlowAdaptive(nn.Module):
         grad_magnitude = torch.sqrt(grad_x_cropped.pow(2) + grad_y_cropped.pow(2))
         edge_complexity = grad_magnitude.mean(dim=(1, 2, 3))
         
-        print("std: ", std_complexity, "edge: ", edge_complexity)
-        edge_too_low = edge_complexity < 0.9 and edge_complexity > 0.6 # [B]
+        edge_too_low = (edge_complexity < 0.9) & (edge_complexity > 0.5) # [B]
         if edge_too_low.any():
             noise = torch.randn_like(latent) * 0.01
             latent[edge_too_low] = latent[edge_too_low] + noise[edge_too_low]
-            print("Injected noise to preserve edge texture.")
             
         # Apply your constraints
         std_norm = torch.clamp(std_complexity, max=1.5) / 1.0  # Cap std at 1.5
@@ -76,10 +74,9 @@ class ModelSamplingDiscreteFlowAdaptive(nn.Module):
         adjustment = adjustment * boost
         
         # Final clamp
-        adjustment = torch.sigmoid((adjustment - 1.0) * 0.5)
+        adjustment = torch.sigmoid((adjustment - 1.0))
         adjustment = min_factor + (max_factor - min_factor) * adjustment
-        
-        print("Adjustment: ", adjustment)
+        # print("Adjustment: ", adjustment)
         return base_sigma * adjustment, latent
 
     def calculate_denoised(self, sigma, model_output, model_input):
@@ -91,6 +88,4 @@ class ModelSamplingDiscreteFlowAdaptive(nn.Module):
         Combines latent and noise based on sigma.
         Now allows sigma to be a tensor for adaptive per-sample noise.
         """
-        while sigma.ndim < latent_image.ndim:
-            sigma = sigma.unsqueeze(-1)
         return sigma * noise + (1.0 - sigma) * latent_image

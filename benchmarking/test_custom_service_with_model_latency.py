@@ -136,7 +136,7 @@ async def main():
     # Configure these parameters as needed
     ITERATIONS = 20
     PROMPT = "Generate an image of a cat"
-    TIMESTEPS = 30
+    TIMESTEPS = 50
 
     client = BenchmarkClient()
     result = await client.run_benchmark(
