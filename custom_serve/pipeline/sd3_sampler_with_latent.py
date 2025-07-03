@@ -55,28 +55,26 @@ class ModelSamplingDiscreteFlowAdaptive(nn.Module):
         grad_magnitude = torch.sqrt(grad_x_cropped.pow(2) + grad_y_cropped.pow(2))
         edge_complexity = grad_magnitude.mean(dim=(1, 2, 3))
         
-        edge_too_low = (edge_complexity < 0.9) & (edge_complexity > 0.5) # [B]
+        edge_too_low = (edge_complexity < 0.9) & (edge_complexity > 0.7) # [B]
         if edge_too_low.any():
             noise = torch.randn_like(latent) * 0.01
             latent[edge_too_low] = latent[edge_too_low] + noise[edge_too_low]
             
-        # Apply your constraints
-        std_norm = torch.clamp(std_complexity, max=1.5) / 1.0  # Cap std at 1.5
+        
         # edge_norm = torch.clamp(edge_complexity, min=0.4) / 0.5  # Floor edge at 0.4
         edge_norm = edge_complexity/ 0.5  # Floor edge at 0.4
         
         # Your formula
-        adjustment = 1.1 - std_norm + edge_norm
+        adjustment = std_complexity + 0.3 * edge_complexity
         
         # Your edge penalty (using original edge_complexity)
-        edge_penalty = torch.clamp(0.4 - edge_complexity, min=0.0)
-        boost = 1.0 + edge_penalty * 0.5
+        edge_penalty = torch.sigmoid((edge_complexity) * 2.0)
+        boost = 1.0 + edge_penalty * 0.3
         adjustment = adjustment * boost
         
         # Final clamp
-        adjustment = torch.sigmoid((adjustment - 1.0))
+        adjustment = torch.sigmoid((adjustment))
         adjustment = min_factor + (max_factor - min_factor) * adjustment
-        # print("Adjustment: ", adjustment)
         return base_sigma * adjustment, latent
 
     def calculate_denoised(self, sigma, model_output, model_input):
