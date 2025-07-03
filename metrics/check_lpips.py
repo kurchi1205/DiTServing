@@ -68,6 +68,6 @@ def compute_lpips_for_folders(source_root, target_root, cache_intervals):
 if __name__ == "__main__":
     source_dir = "/home/DiTServing/assets"
     target_dir = "/home/DiTServing/assets/our_outputs"
-    cache_steps = [5, 6]  # include baseline
+    cache_steps = [1, 2, 3, 4, 5, 6]  # include baseline
 
     compute_lpips_for_folders(source_dir, target_dir, cache_steps)

@@ -65,6 +65,6 @@ def evaluate_niqe_by_cache(src_root, tgt_root, cache_intervals):
 if __name__ == "__main__":
     src_root = "/home/DiTServing/assets"
     tgt_root = "/home/DiTServing/assets/our_outputs"
-    cache_intervals = [5, 6]
+    cache_intervals = [1, 2, 3, 4, 5, 6]
 
     evaluate_niqe_by_cache(src_root, tgt_root, cache_intervals)

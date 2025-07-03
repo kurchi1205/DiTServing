@@ -141,7 +141,7 @@ async def process_prompts(client, prompts, interval):
 if __name__ == "__main__":
     client = CachingClient()
     # asyncio.run(client.start_bg_process())
-    interval_list = [6]
+    interval_list = [1, 2, 3, 4]
     prompts = json.load(open("/home/DiTServing/metrics/testing_prompts.json"))
     for interval in interval_list:
         # interval = 0  # Set desired caching interval
