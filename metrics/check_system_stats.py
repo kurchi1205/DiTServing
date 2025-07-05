@@ -53,7 +53,7 @@ def collect_system_metrics(interval=2, output_file="system_metrics.json"):
         os.makedirs(os.path.dirname(output_file))
     with open(output_file, "w") as f:
         json.dump(metrics, f, indent=2)
-    print(f"✅ Metrics saved to {output_file}")
+    print(f"Metrics saved to {output_file}")
 
 
 if __name__ == "__main__":
