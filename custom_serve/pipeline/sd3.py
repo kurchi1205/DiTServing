@@ -54,6 +54,7 @@ class BaseModel(torch.nn.Module):
         prefix="",
         control_model_ckpt=None,
         verbose=False,
+        custom_scheduler=True
     ):
         super().__init__()
         # Important configuration values can be quickly determined by checking shapes in the source file
@@ -105,7 +106,10 @@ class BaseModel(torch.nn.Module):
             dtype=dtype,
             verbose=verbose,
         )
-        self.model_sampling = ModelSamplingDiscreteFlowAdaptive(shift=shift)
+        if custom_scheduler:
+            self.model_sampling = ModelSamplingDiscreteFlowAdaptive(shift=shift)
+        else:
+            self.model_sampling = ModelSamplingDiscreteFlow(shift=shift)
 
 
     def apply_model(self, x, adaptive_sigma, sigma, c_crossattn=None, y=None, skip_layers=[], controlnet_cond=None, compute_attention=True, request=None, context_latent=None, x_latent=None):
@@ -297,7 +301,7 @@ class SD3LatentFormat:
 
 class SD3:
     def __init__(
-        self, model, shift, control_model_file=None, verbose=False, device="cpu"
+        self, model, shift, control_model_file=None, verbose=False, device="cpu", custom_scheduler=True
     ):
         with safe_open(model, framework="pt", device="cpu") as f:
             control_model_ckpt = None
@@ -309,6 +313,7 @@ class SD3:
                 dtype=torch.float16,
                 control_model_ckpt=control_model_ckpt,
                 verbose=verbose,
+                custom_scheduler=custom_scheduler
             ).eval()
             load_into(f, self.model, "model.", "cuda", torch.float16)
         

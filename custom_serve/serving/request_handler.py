@@ -43,6 +43,7 @@ class RequestPool:
     def add_request_to_final_pool(self, request):
         """Add a new request to the pool."""
         self.requests[request["request_id"]] = request
+        self.requests[request["request_id"]]["processing_time_start"] = datetime.now().isoformat()
         self.raw_requests.pop(request["request_id"])
         logger.info(f"Request added to final pool: {request['request_id']} (Prompt: {request['prompt']})")
 

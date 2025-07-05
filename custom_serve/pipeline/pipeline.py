@@ -30,6 +30,7 @@ class SD3Inferencer:
         text_encoder_device: str = "cpu",
         verbose=False,
         load_tokenizers: bool = True,
+        custom_scheduler = True
     ):
         self.verbose = verbose
         print("Loading tokenizers...")
@@ -45,10 +46,11 @@ class SD3Inferencer:
             print("Loading OpenCLIP bigG...")
             self.clip_g = ClipG(model_folder, text_encoder_device)
         print(f"Loading SD3 model {os.path.basename(model)}...")
-        self.sd3 = SD3(model, shift, controlnet_ckpt, verbose, "cuda")
+        self.sd3 = SD3(model, shift, controlnet_ckpt, verbose, "cuda", custom_scheduler)
         print("Loading VAE model...")
         self.vae = VAE(vae or model)
         print("Models loaded.")
+        self.custom_scheduler = custom_scheduler
 
     def get_empty_latent(self, batch_size, width, height, seed, device="cuda"):
         self.print("Prep an empty latent...")
@@ -158,9 +160,9 @@ class SD3Inferencer:
         sigma_fn = lambda t: t.neg().exp()
         t_fn = lambda sigma: sigma.log().neg()
         # Model denoising step
-        # st_2 = time.time()
-        # adaptive_sigma = sigma
-        adaptive_sigma, x = model.model.model_sampling.sigma_from_latent(x, sigma)
+        adaptive_sigma = sigma
+        if self.custom_scheduler:
+            adaptive_sigma, x = model.model.model_sampling.sigma_from_latent(x, sigma)
         # adaptive_sigma = adaptive_sigma.view(-1, 1, 1, 1)
 
         denoised = model(x, adaptive_sigma * s_in, sigma * s_in, **extra_args)
