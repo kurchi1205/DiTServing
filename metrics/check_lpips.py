@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 from pathlib import Path
 import numpy as np
@@ -17,7 +18,7 @@ def compute_lpips(img1_path, img2_path, loss_fn, transform):
     return dist.item()
 
 
-def compute_lpips_for_folders(source_root, target_root, cache_intervals):
+def compute_lpips_for_folders(source_root, target_root, cache_intervals, output_json):
     lpips_scores = {}
 
     # Load LPIPS model once
@@ -55,19 +56,25 @@ def compute_lpips_for_folders(source_root, target_root, cache_intervals):
 
             if scores:
                 avg_score = float(np.mean(scores))
-                lpips_scores[interval][prompt_name] = avg_score
-                print(f"✅ {prompt_name} [cache_{interval}] → LPIPS: {avg_score:.4f}")
+                if prompt_name not in lpips_scores:
+                    lpips_scores[prompt_name] = {}
+                lpips_scores[prompt_name][str(interval)] = avg_score
+                print(f"{prompt_name} [cache_{interval}] → LPIPS: {avg_score:.4f}")
 
     # Print summary
-    print("\n=== Final LPIPS Summary ===")
-    for interval, results in lpips_scores.items():
-        for prompt, score in results.items():
-            print(f"[cache_{interval}] {prompt}: LPIPS = {score:.4f}")
+    with open(output_json, "w") as f:
+        json.dump(lpips_scores, f, indent=2)
+
+    # print("\n=== Final LPIPS Summary ===")
+    # for interval, results in lpips_scores.items():
+    #     for prompt, score in results.items():
+    #         print(f"[cache_{interval}] {prompt}: LPIPS = {score:.4f}")
 
 
 if __name__ == "__main__":
     source_dir = "/home/DiTServing/assets"
     target_dir = "/home/DiTServing/assets/our_outputs"
+    output_json = "/home/DiTServing/outputs/lpips_scores_by_prompt.json"
     cache_steps = [0, 1, 2, 3, 4, 5, 6]  # include baseline
 
-    compute_lpips_for_folders(source_dir, target_dir, cache_steps)
+    compute_lpips_for_folders(source_dir, target_dir, cache_steps, output_json)
