@@ -98,7 +98,15 @@ async def get_output():
                 image_path = os.path.abspath(os.path.join(output_dir, f"request_{request['request_id']}.png"))
                 image_data.save(image_path)
             completed_requests.append(
-                {"request_id": request["request_id"], "prompt": request["prompt"], "status": request["status"], "timestamp": request["timestamp"], "time_completed": time_completed, "image": image_path}
+                {
+                    "request_id": request["request_id"], 
+                    "prompt": request["prompt"], 
+                    "status": request["status"], 
+                    "timestamp": request["timestamp"],
+                    "processing_time_start": request["processing_time_start"],
+                    "time_completed": time_completed, 
+                    "image": image_path
+                }
             )
             logger.info(f"Retrieved completed request: {request}")
         logger.info(f"Retrieved {len(completed_requests)} completed requests.")
