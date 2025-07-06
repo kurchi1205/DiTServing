@@ -37,6 +37,12 @@ def save_latency_throughput_metrics(
             "total_requests": len(all_end_times)
         }
     }
+    try:
+        with open(output_file, "w") as f:
+            json.dump(metrics, f, indent=2)
+        print(f"Metrics saved to {output_file}")
+    except Exception as e:
+        print(f"Failed to save metrics: {e}")
 
 
 def analyze_requests(requests):
@@ -51,7 +57,7 @@ def analyze_requests(requests):
         try:
             t_add = parse_time(req["timestamp"])
             t_start = parse_time(req["processing_time_start"])
-            t_end = parse_time(req["completed_timestamp"])
+            t_end = parse_time(req["time_completed"])
 
             total_latencies.append((t_end - t_add).total_seconds())
             queue_latencies.append((t_start - t_add).total_seconds())
@@ -82,7 +88,7 @@ def analyze_requests(requests):
 
 
 if __name__ == "__main__":
-    log_path = "home/DiTServing/outputs/completed_requests.json"
+    log_path = "/home/DiTServing/metrics/completed_requests_log_1.json"
     with open(log_path, "r") as f:
         data = json.load(f)
         if "completed_requests" in data:

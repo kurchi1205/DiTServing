@@ -216,12 +216,14 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
     # }
     x_latent_batch = {}
     # Fill tensors directly
+    # print("Lenth of request ids: ", len(request_ids))
     for idx, request_id in enumerate(request_ids):
         request = request_pool.requests[request_id]
         
         # Direct tensor assignments
         noise_scaled_batch[idx] = request["noise_scaled"]
-        old_denoised_batch[idx] = request["old_denoised"]
+        if request["old_denoised"] is not None:
+            old_denoised_batch[idx] = request["old_denoised"]
         
         current_timestep = request["current_timestep"]
         sigma_current_batch[idx] = request["sigmas"][current_timestep]
@@ -238,17 +240,23 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
         #     # x_latent_batch[key][2 * idx: 2 * idx+2] = tensor
         #     slice_size = tensor.shape[1]
         #     x_latent_batch[key][:, idx*slice_size:(idx+1)*slice_size, :] = tensor
+        # print("idx: ", idx, len(request["x_latent"].items()), current_timestep)
         for key, value in request["x_latent"].items():
             if key not in x_latent_batch:
                 x_latent_batch[key] = []
             x_latent_batch[key].append(value.clone())
+
     
     for key in x_latent_batch:
+        # print("number of vals: ", len(x_latent_batch[key]))
         x_latent_batch[key] = torch.stack([x.clone() for x in x_latent_batch[key]], dim=1).reshape(-1, *x_latent_batch[key][0].shape[1:])
 
     # for key in x_latent_batch:
+        # print("latent size: ", x_latent_batch[key].size())
+        # break
     #     x_latent_batch[key] = x_latent_batch[key].reshape(-1, *x_latent_batch[key].shape[2:])
     # Prepare conditioning batches
+    # print("conditions: ", conditioning_cross.size())
     conditioning_batch = {
         "c_crossattn": conditioning_cross,
         "y": conditioning_y
@@ -272,6 +280,7 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
     # Run denoising
     # st_2 = time.time()
     denoiser_model = denoiser(model)
+    # print("old denoised: ", old_denoised_batch.size(), " curr denoised: ", noise_scaled_batch.size())
     latent_batch, new_old_denoised_batch = handler.denoise_each_step(
         denoiser_model,
         noise_scaled_batch,

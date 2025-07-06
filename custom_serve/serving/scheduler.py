@@ -19,6 +19,7 @@ class Scheduler:
         async with self.lock:
             # Determine how many more requests can be added to the active queue
             available_slots = max_request_size - request_pool.active_queue.qsize() - request_pool.attn_queue.qsize()
+            
             if available_slots <= 0:
                 logger.info(f"Active queue is full. Max size: {max_request_size}")
                 return
@@ -51,26 +52,40 @@ class Scheduler:
         """Shift requests requiring attention to the attention queue."""
         async with self.lock:
             active_requests = []
+            timestep_zero_requests = []
+
             # Step 1: Process active queue first
             while not request_pool.active_queue.empty():
                 request_id = await request_pool.active_queue.get()
                 request = request_pool.requests[request_id]
 
-                # Check if the request requires attention
-                if request["cache_interval"] <= 0 and request_pool.attn_queue.qsize() < self.batch_size:
-                    await request_pool.attn_queue.put(request_id)
-                    logger.info(f"Request {request_id} shifted to attention queue {request_pool.attn_queue.qsize()}.")
+                # Prioritize current_timestep == 0
+                if request["current_timestep"] == 0:
+                    timestep_zero_requests.append(request_id)
                 else:
                     active_requests.append(request_id)
-            # Re-populate active queue with remaining requests
+
+            # Step 2: First push timestep == 0 requests to attn_queue
+            for request_id in timestep_zero_requests:
+                if request_pool.attn_queue.qsize() < self.batch_size:
+                    await request_pool.attn_queue.put(request_id)
+                    logger.info(f"Timestep-0 request {request_id} added to attention queue.")
+                else:
+                    active_requests.append(request_id)  # Re-add if queue full
+
+            # Step 3: Now handle cache_interval exhausted requests
             for request_id in active_requests:
-                await request_pool.active_queue.put(request_id)
-            logger.debug(f"Repopulated active queue with {len(active_requests)} requests.")
+                request = request_pool.requests[request_id]
+                if request["cache_interval"] <= 0 and request_pool.attn_queue.qsize() < self.batch_size:
+                    await request_pool.attn_queue.put(request_id)
+                    logger.info(f"Cache-exhausted request {request_id} added to attention queue.")
+                else:
+                    await request_pool.active_queue.put(request_id)
 
             # Step 2: Add new requests from the pool if attn_queue is not full
             for request_id, request in request_pool.requests.items():
                 if request_pool.attn_queue.qsize() >= self.batch_size:
-                    logger.info("Attention queue is full. Stopping shift to attention queue.")
+                    logger.debug("Attention queue is full. Stopping shift to attention queue.")
                     break  # Stop if attn_queue is full
                 if request["status"] == RequestStatus.PENDING:
                     if (request_pool.active_queue.qsize() + request_pool.attn_queue.qsize()) < max_active_requests and request_pool.attn_queue.qsize() < self.batch_size:
