@@ -8,7 +8,7 @@ import time
 
 # Config
 PROMPT_FILE = "/home/DiTServing/metrics/testing_prompts.json"
-completed_log_path = "/home/DiTServing/metrics/completed_requests_log_1.json"
+completed_log_path = "/home/DiTServing/metrics/completed_requests_log_4_req.json"
 SAVE_INTERVAL = 5
 
 # Load prompts
@@ -122,10 +122,10 @@ async def main():
 
     # Simulate steady load
     # await simulate_load(num_requests=6, delay_between=1)
-    await(simulate_constant_throughput(4, 5))
+    await(simulate_constant_throughput(4, 1))
 
     # Keep polling for a while to finish all responses
-    await asyncio.sleep(100)
+    await asyncio.sleep(200)
     poll_task.cancel()
 
 
