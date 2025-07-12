@@ -20,5 +20,8 @@ dit_serve/Dit_model/*
 
 **/*.safetensors
 **/*.pth
+**/*.pt
 
 **/wandb
+
+**/*.egg-info
