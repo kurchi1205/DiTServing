@@ -69,7 +69,7 @@ def parse_args():
     args.resolution = 1024
     args.train_batch_size = 2 # batch 2 was the best for a single rtx3090
     args.num_train_epochs = 1
-    args.gradient_accumulation_steps = 4
+    args.gradient_accumulation_steps = 1
     args.gradient_checkpointing = False
     args.learning_rate = 1e-04
     args.scale_lr = True
@@ -84,7 +84,7 @@ def parse_args():
     #args.resume_from_checkpoint
     args.test_samples = 20
     args.validation_epochs = 1
-    args.validation_steps = 10
+    args.validation_steps = 1
     args.tracker_project_name = "vae-fine-tune"
     args.use_8bit_adam = False
     # args.use_ema = True # this will drastically slow your training, check speed vs performance
@@ -92,7 +92,8 @@ def parse_args():
     #args.kl_scale
     args.push_to_hub = False
     #hub_token
-    args.lpips_scale = 5e-1
+    args.lpips_scale = 5e-8
+    args.mse_scale = 0.000005
     args.kl_scale = 1e-6 # this is not relevant with patched loss
     args.lpips_start = 50001 # this doesn't do anything?
     
@@ -111,7 +112,7 @@ def parse_args():
     args.train_only_decoder = True
     # args.comment = "VAE finetune by Wasabi, test model using patched MSE"
     
-    args.patch_loss = True
+    args.patch_loss = False
     args.patch_size = 64
     args.patch_stride = 32
     
@@ -177,27 +178,45 @@ def patch_based_lpips_loss(lpips_model, real_images, recon_images, patch_size=32
     return lpips_loss / real_patches.size(2)  # Normalize by the number of patches
 
 
-def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 0, max_validation_sample=4):
-    vae_model = acc_unwrap_model(vae.model)
+def log_validation(test_dataloader, vae, accelerator, curr_step = 0, max_validation_sample=4):
+    # vae_model = acc_unwrap_model(vae.model)
     images = []
-    
+    vae_model_unwrapped = accelerator.unwrap_model(vae.model).eval()
+    from safetensors.torch import save_file
+    state_dict = {
+        k: v.detach().cpu().to(torch.float16) for k, v in vae_model_unwrapped.state_dict().items()
+    }
+    # torch.save(vae_model_unwrapped.state_dict(), "vae_temp.pth")
+    save_file(state_dict, "vae_temp.safetensors")
+    # === Reload the model ===
+    # Create new model instance and load weights
+    vae_reload = VAE("vae_temp.safetensors", dtype=torch.float16)
+    # vae_reload = SDVAE(dtype=torch.float16, device="cpu").eval().to(accelerator.device)
+    # vae_reload.load_state_dict(torch.load("vae_temp.pth", map_location=accelerator.device), strict=True)
+    vae_reload.model = vae_reload.model.to('cuda')
+    vae_reload.model = vae_reload.model.eval()
     for i, sample in enumerate(test_dataloader):
         if i < max_validation_sample:
-            x = sample["src_pixel_values"].to(weight_dtype)
+            x = sample["src_pixel_values"]
             # encoded = vae_model.encode(x)
             # reconstructions = vae_model.decode(encoded)
-            z, mu, logvar = vae.model.encode(x)#.to(weight_dtype)
-            z = z.to(weight_dtype) # Not mode()
-            reconstructions = vae.model.decode(z).to(weight_dtype)
+            with torch.no_grad(), torch.amp.autocast("cuda", dtype=torch.float16):
+                # Reconstructed using reloaded model
+                z1, _, _ = vae_reload.model.encode(x)
+                recon1 = vae_reload.model.decode(z1)
+
+                # Reconstructed using in-memory model
+                z2, _, _ = vae_model_unwrapped.encode(x)
+                recon2 = vae_model_unwrapped.decode(z2)
             images.append(
-                torch.cat([sample["src_pixel_values"].cpu(), sample["tgt_pixel_values"].cpu(), reconstructions.cpu()], axis=0)
+                torch.cat([sample["src_pixel_values"].cpu(), sample["tgt_pixel_values"].cpu(), recon1.cpu(), recon2.cpu()], axis=0)
             )
 
     for tracker in accelerator.trackers:
         if tracker.name == "wandb":
             tracker.log(
                 {
-                    "Original (left), Target (center), Reconstruction (right)": [
+                    "Original (left), Target (center), Reconstruction_saved, Reconstruction": [
                         wandb.Image(torchvision.utils.make_grid(image))
                         for _, image in enumerate(images)
                     ]
@@ -206,22 +225,32 @@ def log_validation(test_dataloader, vae, accelerator, weight_dtype, curr_step = 
             )
         else:
             logger.warn(f"image logging not implemented for {tracker.gen_images}")
-    del vae_model
+    del vae_model_unwrapped
+    del vae_reload
+    vae.model.train()
     torch.cuda.empty_cache()
 
 def compute_kl(mu, logvar):
     return -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1).mean()
 
-def add_noise_to_image(pil_image, model_sampling):
-    image_tensor = transforms.ToTensor()(pil_image)
-    t = torch.randint(30, 50, (1,))
-    sigma = model_sampling.sigma(t).view(1, 1, 1, 1).to(image_tensor.device)
-    noise = torch.randn_like(image_tensor)
-    noisy_image = sigma * noise + (1.0 - sigma) * image_tensor
-    noised = noisy_image.squeeze().clamp(0, 1)
-    noised_img = transforms.ToPILImage()(noised.cpu())
-    return noised_img
+# def add_noise_to_image(pil_image, model_sampling):
+#     image_tensor = transforms.ToTensor()(pil_image)
+#     t = torch.randint(30, 50, (1,))
+#     sigma = model_sampling.sigma(t).view(1, 1, 1, 1).to(image_tensor.device)
+#     noise = torch.randn_like(image_tensor)
+#     noisy_image = sigma * noise + (1.0 - sigma) * image_tensor
+#     noised = noisy_image.squeeze().clamp(0, 1)
+#     noised_img = transforms.ToPILImage()(noised.cpu())
+#     return noised_img
 
+def add_noise_to_image(image_tensor, model_sampling, noise_std=0.2):
+    """
+    Add noise to an image tensor in [-1, 1] using a scaled blend.
+    """
+    noise = torch.randn_like(image_tensor) * noise_std
+    noisy = image_tensor + noise
+
+    return noisy.clamp(-1, 1)
 
 def main():
     # clear any chache
@@ -259,9 +288,9 @@ def main():
         if args.output_dir is not None:
             os.makedirs(args.output_dir, exist_ok=True)    
 
-    weight_dtype = get_dtype(accelerator.mixed_precision)
+    # weight_dtype = get_dtype(accelerator.mixed_precision)
     print("num process", accelerator.num_processes)
-    print("working with", weight_dtype)
+    # print("working with", weight_dtype)
 
         
     vae = VAE(args.vae_model, dtype=torch.float32)
@@ -292,7 +321,7 @@ def main():
         for param in vae.model.encoder.parameters():
             param.requires_grad = False
         # set encoder to eval mode
-        #vae.encoder.eval()
+        vae.model.encoder.eval()
 
     # if True:
 
@@ -374,9 +403,9 @@ def main():
                 args.resolution, interpolation=v2.InterpolationMode.BILINEAR
             ),
             v2.CenterCrop(args.resolution),
-            #v2.ToTensor(), # this is apparently going to be depreciated in the future, replacing with the following 2 lines
-            v2.ToImage(), 
-            v2.ToDtype(weight_dtype, scale=True),
+            v2.ToTensor(), # this is apparently going to be depreciated in the future, replacing with the following 2 lines
+            # v2.ToImage(), 
+            # v2.ToDtype(torch.float32, scale=True),
             v2.Normalize([0.5], [0.5]),
             #v2.ToDtype(weight_dtype)
         ]
@@ -392,11 +421,11 @@ def main():
 
         for img in images:
             # Add noise using your function
-            noisy_pil = add_noise_to_image(img, model_sampling)
+            # noisy_pil = add_noise_to_image(img, model_sampling)
 
             # Apply transforms
-            src = train_transforms(noisy_pil)  # Noised input
-            tgt = train_transforms(img)        # Clean target
+            tgt = train_transforms(img)  # clean image in [-1, 1]
+            src = add_noise_to_image(tgt.clone(), model_sampling)  # noisy version
 
             src_pixel_values.append(src)
             tgt_pixel_values.append(tgt)
@@ -410,8 +439,8 @@ def main():
         src_pixel_values = torch.stack([example["src_pixel_values"] for example in examples])
         tgt_pixel_values = torch.stack([example["tgt_pixel_values"] for example in examples])
 
-        src_pixel_values = src_pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)
-        tgt_pixel_values = tgt_pixel_values.to(memory_format=torch.contiguous_format, dtype=weight_dtype)
+        src_pixel_values = src_pixel_values.to(memory_format=torch.contiguous_format)
+        tgt_pixel_values = tgt_pixel_values.to(memory_format=torch.contiguous_format)
 
         return {
             "src_pixel_values": src_pixel_values,
@@ -457,7 +486,7 @@ def main():
 
     # we use a batch size of 1 bc we want to see samples side by side, which is made by the validation sample function
     test_dataloader = torch.utils.data.DataLoader(
-        test_dataset, shuffle=False, collate_fn=collate_fn,
+        test_dataset, shuffle=True, collate_fn=collate_fn,
         batch_size=1, num_workers=1,  # args.train_batch_size*accelerator.num_processes,
     )
 
@@ -537,7 +566,7 @@ def main():
         patch_size = args.patch_size
         stride = args.patch_stride
 
-    lpips_loss_fn = lpips.LPIPS(net="alex").to(accelerator.device, dtype=weight_dtype)
+    lpips_loss_fn = lpips.LPIPS(net="alex").to(accelerator.device)
     lpips_loss_fn.requires_grad_(False)
     lpips_loss_fn.eval()  # added
     
@@ -549,139 +578,140 @@ def main():
     )
     lpips_loss_fn = accelerator.prepare(lpips_loss_fn)
     #if not args.train_only_decoder:
-    vae.model.encoder = accelerator.prepare(vae.model.encoder)
+    # vae.model.encoder = accelerator.prepare(vae.model.encoder)
 
 
     for epoch in range(first_epoch, args.num_train_epochs):
-        with torch.amp.autocast("cuda", dtype=torch.float16):#accelerator.autocast():
-            vae.model.train()
-            accelerator.wait_for_everyone()
-            train_loss = 0.0
-            logger.info(f"{epoch = }")
+        # with torch.amp.autocast("cuda", dtype=torch.float32):#accelerator.autocast():
+        vae.model.train()
+        accelerator.wait_for_everyone()
+        train_loss = 0.0
+        logger.info(f"{epoch = }")
 
-            for step, batch in enumerate(train_dataloader):
-                # Skip steps until we reach the resumed step
-                if args.resume_from_checkpoint and epoch == first_epoch and step < resume_step:
-                    if step % args.gradient_accumulation_steps == 0:
-                        progress_bar.update(1)
-                    continue
-                with accelerator.accumulate(vae):
-                    src = batch["src_pixel_values"]
-                    target = batch["tgt_pixel_values"]#.to(accelerator.device, dtype=weight_dtype)
-                    # https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/autoencoder_kl.py
-
-                    if accelerator.num_processes > 1:
-                        posterior = vae.model.encode(src).latent_dist
-                        z = posterior.sample().to(weight_dtype)
-                        pred = vae.model.decode(z).sample.to(weight_dtype)
-                    else:
-                        z, mu, logvar = vae.model.encode(src)#.to(weight_dtype)
-                        # z = mean                      if posterior.mode()
-                        # z = mean + variable*epsilon   if posterior.sample()
-                        z = z.to(weight_dtype) # Not mode()
-                        pred = vae.model.decode(z).to(weight_dtype)
-
-                    # pred = pred#.to(dtype=weight_dtype)
-                    kl_loss = compute_kl(mu, logvar).to(weight_dtype)
-                    # kl_loss = posterior.kl().mean().to(weight_dtype)
-
-                    # mse_loss = F.mse_loss(pred.float(), target.float(), reduction="mean")
-                    
-                    if args.patch_loss:
-                        # patched loss
-                        mse_loss = patch_based_mse_loss(target, pred, patch_size, stride).to(weight_dtype)
-                        lpips_loss = patch_based_lpips_loss(lpips_loss_fn, target, pred, patch_size, stride).to(weight_dtype)
-
-                    else:
-                        # default loss
-                        mse_loss = F.mse_loss(pred, target, reduction="mean").to(weight_dtype)
-                        with torch.no_grad():
-                            lpips_loss = lpips_loss_fn(pred, target).mean().to(weight_dtype)
-                            if not torch.isfinite(lpips_loss):
-                                lpips_loss = torch.tensor(0)
-                                
-                    if args.train_only_decoder:
-                        # remove kl term from loss, bc when we only train the decoder, the latent is untouched
-                        # and the kl loss describes the distribution of the latent
-                        loss = (mse_loss 
-                                + args.lpips_scale*lpips_loss)  # .to(weight_dtype)
-                    else:
-                        loss = (mse_loss 
-                                + args.lpips_scale*lpips_loss 
-                                + args.kl_scale*kl_loss)  # .to(weight_dtype)
-                    if args.gradient_accumulation_steps and args.gradient_accumulation_steps>1:
-                        loss = loss/args.gradient_accumulation_steps 
-
-                    if not torch.isfinite(loss):
-                        pred_mean = pred.mean()
-                        target_mean = target.mean()
-                        logger.info("\nWARNING: non-finite loss, ending training ")
-                    
-                    if debug and step < 1:
-                        print(f"loss dtype: {loss.dtype}")
-                        print(f"pred dtype: {pred.dtype}")
-                        print(f"target dtype: {target.dtype}")
-                        print(f"z dtype: {z.dtype}")
-                        print(f"kl_loss dtype: {kl_loss.dtype}")
-                        print(f"mse_loss dtype: {mse_loss.dtype}")
-                        print(f"lpips_loss dtype: {lpips_loss.dtype}")
-                        print(f"vae parameters dtype: {[param.dtype for param in vae.parameters()]}")
-
-
-                    accelerator.backward(loss)
-
-                    if accelerator.sync_gradients:
-                        accelerator.clip_grad_norm_(vae.model.parameters(), args.max_grad_norm)
-                        optimizer.step()
-                        lr_scheduler.step()
-                        optimizer.zero_grad()
-
-                # Checks if the accelerator has performed an optimization step behind the scenes
-
-                # Gather the losses across all processes for logging (if we use distributed training).
-                if loss is not None:
-                    avg_loss = accelerator.gather(loss.repeat(args.train_batch_size)).mean()
-                    train_loss += avg_loss.detach().item() / args.gradient_accumulation_steps
-                else:
-                    logger.warning("Loss not defined, skipping gathering.")
-                    
-                if accelerator.sync_gradients:
+        for step, batch in enumerate(train_dataloader):
+            # Skip steps until we reach the resumed step
+            if args.resume_from_checkpoint and epoch == first_epoch and step < resume_step:
+                if step % args.gradient_accumulation_steps == 0:
                     progress_bar.update(1)
-                    global_step += 1
-                    accelerator.log({"train_loss": train_loss}, step=global_step)
-                    train_loss = 0.0
+                continue
+            with accelerator.accumulate(vae.model.decoder):
+                src = batch["src_pixel_values"]
+                target = batch["tgt_pixel_values"]#.to(accelerator.device, dtype=weight_dtype)
+                # https://github.com/huggingface/diffusers/blob/main/src/diffusers/models/autoencoder_kl.py
 
-                    if global_step % args.checkpointing_steps == 0:
-                        if accelerator.is_main_process:
-                            save_path = os.path.join(
-                                args.output_dir, f"checkpoint-{global_step}"
-                            )
-                            accelerator.save_state(save_path)
-                            logger.info(f"Saved state to {save_path}")
+                if accelerator.num_processes > 1:
+                    posterior = vae.model.encode(src).latent_dist
+                    z = posterior.sample()#.to(weight_dtype)
+                    pred = vae.model.decode(z).sample#.to(weight_dtype)
+                else:
+                    z, mu, logvar = vae.model.encode(src)#.to(weight_dtype)
+                    # z = mean                      if posterior.mode()
+                    # z = mean + variable*epsilon   if posterior.sample()
+                    z = z #.to(weight_dtype) # Not mode()
+                    pred = vae.model.decode(z) #.to(weight_dtype)
 
-                logs = {
-                    "step_loss": loss.detach().item(),
-                    "lr": lr_scheduler.get_last_lr()[0],
-                    "mse": mse_loss.detach().item(),
-                    "lpips": lpips_loss.detach().item(),
-                    "kl": kl_loss.detach().item(),
-                }
-                accelerator.log(logs, step=global_step)
-                progress_bar.set_postfix(**logs)
-                if accelerator.is_main_process:
-                    if global_step % args.validation_steps == 0:
-                        logger.info("Validating model....")
-                        with torch.no_grad():
-                            log_validation(test_dataloader, vae, accelerator, weight_dtype, global_step)
-                    if global_step % args.model_saving_steps == 0:
-                        vae.model = accelerator.unwrap_model(vae.model)
-                        vae.save(os.path.join(args.output_dir, f"{global_step}-finetuned.pth"))
+                # pred = pred#.to(dtype=weight_dtype)
+                kl_loss = compute_kl(mu, logvar) #.to(weight_dtype)
+                # kl_loss = posterior.kl().mean().to(weight_dtype)
+
+                # mse_loss = F.mse_loss(pred.float(), target.float(), reduction="mean")
+                
+                if args.patch_loss:
+                    # patched loss
+                    mse_loss = patch_based_mse_loss(target, pred, patch_size, stride) #.to(weight_dtype)
+                    lpips_loss = patch_based_lpips_loss(lpips_loss_fn, target, pred, patch_size, stride) #.to(weight_dtype)
+
+                else:
+                    # default loss
+                    mse_loss = F.mse_loss(pred, target, reduction="mean") #.to(weight_dtype)
+                    with torch.no_grad():
+                        lpips_loss = lpips_loss_fn(pred, target).mean() #.to(weight_dtype)
+                        if not torch.isfinite(lpips_loss):
+                            lpips_loss = torch.tensor(0)
+                            
+                if args.train_only_decoder:
+                    # remove kl term from loss, bc when we only train the decoder, the latent is untouched
+                    # and the kl loss describes the distribution of the latent
+                    loss = (args.mse_scale * mse_loss 
+                            + args.lpips_scale*lpips_loss)  # .to(weight_dtype)
+                else:
+                    loss = (mse_loss 
+                            + args.lpips_scale*lpips_loss 
+                            + args.kl_scale*kl_loss)  # .to(weight_dtype)
+                if args.gradient_accumulation_steps and args.gradient_accumulation_steps>1:
+                    loss = loss/args.gradient_accumulation_steps 
+
+                if not torch.isfinite(loss):
+                    pred_mean = pred.mean()
+                    target_mean = target.mean()
+                    logger.info("\nWARNING: non-finite loss, ending training ")
+                
+                if debug and step < 1:
+                    print(f"loss dtype: {loss.dtype}")
+                    print(f"pred dtype: {pred.dtype}")
+                    print(f"target dtype: {target.dtype}")
+                    print(f"z dtype: {z.dtype}")
+                    print(f"kl_loss dtype: {kl_loss.dtype}")
+                    print(f"mse_loss dtype: {mse_loss.dtype}")
+                    print(f"lpips_loss dtype: {lpips_loss.dtype}")
+                    print(f"vae parameters dtype: {[param.dtype for param in vae.parameters()]}")
+
+
+                accelerator.backward(loss)
+
+                if accelerator.sync_gradients:
+                    accelerator.clip_grad_norm_(vae.model.parameters(), args.max_grad_norm)
+                    optimizer.step()
+                    lr_scheduler.step()
+                    optimizer.zero_grad()
+
+            # Checks if the accelerator has performed an optimization step behind the scenes
+
+            # Gather the losses across all processes for logging (if we use distributed training).
+            if loss is not None:
+                avg_loss = accelerator.gather(loss.repeat(args.train_batch_size)).mean()
+                train_loss += avg_loss.detach().item() / args.gradient_accumulation_steps
+            else:
+                logger.warning("Loss not defined, skipping gathering.")
+                
+            if accelerator.sync_gradients:
+                progress_bar.update(1)
+                global_step += 1
+                accelerator.log({"train_loss": train_loss}, step=global_step)
+                train_loss = 0.0
+
+                if global_step % args.checkpointing_steps == 0:
+                    if accelerator.is_main_process:
+                        save_path = os.path.join(
+                            args.output_dir, f"checkpoint-{global_step}"
+                        )
+                        accelerator.save_state(save_path)
+                        logger.info(f"Saved state to {save_path}")
+
+            logs = {
+                "step_loss": loss.detach().item(),
+                "lr": lr_scheduler.get_last_lr()[0],
+                "mse": args.mse_scale * mse_loss.detach().item(),
+                "lpips": args.lpips_scale * lpips_loss.detach().item(),
+                "kl": kl_loss.detach().item(),
+            }
+            accelerator.log(logs, step=global_step)
+            progress_bar.set_postfix(**logs)
+            accelerator.wait_for_everyone()
+            if accelerator.is_main_process:
+                if global_step % args.validation_steps == 0:
+                    logger.info("Validating model....")
+                    with torch.no_grad():
+                        log_validation(test_dataloader, vae, accelerator, global_step)
+                if global_step % args.model_saving_steps == 0:
+                    vae.model = accelerator.unwrap_model(vae.model)
+                    vae.save(os.path.join(args.output_dir, f"{global_step}-finetuned.pth"))
 
 
         if accelerator.is_main_process:
             if epoch % args.validation_epochs == 0:
                 with torch.no_grad():
-                    log_validation(test_dataloader, vae, accelerator, weight_dtype, global_step)
+                    log_validation(test_dataloader, vae, accelerator, global_step)
 
     # Create the pipeline using the trained modules and save it.
     accelerator.wait_for_everyone()

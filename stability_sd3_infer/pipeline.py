@@ -84,7 +84,7 @@ class SD3Inferencer:
         ).to(latent.dtype)
 
     def get_cond(self, prompt):
-        self.print("Encode prompt...")
+        # self.print("Encode prompt...")
         tokens = self.tokenizer.tokenize_with_weights(prompt)
         l_out, l_pooled = self.clip_l.model.encode_token_weights(tokens["l"])
         g_out, g_pooled = self.clip_g.model.encode_token_weights(tokens["g"])
@@ -118,13 +118,14 @@ class SD3Inferencer:
         skip_layer_config={},
     ) -> torch.Tensor:
         self.print("Sampling...")
+        # print("seed: ", seed)
         latent = latent.half().cuda()
         self.sd3.model = self.sd3.model.cuda()
         noise = self.get_noise(seed, latent).cuda()
         sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
         cfg_scale = 5.0
-        print("Denoise: ", denoise)
-        print("cfg_scale: ", cfg_scale)
+        # print("Denoise: ", denoise)
+        # print("cfg_scale: ", cfg_scale)
         sigmas = sigmas[int(steps * (1 - denoise)) :]
         conditioning = self.fix_cond(conditioning)
         neg_cond = self.fix_cond(neg_cond)
@@ -143,7 +144,7 @@ class SD3Inferencer:
             if skip_layer_config.get("scale", 0) > 0
             else CFGDenoiser
         )
-        print(skip_layer_config)
+        # print(skip_layer_config)
         latent = sample_fn(
             denoiser(self.sd3.model, steps, skip_layer_config),
             noise_scaled,
@@ -174,7 +175,7 @@ class SD3Inferencer:
         noise = self.get_noise(seed, latent).cuda()
         sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
         sigmas = sigmas[int(steps * (1 - denoise)) :]
-        print(cfg_scale)
+        # print(cfg_scale)
         extra_args = {
             "cond": conditioning,
             "uncond": neg_cond,
@@ -263,8 +264,8 @@ class SD3Inferencer:
         steps=30,
         cfg_scale=4.5,
         sampler="dpmpp_2m",
-        seed=50,
-        seed_type="rand",
+        seed=42,
+        seed_type="fixed",
         out_dir="outputs",
         controlnet_cond_image=None,
         init_image=None,
@@ -299,7 +300,7 @@ class SD3Inferencer:
                 denoise if init_image else 1.0,
                 skip_layer_config,
             )
-            print("Time for denoising: ", time.time() - st)
+            # print("Time for denoising: ", time.time() - st)
             image = self.vae_decode(sampled_latent)
             images.append(image)
             self.print("Done")
@@ -314,8 +315,8 @@ class SD3Inferencer:
             steps=30,
             cfg_scale=4.5,
             sampler="dpmpp_2m",
-            seed=50,
-            seed_type="rand",
+            seed=42,
+            seed_type="fixed",
             out_dir="outputs",
             controlnet_cond_image=None,
             init_image=None,

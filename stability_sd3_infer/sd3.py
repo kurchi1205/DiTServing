@@ -169,7 +169,6 @@ class CFGDenoiser(torch.nn.Module):
             y=torch.cat([cond["y"], uncond["y"]]),
             **kwargs,
         )
-        print("Apply model", time.time() - st)
         # Then split and apply CFG Scaling
         pos_out, neg_out = batched.chunk(2)
         scaled = neg_out + (pos_out - neg_out) * cond_scale

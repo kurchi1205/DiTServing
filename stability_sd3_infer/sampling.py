@@ -27,12 +27,10 @@ def sample_dpmpp_2m(model, x, sigmas, extra_args=None):
     sigma_fn = lambda t: t.neg().exp()
     t_fn = lambda sigma: sigma.log().neg()
     old_denoised = None
-    print("Extra args: ", extra_args)
     st = time.time()
     for i in tqdm(range(len(sigmas) - 1)):
         st_1 = time.time()
         denoised = model(x, sigmas[i] * s_in, **extra_args)
-        print("denoising: ", time.time() - st_1)
         st_1 = time.time() 
         t, t_next = t_fn(sigmas[i]), t_fn(sigmas[i + 1])
         h = t_next - t
@@ -44,6 +42,6 @@ def sample_dpmpp_2m(model, x, sigmas, extra_args=None):
             denoised_d = (1 + 1 / (2 * r)) * denoised - (1 / (2 * r)) * old_denoised
             x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised_d
         old_denoised = denoised
-        print("getting denoised x: ", time.time() - st_1)
-    print("Denoising all steps: ", time.time() - st)
+        # print("getting denoised x: ", time.time() - st_1)
+    # print("Denoising all steps: ", time.time() - st)
     return x

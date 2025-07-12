@@ -222,19 +222,19 @@ PROMPT = [
 # and amber, blue and pink,
 # brilliantly illuminated in the
 # background''',] 
-# "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami clouds",]
+"A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami clouds",]
 #         "A silhouette of a grand piano overlooking a dusky cityscape viewed from a top-floor penthouse, rendered in the bold and vivid sytle of a vintage travel poster",
-        '''Pirate ship trapped in a
-cosmic maelstrom nebula,
-rendered in cosmic beach
-whirlpool engine,
-volumetric lighting,
-spectacular, ambient lights,
-light pollution, cinematic
-atmosphere, art nouveau
-style, illustration art artwork
-by SenseiJaye, intricate
-detail''', ]
+#         '''Pirate ship trapped in a
+# cosmic maelstrom nebula,
+# rendered in cosmic beach
+# whirlpool engine,
+# volumetric lighting,
+# spectacular, ambient lights,
+# light pollution, cinematic
+# atmosphere, art nouveau
+# style, illustration art artwork
+# by SenseiJaye, intricate
+# detail''', ]
 # '''colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues''',]
 # '''A painter study hard to
 # learn how to draw with
@@ -381,7 +381,6 @@ class SD3Inferencer:
         self.sd3.model = self.sd3.model.cuda()
         noise = self.get_noise(seed, latent).cuda()
         sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
-        print(denoise, cfg_scale)
         sigmas = sigmas[int(steps * (1 - denoise)) :]
         conditioning = self.fix_cond(conditioning)
         neg_cond = self.fix_cond(neg_cond)
@@ -406,10 +405,10 @@ class SD3Inferencer:
             sigmas,
             extra_args=extra_args,
         )
-        for l, lat in enumerate(all_latent):
-            pro_lat = SD3LatentFormat().process_out(lat)
-            image = self.vae_decode(pro_lat)
-            image.save(f"gen_images_ship_og/t_{l+1}.jpeg")
+        # for l, lat in enumerate(all_latent):
+        #     pro_lat = SD3LatentFormat().process_out(lat)
+        #     image = self.vae_decode(pro_lat)
+        #     image.save(f"gen_images_ship_og/t_{l+1}.jpeg")
 
         latent = SD3LatentFormat().process_out(latent)
         self.sd3.model = self.sd3.model.cpu()
@@ -491,7 +490,6 @@ class SD3Inferencer:
         if init_image:
             latent = self._image_to_latent(init_image, width, height)
         else:
-            print("Seed for latent: ", seed)
             latent = self.get_empty_latent(1, width, height, seed, "cpu")
             latent = latent.cuda()
         if controlnet_cond_image:
@@ -513,7 +511,6 @@ class SD3Inferencer:
             else:  # fixed
                 seed_num = seed
             conditioning = self.get_cond(prompt)
-            print("seed num: ", seed_num)
             sampled_latent = self.do_sampling(
                 latent,
                 seed_num,
@@ -550,7 +547,7 @@ CONFIGS = {
             "start": 0.01,
             "end": 0.20,
             "layers": [7, 8, 9],
-            "cfg": 4.0,
+            "cfg": 5,
         },
     },
     "sd3.5_large": {

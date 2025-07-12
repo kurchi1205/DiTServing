@@ -890,9 +890,6 @@ class MMDiTX(nn.Module):
                     controlnet_hidden_states
                 )
                 x = x + controlnet_hidden_states[i // controlnet_block_interval]
-        print("attn: ", attn_time)
-        print("pre attn: ", preattn_time)
-        print("post attn: ", postattn_time)
         x = self.final_layer(x, c_mod)  # (N, T, patch_size ** 2 * out_channels)
         return x
 
@@ -918,10 +915,8 @@ class MMDiTX(nn.Module):
         if y is not None:
             y = self.y_embedder(y)  # (N, D)
             c = c + y  # (N, D)
-        print("embedding time: ", time.time() - st)
         context = self.context_embedder(context)
         st = time.time()
         x = self.forward_core_with_concat(x, c, context, skip_layers, controlnet_hidden_states)
-        print("forward time: ", time.time() - st)
         x = self.unpatchify(x, hw=hw)  # (N, out_channels, H, W)
         return x
