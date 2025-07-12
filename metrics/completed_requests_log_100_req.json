@@ -1,0 +1,598 @@
+{
+  "completed_requests": [
+    {
+      "request_id": "3153be9b-66f7-4469-8951-7d877f32c9bb",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:52.348087",
+      "processing_time_start": "2025-07-12T00:24:52.528622",
+      "time_completed": "2025-07-12T00:25:19.941791",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3153be9b-66f7-4469-8951-7d877f32c9bb.png"
+    },
+    {
+      "request_id": "006396be-d0fe-4c2c-89d3-c5dc8ff4a611",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:52.592249",
+      "processing_time_start": "2025-07-12T00:24:52.923983",
+      "time_completed": "2025-07-12T00:25:21.647275",
+      "image": "/home/DiTServing/custom_serve/output_images/request_006396be-d0fe-4c2c-89d3-c5dc8ff4a611.png"
+    },
+    {
+      "request_id": "df8e9d23-defc-436f-b0c9-d37fcb5966c6",
+      "prompt": "Whimsical Garden Gnome with Flowers and Butterflies Poster",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:52.926670",
+      "processing_time_start": "2025-07-12T00:24:53.276379",
+      "time_completed": "2025-07-12T00:25:22.078758",
+      "image": "/home/DiTServing/custom_serve/output_images/request_df8e9d23-defc-436f-b0c9-d37fcb5966c6.png"
+    },
+    {
+      "request_id": "64c3def8-16d0-4458-bcca-b8494553af3c",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:53.279751",
+      "processing_time_start": "2025-07-12T00:24:53.641662",
+      "time_completed": "2025-07-12T00:25:23.546574",
+      "image": "/home/DiTServing/custom_serve/output_images/request_64c3def8-16d0-4458-bcca-b8494553af3c.png"
+    },
+    {
+      "request_id": "58940134-9414-4072-826e-b6820c662f07",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:53.347937",
+      "processing_time_start": "2025-07-12T00:24:53.776179",
+      "time_completed": "2025-07-12T00:25:24.026366",
+      "image": "/home/DiTServing/custom_serve/output_images/request_58940134-9414-4072-826e-b6820c662f07.png"
+    },
+    {
+      "request_id": "9b717035-ff12-4ffb-963b-27180e671027",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:53.784055",
+      "processing_time_start": "2025-07-12T00:24:54.170515",
+      "time_completed": "2025-07-12T00:25:25.519135",
+      "image": "/home/DiTServing/custom_serve/output_images/request_9b717035-ff12-4ffb-963b-27180e671027.png"
+    },
+    {
+      "request_id": "8414a27a-c4c4-4fd5-93ae-c9125c150aec",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:53.848654",
+      "processing_time_start": "2025-07-12T00:24:54.302826",
+      "time_completed": "2025-07-12T00:25:38.214752",
+      "image": "/home/DiTServing/custom_serve/output_images/request_8414a27a-c4c4-4fd5-93ae-c9125c150aec.png"
+    },
+    {
+      "request_id": "dbec629a-26f9-4ea2-a8fc-203486a63e99",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:54.305731",
+      "processing_time_start": "2025-07-12T00:24:54.683564",
+      "time_completed": "2025-07-12T00:25:39.832617",
+      "image": "/home/DiTServing/custom_serve/output_images/request_dbec629a-26f9-4ea2-a8fc-203486a63e99.png"
+    },
+    {
+      "request_id": "716b38cd-ec41-48e2-82c7-cfcb9816a66c",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:54.353788",
+      "processing_time_start": "2025-07-12T00:24:54.807322",
+      "time_completed": "2025-07-12T00:25:40.263831",
+      "image": "/home/DiTServing/custom_serve/output_images/request_716b38cd-ec41-48e2-82c7-cfcb9816a66c.png"
+    },
+    {
+      "request_id": "206a88e2-096d-4597-9c79-8f266036cc23",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:54.810677",
+      "processing_time_start": "2025-07-12T00:24:55.239784",
+      "time_completed": "2025-07-12T00:25:41.765522",
+      "image": "/home/DiTServing/custom_serve/output_images/request_206a88e2-096d-4597-9c79-8f266036cc23.png"
+    },
+    {
+      "request_id": "6ff5c99b-0763-4d86-9909-529a2b00b8c1",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:54.852838",
+      "processing_time_start": "2025-07-12T00:24:55.374182",
+      "time_completed": "2025-07-12T00:25:42.045052",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6ff5c99b-0763-4d86-9909-529a2b00b8c1.png"
+    },
+    {
+      "request_id": "3b1b514c-0152-4f7d-b081-401a58cbc29e",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:55.378010",
+      "processing_time_start": "2025-07-12T00:24:55.806040",
+      "time_completed": "2025-07-12T00:25:43.476859",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3b1b514c-0152-4f7d-b081-401a58cbc29e.png"
+    },
+    {
+      "request_id": "c8810cc5-30d8-4bd5-af49-5a6dc7c0d93f",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:55.379474",
+      "processing_time_start": "2025-07-12T00:24:55.939331",
+      "time_completed": "2025-07-12T00:25:55.983408",
+      "image": "/home/DiTServing/custom_serve/output_images/request_c8810cc5-30d8-4bd5-af49-5a6dc7c0d93f.png"
+    },
+    {
+      "request_id": "e97e27ff-26c4-47a5-aecd-a2f3a62d9987",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:55.607424",
+      "processing_time_start": "2025-07-12T00:24:56.063740",
+      "time_completed": "2025-07-12T00:25:57.798468",
+      "image": "/home/DiTServing/custom_serve/output_images/request_e97e27ff-26c4-47a5-aecd-a2f3a62d9987.png"
+    },
+    {
+      "request_id": "5e838038-9b77-48a6-9210-4b20608c533f",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:56.066793",
+      "processing_time_start": "2025-07-12T00:24:56.468422",
+      "time_completed": "2025-07-12T00:25:58.251294",
+      "image": "/home/DiTServing/custom_serve/output_images/request_5e838038-9b77-48a6-9210-4b20608c533f.png"
+    },
+    {
+      "request_id": "0860147b-dd16-40e4-bbf5-00bfaac7b006",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:56.108565",
+      "processing_time_start": "2025-07-12T00:24:56.598714",
+      "time_completed": "2025-07-12T00:25:59.780218",
+      "image": "/home/DiTServing/custom_serve/output_images/request_0860147b-dd16-40e4-bbf5-00bfaac7b006.png"
+    },
+    {
+      "request_id": "2b5cf45d-3e61-44a5-87a0-92820bbdf09d",
+      "prompt": "Whimsical Garden Gnome with Flowers and Butterflies Poster",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:56.602270",
+      "processing_time_start": "2025-07-12T00:24:56.997454",
+      "time_completed": "2025-07-12T00:26:00.211018",
+      "image": "/home/DiTServing/custom_serve/output_images/request_2b5cf45d-3e61-44a5-87a0-92820bbdf09d.png"
+    },
+    {
+      "request_id": "36ca8c1e-93d8-4c7b-a670-14407698446e",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:56.612433",
+      "processing_time_start": "2025-07-12T00:24:57.119866",
+      "time_completed": "2025-07-12T00:26:01.600417",
+      "image": "/home/DiTServing/custom_serve/output_images/request_36ca8c1e-93d8-4c7b-a670-14407698446e.png"
+    },
+    {
+      "request_id": "ae692a33-20d7-4cb2-ab22-4ec8bf2a236a",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:57.127496",
+      "processing_time_start": "2025-07-12T00:24:57.510188",
+      "time_completed": "2025-07-12T00:26:14.355014",
+      "image": "/home/DiTServing/custom_serve/output_images/request_ae692a33-20d7-4cb2-ab22-4ec8bf2a236a.png"
+    },
+    {
+      "request_id": "8bc84cb6-f573-459b-9b50-0d230a2df60a",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:57.128895",
+      "processing_time_start": "2025-07-12T00:24:57.638173",
+      "time_completed": "2025-07-12T00:26:16.226093",
+      "image": "/home/DiTServing/custom_serve/output_images/request_8bc84cb6-f573-459b-9b50-0d230a2df60a.png"
+    },
+    {
+      "request_id": "434c3445-dd1b-4184-8d7c-a700ca4670a7",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:57.650925",
+      "processing_time_start": "2025-07-12T00:24:58.082612",
+      "time_completed": "2025-07-12T00:26:16.734931",
+      "image": "/home/DiTServing/custom_serve/output_images/request_434c3445-dd1b-4184-8d7c-a700ca4670a7.png"
+    },
+    {
+      "request_id": "0aba7094-d867-427e-a5ca-1943bec29d35",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:57.653107",
+      "processing_time_start": "2025-07-12T00:24:58.198474",
+      "time_completed": "2025-07-12T00:26:18.273908",
+      "image": "/home/DiTServing/custom_serve/output_images/request_0aba7094-d867-427e-a5ca-1943bec29d35.png"
+    },
+    {
+      "request_id": "ae34a994-aba4-4a61-9698-c1fc7b6da21b",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:57.866073",
+      "processing_time_start": "2025-07-12T00:24:58.311440",
+      "time_completed": "2025-07-12T00:26:18.747962",
+      "image": "/home/DiTServing/custom_serve/output_images/request_ae34a994-aba4-4a61-9698-c1fc7b6da21b.png"
+    },
+    {
+      "request_id": "42f9b98f-9f08-45de-8da3-359ab74e8a29",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:58.313524",
+      "processing_time_start": "2025-07-12T00:24:58.723826",
+      "time_completed": "2025-07-12T00:26:20.233563",
+      "image": "/home/DiTServing/custom_serve/output_images/request_42f9b98f-9f08-45de-8da3-359ab74e8a29.png"
+    },
+    {
+      "request_id": "23a37f07-76aa-403f-915c-6c4df364989a",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:58.366099",
+      "processing_time_start": "2025-07-12T00:24:58.840345",
+      "time_completed": "2025-07-12T00:26:32.949946",
+      "image": "/home/DiTServing/custom_serve/output_images/request_23a37f07-76aa-403f-915c-6c4df364989a.png"
+    },
+    {
+      "request_id": "2a79803b-2589-450f-a812-3a03db6a49ee",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:58.853566",
+      "processing_time_start": "2025-07-12T00:24:59.235924",
+      "time_completed": "2025-07-12T00:26:34.749934",
+      "image": "/home/DiTServing/custom_serve/output_images/request_2a79803b-2589-450f-a812-3a03db6a49ee.png"
+    },
+    {
+      "request_id": "3339a1d4-fd78-4250-9591-9daa64b57539",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:58.870140",
+      "processing_time_start": "2025-07-12T00:24:59.361623",
+      "time_completed": "2025-07-12T00:26:35.025922",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3339a1d4-fd78-4250-9591-9daa64b57539.png"
+    },
+    {
+      "request_id": "4167fe0f-a0eb-4bb5-9ec3-f96b00ea9ede",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:59.364051",
+      "processing_time_start": "2025-07-12T00:24:59.748977",
+      "time_completed": "2025-07-12T00:26:36.493680",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4167fe0f-a0eb-4bb5-9ec3-f96b00ea9ede.png"
+    },
+    {
+      "request_id": "64bfcff2-4023-4adc-add8-f1fe6e394f5d",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:59.380110",
+      "processing_time_start": "2025-07-12T00:24:59.863392",
+      "time_completed": "2025-07-12T00:26:36.911607",
+      "image": "/home/DiTServing/custom_serve/output_images/request_64bfcff2-4023-4adc-add8-f1fe6e394f5d.png"
+    },
+    {
+      "request_id": "2112e2ac-5990-4f39-acca-a1ec2e74e286",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:59.870923",
+      "processing_time_start": "2025-07-12T00:25:00.259627",
+      "time_completed": "2025-07-12T00:26:38.356789",
+      "image": "/home/DiTServing/custom_serve/output_images/request_2112e2ac-5990-4f39-acca-a1ec2e74e286.png"
+    },
+    {
+      "request_id": "21cc91c7-3210-4c29-bfbb-8e01cf5c7d4d",
+      "prompt": "Whimsical Garden Gnome with Flowers and Butterflies Poster",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:24:59.875318",
+      "processing_time_start": "2025-07-12T00:25:00.378812",
+      "time_completed": "2025-07-12T00:26:51.137098",
+      "image": "/home/DiTServing/custom_serve/output_images/request_21cc91c7-3210-4c29-bfbb-8e01cf5c7d4d.png"
+    },
+    {
+      "request_id": "b6246935-7cbe-4bb0-a919-1fd05c80be18",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:00.381653",
+      "processing_time_start": "2025-07-12T00:25:00.772338",
+      "time_completed": "2025-07-12T00:26:52.901260",
+      "image": "/home/DiTServing/custom_serve/output_images/request_b6246935-7cbe-4bb0-a919-1fd05c80be18.png"
+    },
+    {
+      "request_id": "1671c417-9673-4c33-bc5d-d28523ff2c38",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:00.382822",
+      "processing_time_start": "2025-07-12T00:25:00.896626",
+      "time_completed": "2025-07-12T00:26:53.317323",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1671c417-9673-4c33-bc5d-d28523ff2c38.png"
+    },
+    {
+      "request_id": "26b35120-54b0-40bb-97a2-429412f10e62",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:00.902032",
+      "processing_time_start": "2025-07-12T00:25:01.335749",
+      "time_completed": "2025-07-12T00:26:54.788002",
+      "image": "/home/DiTServing/custom_serve/output_images/request_26b35120-54b0-40bb-97a2-429412f10e62.png"
+    },
+    {
+      "request_id": "f69bd49d-1f7e-45a0-857a-bf9ec2acedb1",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:00.907101",
+      "processing_time_start": "2025-07-12T00:25:01.475144",
+      "time_completed": "2025-07-12T00:26:55.262203",
+      "image": "/home/DiTServing/custom_serve/output_images/request_f69bd49d-1f7e-45a0-857a-bf9ec2acedb1.png"
+    },
+    {
+      "request_id": "e86b6270-76eb-4334-a2a2-d784e9d34c9f",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:01.131749",
+      "processing_time_start": "2025-07-12T00:25:01.609694",
+      "time_completed": "2025-07-12T00:26:56.545516",
+      "image": "/home/DiTServing/custom_serve/output_images/request_e86b6270-76eb-4334-a2a2-d784e9d34c9f.png"
+    },
+    {
+      "request_id": "fdd4bcf5-178e-4b31-9c10-bf4017e91c2a",
+      "prompt": "Whimsical Garden Gnome with Flowers and Butterflies Poster",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:01.613055",
+      "processing_time_start": "2025-07-12T00:25:02.004676",
+      "time_completed": "2025-07-12T00:27:09.263107",
+      "image": "/home/DiTServing/custom_serve/output_images/request_fdd4bcf5-178e-4b31-9c10-bf4017e91c2a.png"
+    },
+    {
+      "request_id": "1f865d19-5fc4-4a0e-8638-84360804feee",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:01.633593",
+      "processing_time_start": "2025-07-12T00:25:02.128623",
+      "time_completed": "2025-07-12T00:27:11.024032",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1f865d19-5fc4-4a0e-8638-84360804feee.png"
+    },
+    {
+      "request_id": "4144e365-b77a-4156-9a00-29805b130242",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:02.134419",
+      "processing_time_start": "2025-07-12T00:25:02.578189",
+      "time_completed": "2025-07-12T00:27:11.486529",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4144e365-b77a-4156-9a00-29805b130242.png"
+    },
+    {
+      "request_id": "5f5fb80c-5c45-4c9e-bef4-c3d0ce6af7a2",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:02.139296",
+      "processing_time_start": "2025-07-12T00:25:02.699992",
+      "time_completed": "2025-07-12T00:27:12.838058",
+      "image": "/home/DiTServing/custom_serve/output_images/request_5f5fb80c-5c45-4c9e-bef4-c3d0ce6af7a2.png"
+    },
+    {
+      "request_id": "136e0d46-4f0b-47ba-a234-ef0ed6fa5309",
+      "prompt": "pinkfantasybabes, Close-up of a woman's face wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:02.386785",
+      "processing_time_start": "2025-07-12T00:25:02.830001",
+      "time_completed": "2025-07-12T00:27:13.253795",
+      "image": "/home/DiTServing/custom_serve/output_images/request_136e0d46-4f0b-47ba-a234-ef0ed6fa5309.png"
+    },
+    {
+      "request_id": "e8bfaad8-84a7-4689-8aa0-94ded8ae5c7a",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:02.833081",
+      "processing_time_start": "2025-07-12T00:25:03.228045",
+      "time_completed": "2025-07-12T00:27:14.699151",
+      "image": "/home/DiTServing/custom_serve/output_images/request_e8bfaad8-84a7-4689-8aa0-94ded8ae5c7a.png"
+    },
+    {
+      "request_id": "9b32c762-9e7a-4242-b7ec-0db298ba23db",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:02.888095",
+      "processing_time_start": "2025-07-12T00:25:03.390190",
+      "time_completed": "2025-07-12T00:27:27.460939",
+      "image": "/home/DiTServing/custom_serve/output_images/request_9b32c762-9e7a-4242-b7ec-0db298ba23db.png"
+    },
+    {
+      "request_id": "23c778c1-2818-4587-9820-e6bf3ab64405",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:03.399459",
+      "processing_time_start": "2025-07-12T00:25:03.782585",
+      "time_completed": "2025-07-12T00:27:29.115478",
+      "image": "/home/DiTServing/custom_serve/output_images/request_23c778c1-2818-4587-9820-e6bf3ab64405.png"
+    },
+    {
+      "request_id": "5a4d30cc-07b7-4547-8598-3bbe3d64f29e",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:03.405158",
+      "processing_time_start": "2025-07-12T00:25:03.908385",
+      "time_completed": "2025-07-12T00:27:29.537245",
+      "image": "/home/DiTServing/custom_serve/output_images/request_5a4d30cc-07b7-4547-8598-3bbe3d64f29e.png"
+    },
+    {
+      "request_id": "b5b6ab05-6caa-4ea3-b3d8-fb9ed7c4269f",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:03.911977",
+      "processing_time_start": "2025-07-12T00:25:04.304611",
+      "time_completed": "2025-07-12T00:27:31.035268",
+      "image": "/home/DiTServing/custom_serve/output_images/request_b5b6ab05-6caa-4ea3-b3d8-fb9ed7c4269f.png"
+    },
+    {
+      "request_id": "48bcbfbd-aaa1-477c-9787-2b9c08f0ec00",
+      "prompt": "pinkfantasybabes, Close-up of a woman's face wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:03.915647",
+      "processing_time_start": "2025-07-12T00:25:04.428941",
+      "time_completed": "2025-07-12T00:27:31.464371",
+      "image": "/home/DiTServing/custom_serve/output_images/request_48bcbfbd-aaa1-477c-9787-2b9c08f0ec00.png"
+    },
+    {
+      "request_id": "039c7a10-c19c-495a-8c82-6b3ffd014a94",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:04.143835",
+      "processing_time_start": "2025-07-12T00:25:04.553105",
+      "time_completed": "2025-07-12T00:27:32.909275",
+      "image": "/home/DiTServing/custom_serve/output_images/request_039c7a10-c19c-495a-8c82-6b3ffd014a94.png"
+    },
+    {
+      "request_id": "6f7c3024-3d30-4fba-8113-44e4035fe570",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:04.554781",
+      "processing_time_start": "2025-07-12T00:25:04.992254",
+      "time_completed": "2025-07-12T00:27:45.732148",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6f7c3024-3d30-4fba-8113-44e4035fe570.png"
+    },
+    {
+      "request_id": "761edd45-3c6c-4a31-998f-d7f1967b39e3",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:04.643495",
+      "processing_time_start": "2025-07-12T00:25:05.129991",
+      "time_completed": "2025-07-12T00:27:47.371608",
+      "image": "/home/DiTServing/custom_serve/output_images/request_761edd45-3c6c-4a31-998f-d7f1967b39e3.png"
+    },
+    {
+      "request_id": "d65ed169-3caf-4023-b81c-b3333c4d14ce",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:05.138431",
+      "processing_time_start": "2025-07-12T00:25:05.526240",
+      "time_completed": "2025-07-12T00:27:47.661890",
+      "image": "/home/DiTServing/custom_serve/output_images/request_d65ed169-3caf-4023-b81c-b3333c4d14ce.png"
+    },
+    {
+      "request_id": "85a143da-7ef7-4b9e-998b-0ac1cc9dd392",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:05.147302",
+      "processing_time_start": "2025-07-12T00:25:05.664108",
+      "time_completed": "2025-07-12T00:27:49.145444",
+      "image": "/home/DiTServing/custom_serve/output_images/request_85a143da-7ef7-4b9e-998b-0ac1cc9dd392.png"
+    },
+    {
+      "request_id": "a3254991-516d-4971-9d5d-703225d8bd0d",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:05.667080",
+      "processing_time_start": "2025-07-12T00:25:06.064268",
+      "time_completed": "2025-07-12T00:27:49.424657",
+      "image": "/home/DiTServing/custom_serve/output_images/request_a3254991-516d-4971-9d5d-703225d8bd0d.png"
+    },
+    {
+      "request_id": "23978505-d25f-41fd-8674-c5b3946df499",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:05.669621",
+      "processing_time_start": "2025-07-12T00:25:06.197858",
+      "time_completed": "2025-07-12T00:27:50.839825",
+      "image": "/home/DiTServing/custom_serve/output_images/request_23978505-d25f-41fd-8674-c5b3946df499.png"
+    },
+    {
+      "request_id": "d43b7378-acb1-4f0d-9643-306ad7fd9bb1",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:06.201231",
+      "processing_time_start": "2025-07-12T00:25:06.599020",
+      "time_completed": "2025-07-12T00:28:03.595548",
+      "image": "/home/DiTServing/custom_serve/output_images/request_d43b7378-acb1-4f0d-9643-306ad7fd9bb1.png"
+    },
+    {
+      "request_id": "9a41d2db-6f5b-4094-9976-591ad449e3ba",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:06.203422",
+      "processing_time_start": "2025-07-12T00:25:06.723024",
+      "time_completed": "2025-07-12T00:28:05.428231",
+      "image": "/home/DiTServing/custom_serve/output_images/request_9a41d2db-6f5b-4094-9976-591ad449e3ba.png"
+    },
+    {
+      "request_id": "48d29bf6-b7dd-4645-82fe-f92209a1b502",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:06.400562",
+      "processing_time_start": "2025-07-12T00:25:06.861675",
+      "time_completed": "2025-07-12T00:28:05.840186",
+      "image": "/home/DiTServing/custom_serve/output_images/request_48d29bf6-b7dd-4645-82fe-f92209a1b502.png"
+    },
+    {
+      "request_id": "6b33113e-f9ef-46c0-94dc-42828438f03c",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:06.864928",
+      "processing_time_start": "2025-07-12T00:25:07.261463",
+      "time_completed": "2025-07-12T00:28:07.340606",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6b33113e-f9ef-46c0-94dc-42828438f03c.png"
+    },
+    {
+      "request_id": "009c072b-0485-41f3-ae58-ef0f19f94752",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:06.900911",
+      "processing_time_start": "2025-07-12T00:25:07.386040",
+      "time_completed": "2025-07-12T00:28:07.774486",
+      "image": "/home/DiTServing/custom_serve/output_images/request_009c072b-0485-41f3-ae58-ef0f19f94752.png"
+    },
+    {
+      "request_id": "28ad11fb-01a6-45f6-83a7-89e899cc9437",
+      "prompt": "pinkfantasybabes, Close-up of a woman's face wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:07.390100",
+      "processing_time_start": "2025-07-12T00:25:07.792907",
+      "time_completed": "2025-07-12T00:28:09.225943",
+      "image": "/home/DiTServing/custom_serve/output_images/request_28ad11fb-01a6-45f6-83a7-89e899cc9437.png"
+    },
+    {
+      "request_id": "13d4f88d-1f4e-4652-b163-0cdb8b9ab612",
+      "prompt": "A vast landscape made entirely of various meats spreads out before the viewer. tender, succulent hills of roast beef, chicken drumstick trees, bacon rivers, and ham boulders create a surreal, yet appetizing scene. the sky is adorned with pepperoni sun and salami cloud",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:07.404068",
+      "processing_time_start": "2025-07-12T00:25:07.931106",
+      "time_completed": "2025-07-12T00:28:22.014980",
+      "image": "/home/DiTServing/custom_serve/output_images/request_13d4f88d-1f4e-4652-b163-0cdb8b9ab612.png"
+    },
+    {
+      "request_id": "52ba838f-31fd-4812-b945-4931ae8a04f6",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:07.654766",
+      "processing_time_start": "2025-07-12T00:25:08.063614",
+      "time_completed": "2025-07-12T00:28:23.650803",
+      "image": "/home/DiTServing/custom_serve/output_images/request_52ba838f-31fd-4812-b945-4931ae8a04f6.png"
+    },
+    {
+      "request_id": "98df3bcf-b412-4671-babd-6c007709a3d1",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:08.084030",
+      "processing_time_start": "2025-07-12T00:25:08.458883",
+      "time_completed": "2025-07-12T00:28:24.148786",
+      "image": "/home/DiTServing/custom_serve/output_images/request_98df3bcf-b412-4671-babd-6c007709a3d1.png"
+    },
+    {
+      "request_id": "3f29248f-0139-44fd-ac06-0adf3df9e957",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:08.156121",
+      "processing_time_start": "2025-07-12T00:25:08.583323",
+      "time_completed": "2025-07-12T00:28:25.789697",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3f29248f-0139-44fd-ac06-0adf3df9e957.png"
+    },
+    {
+      "request_id": "78cc2246-99bb-4024-b701-0b030dcb1b0f",
+      "prompt": "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:08.591823",
+      "processing_time_start": "2025-07-12T00:25:08.986544",
+      "time_completed": "2025-07-12T00:28:26.246384",
+      "image": "/home/DiTServing/custom_serve/output_images/request_78cc2246-99bb-4024-b701-0b030dcb1b0f.png"
+    },
+    {
+      "request_id": "4e39712c-cbb7-4bc6-9fb2-73afc99f6d2d",
+      "prompt": "stars, water, brilliantly gorgeous large scale scene, a little girl, in the style of dreamy realism, light gold and amber, blue and pink, brilliantly illuminated in the background",
+      "status": "completed",
+      "timestamp": "2025-07-12T00:25:08.658113",
+      "processing_time_start": "2025-07-12T00:25:09.120094",
+      "time_completed": "2025-07-12T00:28:27.700222",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4e39712c-cbb7-4bc6-9fb2-73afc99f6d2d.png"
+    }
+  ]
+}

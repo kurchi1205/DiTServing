@@ -127,8 +127,8 @@ class CachingClient:
 
 async def process_prompts(client, prompts, interval):
     for key, prompt in prompts.items():
-        # if key != "prompt_7":
-        #     continue
+        if key != "prompt_7":
+            continue
         timesteps_left = 50
         path = f"/home/DiTServing/assets/our_outputs/{key}.png"
         print(f"Processing {key}")
@@ -141,7 +141,7 @@ async def process_prompts(client, prompts, interval):
 if __name__ == "__main__":
     client = CachingClient()
     # asyncio.run(client.start_bg_process())
-    interval_list = [1, 2, 3, 4]
+    interval_list = [5]
     prompts = json.load(open("/home/DiTServing/metrics/testing_prompts.json"))
     for interval in interval_list:
         # interval = 0  # Set desired caching interval

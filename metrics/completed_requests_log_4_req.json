@@ -1,0 +1,40 @@
+{
+  "completed_requests": [
+    {
+      "request_id": "b8c3a20d-b84a-43e7-b36e-5ff59b302865",
+      "prompt": "pinkfantasybabes, Close-up of a woman's face wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...",
+      "status": "completed",
+      "timestamp": "2025-07-11T15:03:01.901169",
+      "processing_time_start": "2025-07-11T15:03:02.060977",
+      "time_completed": "2025-07-11T15:03:12.337102",
+      "image": "/home/DiTServing/custom_serve/output_images/request_b8c3a20d-b84a-43e7-b36e-5ff59b302865.png"
+    },
+    {
+      "request_id": "b8b9c56e-c008-40f8-b591-4d0d76783aa7",
+      "prompt": "Serene Young Woman Portrait with Iridescent Shawl Art",
+      "status": "completed",
+      "timestamp": "2025-07-11T15:03:02.147355",
+      "processing_time_start": "2025-07-11T15:03:02.420844",
+      "time_completed": "2025-07-11T15:03:12.743440",
+      "image": "/home/DiTServing/custom_serve/output_images/request_b8b9c56e-c008-40f8-b591-4d0d76783aa7.png"
+    },
+    {
+      "request_id": "be0b87fe-5397-4560-902c-b1ac695cf4ac",
+      "prompt": "colored sketch in the style of ck-ccd, young Asian woman wearing a motorcycle helmet, long loose platinum hair, sitting on a large powerful motorcycle, leather jacket, sunset, in orange hues",
+      "status": "completed",
+      "timestamp": "2025-07-11T15:03:02.426393",
+      "processing_time_start": "2025-07-11T15:03:02.761061",
+      "time_completed": "2025-07-11T15:03:14.139022",
+      "image": "/home/DiTServing/custom_serve/output_images/request_be0b87fe-5397-4560-902c-b1ac695cf4ac.png"
+    },
+    {
+      "request_id": "3b86c9da-832e-4a81-a1fb-cb743af23a52",
+      "prompt": "pinkfantasybabes, Close-up of a woman's face wearing an ornate, intricate masquerade mask that covers her eyes and upper nose...",
+      "status": "completed",
+      "timestamp": "2025-07-11T15:03:02.762892",
+      "processing_time_start": "2025-07-11T15:03:03.100843",
+      "time_completed": "2025-07-11T15:03:14.590813",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3b86c9da-832e-4a81-a1fb-cb743af23a52.png"
+    }
+  ]
+}

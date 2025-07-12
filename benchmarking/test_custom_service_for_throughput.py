@@ -166,7 +166,7 @@ class ThroughputTester:
                 await asyncio.sleep(self.spawn_interval)
 
     async def run_test(self):
-        # await self.start_background_process()
+        await self.start_background_process()
 
         print(f"Starting throughput test with {self.total_requests} total requests")
         print(f"Spawning {self.spawn_rate} requests every {self.spawn_interval} seconds")
