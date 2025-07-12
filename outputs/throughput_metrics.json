@@ -1,0 +1,24 @@
+{
+  "latency": {
+    "total": {
+      "avg": 36.148,
+      "p95": 55.699,
+      "max": 55.768
+    },
+    "queue": {
+      "avg": 0.431,
+      "p95": 0.566,
+      "max": 0.57
+    },
+    "inference": {
+      "avg": 35.717,
+      "p95": 55.271,
+      "max": 55.308
+    }
+  },
+  "throughput": {
+    "requests_per_second": 0.329,
+    "time_span_sec": 60.71,
+    "total_requests": 20
+  }
+}

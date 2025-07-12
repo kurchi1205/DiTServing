@@ -1,0 +1,2 @@
+python start_background.py
+python load_testing.py
