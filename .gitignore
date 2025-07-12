@@ -18,3 +18,10 @@ dit_serve/Dit_model/*
 **/*_model
 **/*.zip
 
+**/wandb
+**/datasets
+
+**/*.pth
+**/*.safetensors
+
+**/*.egg-info
