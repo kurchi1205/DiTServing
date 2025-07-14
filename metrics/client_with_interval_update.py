@@ -127,7 +127,7 @@ class CachingClient:
 
 async def process_prompts(client, prompts, interval):
     for key, prompt in prompts.items():
-        if key != "prompt_7":
+        if key != "prompt_9":
             continue
         timesteps_left = 50
         path = f"/home/DiTServing/assets/our_outputs/{key}.png"
