@@ -3,12 +3,22 @@ import json
 import shutil
 from pathlib import Path
 # from cleanfid import fid
+import torch
+from PIL import Image
 from torch_fidelity import calculate_metrics
+from torchvision import transforms
+from torchmetrics.image.fid import FrechetInceptionDistance
+
 
 
 source_root = Path("/home/DiTServing/assets")
 target_root = Path("/home/DiTServing/assets/our_outputs")
-cache_intervals = [1, 2, 3, 4, 5, 6]  # Your desired intervals
+cache_intervals = [0, 1, 2, 3, 4, 5, 6]  # Your desired intervals
+
+transform = transforms.Compose([
+    transforms.ToTensor(),  # Scales to [0, 1]
+])
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # Output results dictionary
@@ -23,49 +33,50 @@ for interval in cache_intervals:
             continue
 
         prompt_name = prompt_folder.name
-        src_matches = list(prompt_folder.glob("generated_image*.png"))
-        tgt_matches = list((target_root / prompt_folder.name).glob(f"cache_{interval}*.png"))
-        # tgt_img_path = target_root / f"{prompt_name}_cache_{interval}.png"
-        if not src_matches:
-            print(f"❌ No source image for {prompt_name}")
+        src_images = sorted(prompt_folder.glob("generated_image*.png"))
+        tgt_images = sorted((target_root / prompt_name).glob(f"cache_{interval}*.png"))
+        if not src_images:
+            # print(f"No source image for {prompt_name}")
             continue
-        if not tgt_matches:
-            print(f"❌ No target image for {prompt_name} cache_{interval}")
+        if not tgt_images:
+            # print(f"No target image for {prompt_name} cache_{interval}")
             continue
-        if len(src_matches) == 1:
-            src_matches = src_matches * 2
-        if len(tgt_matches) == 1:
-            tgt_matches = tgt_matches * 2
-        # Create temp folders
-        temp_src = Path(f"temp_src_{prompt_name}_{interval}")
-        temp_tgt = Path(f"temp_tgt_{prompt_name}_{interval}")
-        temp_src.mkdir(exist_ok=True)
-        temp_tgt.mkdir(exist_ok=True)
+        print(src_images, tgt_images)
 
-        # Copy images into temp folders
-        for i, img_path in enumerate(src_matches):
-            shutil.copy(img_path, temp_src / f"image_{i}.png")
-        for i, img_path in enumerate(tgt_matches):
-            shutil.copy(img_path, temp_tgt / f"image_{i}.png")
-        # shutil.copy(tgt_img_path, temp_tgt / "image.png")
+        # Ensure minimum 2 images for FID calculation
+        if len(src_images) == 1:
+            src_images = src_images * 2
+        if len(tgt_images) == 1:
+            tgt_images = tgt_images * 2
+
+
 
         try:
-            result = calculate_metrics(
-                input1=str(temp_src),
-                input2=str(temp_tgt),
-                fid=True,
-                verbose=False
-            )
-            fid_score = result['frechet_inception_distance']
+            fid_metric = FrechetInceptionDistance(feature=64, input_img_size=(3, 1024, 1024)).to(device)
+
+            # Update with real (source) images
+            for img_path in src_images:
+                img = transform(Image.open(img_path).convert("RGB")).unsqueeze(0).to(device)
+                img = (img * 255).byte()  # Convert back to uint8 as expected by FID
+                fid_metric.update(img, real=True)
+
+            # Update with fake (target) images
+            for img_path in tgt_images:
+                img = transform(Image.open(img_path).convert("RGB")).unsqueeze(0).to(device)
+                img = (img * 255).byte()
+                fid_metric.update(img, real=False)
+
+            fid_score = fid_metric.compute().item()
             fid_scores[interval][prompt_name] = fid_score
             print(f"FID for {prompt_name} (cache_{interval}): {fid_score:.2f}")
+
         except Exception as e:
             print(f"Error computing FID for {prompt_name} cache_{interval}: {e}")
             fid_scores[interval][prompt_name] = None
 
         # Optional: remove temp folders (or keep for inspection)
-        shutil.rmtree(temp_src)
-        shutil.rmtree(temp_tgt)
+        # shutil.rmtree(temp_src)
+        # shutil.rmtree(temp_tgt)
 
 final_scores = {}
 for interval, results in fid_scores.items():
