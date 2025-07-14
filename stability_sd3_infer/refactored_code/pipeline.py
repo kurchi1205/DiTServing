@@ -51,7 +51,7 @@ class SD3Inferencer:
         print("Models loaded.")
 
     def get_empty_latent(self, batch_size, width, height, seed, device="cuda"):
-        self.print("Prep an empty latent...")
+        # self.print("Prep an empty latent...")
         shape = (batch_size, 16, height // 8, width // 8)
         latents = torch.zeros(shape, device=device)
         for i in range(shape[0]):
@@ -72,9 +72,9 @@ class SD3Inferencer:
 
     def get_noise(self, seed, latent):
         generator = torch.manual_seed(seed)
-        self.print(
-            f"dtype = {latent.dtype}, layout = {latent.layout}, device = {latent.device}"
-        )
+        # self.print(
+        #     f"dtype = {latent.dtype}, layout = {latent.layout}, device = {latent.device}"
+        # )
         return torch.randn(
             latent.size(),
             dtype=torch.float32,
@@ -117,7 +117,7 @@ class SD3Inferencer:
         denoise=1.0,
         skip_layer_config={},
     ) -> torch.Tensor:
-        self.print("Sampling...")
+        # self.print("Sampling...")
         # print("seed: ", seed)
         latent = latent.half().cuda()
         self.sd3.model = self.sd3.model.cuda()
@@ -153,7 +153,7 @@ class SD3Inferencer:
         )
         latent = SD3LatentFormat().process_out(latent)
         self.sd3.model = self.sd3.model.cpu()
-        self.print("Sampling done")
+        # self.print("Sampling done")
         return latent
 
     def do_sampling_batched(
@@ -199,12 +199,12 @@ class SD3Inferencer:
         )
         latent = SD3LatentFormat().process_out(latent)
         self.sd3.model = self.sd3.model.cpu()
-        self.print("Sampling done")
+        # self.print("Sampling done")
         return latent
     def vae_encode(
         self, image, using_2b_controlnet: bool = False, controlnet_type: int = 0
     ) -> torch.Tensor:
-        self.print("Encoding image to latent...")
+        # self.print("Encoding image to latent...")
         image = image.convert("RGB")
         image_np = np.array(image).astype(np.float32) / 255.0
         image_np = np.moveaxis(image_np, 2, 0)
@@ -220,7 +220,7 @@ class SD3Inferencer:
         self.vae.model = self.vae.model.cuda()
         latent = self.vae.model.encode(image_torch).cpu()
         self.vae.model = self.vae.model.cpu()
-        self.print("Encoded")
+        # self.print("Encoded")
         return latent
 
     def vae_encode_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
@@ -229,7 +229,7 @@ class SD3Inferencer:
         return latent
 
     def vae_decode(self, latent) -> Image.Image:
-        self.print("Decoding latent to image...")
+        # self.print("Decoding latent to image...")
         latent = latent.cuda()
         self.vae.model = self.vae.model.cuda()
         image = self.vae.model.decode(latent)
@@ -239,7 +239,7 @@ class SD3Inferencer:
         decoded_np = 255.0 * np.moveaxis(image.cpu().numpy(), 0, 2)
         decoded_np = decoded_np.astype(np.uint8)
         out_image = Image.fromarray(decoded_np)
-        self.print("Decoded")
+        # self.print("Decoded")
         return out_image
 
     def _image_to_latent(
@@ -303,7 +303,7 @@ class SD3Inferencer:
             # print("Time for denoising: ", time.time() - st)
             image = self.vae_decode(sampled_latent)
             images.append(image)
-            self.print("Done")
+            # self.print("Done")
         return images
 
 
