@@ -1,1 +1,5 @@
 datasets==4.0.0
+aiohttp
+torchvision
+torchmetrics
+torch-fidelity
