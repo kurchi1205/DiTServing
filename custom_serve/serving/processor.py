@@ -3,6 +3,8 @@ import torch
 import os
 from pipeline.sd3 import SD3LatentFormat
 
+PROFILE_GPU = os.getenv("PROFILE_GPU", "false").lower() == "true"
+
 def process_each_timestep(handler, request_id, request_pool, cache_interval, compute_attention=True, save_latents=False):
     # st = time.time()
     denoiser = handler.denoiser
@@ -54,7 +56,12 @@ def process_each_timestep(handler, request_id, request_pool, cache_interval, com
     # print("Noise shape: ", noise_batch.size())
     # latent, old_denoised = handler.denoise_each_step(denoiser_model, noise_scaled, sigmas[current_timestep], sigmas[current_timestep - 1], sigmas[current_timestep + 1], old_denoised, extra_args)
     # st_2 = time.time()
-    latent, old_denoised = handler.denoise_each_step(denoiser_model, noise_scaled, sigma_current, sigma_prev, sigma_next, old_denoised, extra_args)
+    if PROFILE_GPU:
+        latent, old_denoised, elapsed_gpu_time = handler.denoise_each_step(denoiser_model, noise_scaled, sigma_current, sigma_prev, sigma_next, old_denoised, extra_args)
+        request["elapsed_gpu_time"] += elapsed_gpu_time
+    else:
+        latent, old_denoised = handler.denoise_each_step(denoiser_model, noise_scaled, sigma_current, sigma_prev, sigma_next, old_denoised, extra_args)
+    
     request["noise_scaled"] = latent
     request["old_denoised"] = old_denoised
     request_pool.requests[request_id] = request
@@ -281,16 +288,27 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
     # st_2 = time.time()
     denoiser_model = denoiser(model)
     # print("old denoised: ", old_denoised_batch.size(), " curr denoised: ", noise_scaled_batch.size())
-    latent_batch, new_old_denoised_batch = handler.denoise_each_step(
-        denoiser_model,
-        noise_scaled_batch,
-        sigma_current_batch,
-        sigma_prev_batch,
-        sigma_next_batch,
-        old_denoised_batch,
-        extra_args
-    )
-
+    elapsed_gpu_time = 0
+    if PROFILE_GPU:
+        latent_batch, new_old_denoised_batch, elapsed_gpu_time = handler.denoise_each_step(
+            denoiser_model,
+            noise_scaled_batch,
+            sigma_current_batch,
+            sigma_prev_batch,
+            sigma_next_batch,
+            old_denoised_batch,
+            extra_args
+        )
+    else:
+        latent_batch, new_old_denoised_batch = handler.denoise_each_step(
+            denoiser_model,
+            noise_scaled_batch,
+            sigma_current_batch,
+            sigma_prev_batch,
+            sigma_next_batch,
+            old_denoised_batch,
+            extra_args
+        )
     # Update requests directly
     requests = []
     # st_3 = time.time()
@@ -298,6 +316,7 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
         request = request_pool.requests[request_id]
         request["noise_scaled"] = latent_batch[idx:idx+1]
         request["old_denoised"] = new_old_denoised_batch[idx:idx+1]
+        request["elapsed_gpu_time"] += elapsed_gpu_time
         requests.append(request)
 
         if save_latents:

@@ -3,6 +3,7 @@ system:
   batch_size: 1                # Number of requests processed in a batch
   cache_interval: 5            # Interval for cache expiration in timesteps
   pending_timeout_check: 200
+  profile_gpu: True
   
 server:
   url: "http://localhost:8000"

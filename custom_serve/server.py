@@ -22,6 +22,8 @@ config = config_loader.config
 # Initialize the RequestHandler
 handler = None
 inference_handler = None
+os.environ["PROFILE_GPU"] = str(config["system"].get("profile_gpu", False)).lower()
+
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -101,6 +103,7 @@ async def get_output():
                 {
                     "request_id": request["request_id"], 
                     "prompt": request["prompt"], 
+                    "elapsed_gpu_time": request["elapsed_gpu_time"],
                     "status": request["status"], 
                     "timestamp": request["timestamp"],
                     "processing_time_start": request["processing_time_start"],

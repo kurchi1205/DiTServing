@@ -10,6 +10,7 @@ from pipeline.sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
 from pipeline.vae import VAE
 from tqdm import tqdm
 import time
+PROFILE_GPU = os.getenv("PROFILE_GPU", "false").lower() == "true"
 
 class SD3Inferencer:
 
@@ -119,7 +120,18 @@ class SD3Inferencer:
             seed_num = torch.randint(0, 100000, (1,)).item()
         else:  # fixed
             seed_num = seed
-        conditioning = self.get_cond(prompt)
+        if PROFILE_GPU:
+            start_event = torch.cuda.Event(enable_timing=True)
+            end_event = torch.cuda.Event(enable_timing=True)
+
+            torch.cuda.synchronize()
+            start_event.record()
+            conditioning = self.get_cond(prompt)
+            end_event.record()
+            torch.cuda.synchronize()
+            elapsed_time_ms = start_event.elapsed_time(end_event)
+        else:
+            conditioning = self.get_cond(prompt)
         latent = latent.half().cuda()
         self.sd3.model = self.sd3.model.cuda()
         noise = self.get_noise(seed_num, latent).cuda()
@@ -128,7 +140,9 @@ class SD3Inferencer:
         noise_scaled = self.sd3.model.model_sampling.noise_scaling(
             sigmas[0], noise, latent, self.max_denoise(sigmas)
         )
-        return noise_scaled, sigmas, conditioning, neg_cond, seed_num
+        if not PROFILE_GPU:
+            return noise_scaled, sigmas, conditioning, neg_cond, seed_num
+        return noise_scaled, sigmas, conditioning, neg_cond, seed_num, elapsed_time_ms / 1000
 
 
     def denoise_each_step_1(self, model, x, sigma, prev_sigma, next_sigma, old_denoised, extra_args=None):
@@ -164,8 +178,19 @@ class SD3Inferencer:
         if self.custom_scheduler:
             adaptive_sigma, x = model.model.model_sampling.sigma_from_latent(x, sigma)
         # adaptive_sigma = adaptive_sigma.view(-1, 1, 1, 1)
+        if PROFILE_GPU:
+            start_event = torch.cuda.Event(enable_timing=True)
+            end_event = torch.cuda.Event(enable_timing=True)
 
-        denoised = model(x, adaptive_sigma * s_in, sigma * s_in, **extra_args)
+            torch.cuda.synchronize()
+            start_event.record()
+            denoised = model(x, adaptive_sigma * s_in, sigma * s_in, **extra_args)
+            end_event.record()
+            torch.cuda.synchronize()
+
+            elapsed_time_ms = start_event.elapsed_time(end_event)
+        else:
+            denoised = model(x, adaptive_sigma * s_in, sigma * s_in, **extra_args)
         # print("Denoised: ", time.time() - st)
         # print("Just Denoising: ", time.time() - st_2)
         # Compute time values
@@ -190,7 +215,9 @@ class SD3Inferencer:
         x = torch.where(next_sigma.view(-1, 1, 1, 1) == 0,
                         sigma_ratio * x - expm1_h * denoised,
                         sigma_ratio * x - expm1_h * denoised_d)
-        return x, denoised
+        if not PROFILE_GPU:
+            return x, denoised
+        return x, denoised, elapsed_time_ms/1000
 
 
 
