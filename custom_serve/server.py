@@ -93,7 +93,8 @@ async def get_output():
             request = await handler.request_pool.output_pool.get()
             time_completed = datetime.now().isoformat()
             request["time_completed"] = datetime.fromisoformat(time_completed) - datetime.fromisoformat(request["timestamp"])
-            image_data = request.get("image")
+            image_data = request.get("image", None)
+            image_path = ""
             if image_data:
                 output_dir = "output_images"
                 os.makedirs(output_dir, exist_ok=True)
@@ -106,7 +107,7 @@ async def get_output():
                     "elapsed_gpu_time": request["elapsed_gpu_time"],
                     "status": request["status"], 
                     "timestamp": request["timestamp"],
-                    "processing_time_start": request["processing_time_start"],
+                    "processing_time_start": request.get("processing_time_start", 0),
                     "time_completed": time_completed, 
                     "image": image_path
                 }

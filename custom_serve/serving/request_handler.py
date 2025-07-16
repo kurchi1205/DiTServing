@@ -53,26 +53,17 @@ class RequestPool:
 
     async def check_pending_timeouts(self, pending_timeout, current_time):
         """Check pending requests and mark those exceeding the timeout as failed."""
-        async with self.lock:
-            for request_id, request in list(self.requests.items()):
-                if request["status"] == RequestStatus.PENDING:
-                    request_time = datetime.fromisoformat(request["timestamp"])
-                    if current_time - request_time > timedelta(seconds=pending_timeout):
-                        request["status"] = RequestStatus.FAILED
-                        await self.add_to_output_pool(request)
-                        logger.info(f"Request {request_id} marked as FAILED due to timeout.")
-
-            completed_requests = []
-            while not self.output_pool.empty():
-                completed_request = await self.output_pool.get()
-                request_time = datetime.fromisoformat(completed_request["completed_timestamp"])
-                if current_time - request_time > timedelta(seconds=pending_timeout):
-                    logger.info(f"Completed request {completed_request['request_id']} removed after timeout.")
-                else:
-                    completed_requests.append(completed_request)
-
-            for request in completed_requests:
-                await self.output_pool.put(request)           
+        for request_id, request in list(self.raw_requests.items()):
+            request_time = datetime.fromisoformat(request["timestamp"])
+            if current_time - request_time > timedelta(seconds=pending_timeout):
+                for key in ["noise_scaled", "sigmas", "conditioning", "neg_cond", "old_denoised", "context_latent", "x_latent"]:
+                    if key in request:
+                        del request[key]
+                del self.raw_requests[request_id]
+                request["status"] = RequestStatus.FAILED
+                logger.info(f"Request added to output queue: {request_id}")
+                await self.add_to_output_pool(request)
+       
 
     async def add_to_active_queue(self, request_id):
         """Add a request to the active queue."""
@@ -87,9 +78,6 @@ class RequestPool:
             request['completed_timestamp'] = datetime.now().isoformat()
             await self.output_pool.put(request)
         logger.info(f"Request added to output pool: {request['request_id']} (Prompt: {request['prompt']})")
-        if request['request_id'] in self.requests:
-            del self.requests[request['request_id']]
-            logger.debug(f"Request removed from active pool: {request['request_id']}")
 
 
     async def get_all_active_requests(self):
@@ -135,7 +123,8 @@ class RequestHandler:
             "prompt": prompt,
             "cfg_scale": 5.0,
             "context_latent": {},
-            "x_latent": {}
+            "x_latent": {},
+            "elapsed_gpu_time": 0
         }
         logger.info(f"Created new request: {request['request_id']} (Prompt: {request['prompt']})")
         return request
@@ -168,11 +157,17 @@ class RequestHandler:
         request = self._prepare_first_timestep(inference_handler, request)
         self.request_pool.add_request_to_final_pool(request)
 
-    def prefill(self, inference_handler):
+    async def prefill(self, inference_handler):
+        await self.request_pool.check_pending_timeouts(self.pending_timeout_check, datetime.now())
         all_requests = list(self.request_pool.raw_requests.keys())
+        final_requests_count = len(self.request_pool.requests)
         tasks = []
         for request_id in all_requests:
-            self._prepare_and_add_to_final_pool(inference_handler, request_id)
+            if final_requests_count < self.max_requests:
+                self._prepare_and_add_to_final_pool(inference_handler, request_id)
+                final_requests_count += 1
+            else:
+                break
    
     def update_timesteps_left(self, request_id):
         if request_id in self.request_pool.requests:
@@ -196,7 +191,7 @@ class RequestHandler:
         
         while True:
             if self.request_pool.raw_requests:
-                self.prefill(inference_handler)
+                await self.prefill(inference_handler)
             await self.scheduler.add_to_active_request_queue(self.request_pool, self.max_requests)
             await self.scheduler.shift_to_attn_queue(self.request_pool, self.max_requests)
 
@@ -221,15 +216,17 @@ class RequestHandler:
                 await asyncio.gather(*tasks)
                 # print("Each iteration time: ", time.time() - st)
             
-            while not self.request_pool.decode_queue.empty():
-                request_id = await self.request_pool.decode_queue.get()
-                asyncio.create_task(self._decode_request(inference_handler, request_id))
+            # while not self.request_pool.decode_queue.empty():
+            #     request_id = await self.request_pool.decode_queue.get()
+            #     asyncio.create_task(self._decode_request(inference_handler, request_id))
 
             # Update queue statuses after processing
             for request_id in attn_requests + active_requests:
                 if request_id in self.request_pool.requests:
                     if self.request_pool.requests[request_id]["status"] != RequestStatus.COMPLETED:
                         await self.request_pool.add_to_active_queue(request_id)
+                    else:
+                        asyncio.create_task(self._decode_request(inference_handler, request_id))
                     # elif self.request_pool.requests[request_id]["status"] == RequestStatus.COMPLETED:
                     #     logger.debug(f"Request {request_id} completed. Moving to output pool.")
                     #     await self.request_pool.add_to_output_pool(self.request_pool.requests[request_id])
@@ -247,6 +244,8 @@ class RequestHandler:
         Decodes the image for a request asynchronously without blocking the main process.
         """
         request = self.request_pool.requests[request_id]
+        del self.request_pool.requests[request['request_id']]
+        logger.debug(f"Request removed from active pool: {request['request_id']}")
 
         # Run decoding in a separate thread (prevents blocking)
         latent = SD3LatentFormat().process_out(request["noise_scaled"])
@@ -265,7 +264,6 @@ class RequestHandler:
     async def _process_attention_batch(self, inference_handler, request_ids, save_latents):
         """Process a batch of attention requests asynchronously."""
         processed_requests = []
-        
         # Process each attention request one by one
         for request_id in request_ids:
             # Use the existing sequential processing for attention requests
@@ -288,8 +286,8 @@ class RequestHandler:
             request["current_timestep"] += 1
             
             # Handle completion
-            if request["timesteps_left"] == 0:
-                await self.request_pool.decode_queue.put(request_id)
+            # if request["timesteps_left"] == 0:
+            #     await self.request_pool.decode_queue.put(request_id)
             
             self.update_status(request)
             processed_requests.append(request)
@@ -299,6 +297,7 @@ class RequestHandler:
     async def _process_active_batch(self, inference_handler, request_ids, save_latents):
         """Process a batch of non-attention requests asynchronously."""
         # Use the existing batch processing for active requests
+
         processed_requests = await asyncio.to_thread(
             process_each_timestep_batched,
             inference_handler,
@@ -317,8 +316,8 @@ class RequestHandler:
             request["current_timestep"] += 1
             
             # Handle completion
-            if request["timesteps_left"] == 0:
-                await self.request_pool.decode_queue.put(request_id)
+            # if request["timesteps_left"] == 0:
+            #     await self.request_pool.decode_queue.put(request_id)
             self.update_status(request)
             self.request_pool.requests[request_id] = request
         
