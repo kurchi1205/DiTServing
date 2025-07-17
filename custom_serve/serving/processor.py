@@ -5,16 +5,15 @@ from pipeline.sd3 import SD3LatentFormat
 
 PROFILE_GPU = os.getenv("PROFILE_GPU", "false").lower() == "true"
 
-def process_each_timestep(handler, request_id, request_pool, cache_interval, compute_attention=True, save_latents=False):
+def process_each_timestep(handler, request_id, request, empty_latent, neg_cond, cache_interval, compute_attention=True, save_latents=False):
     # st = time.time()
     denoiser = handler.denoiser
     model = handler.sd3.model
-    request = request_pool.requests[request_id]
     prompt = request["prompt"]
     timesteps_left = request["timesteps_left"]
     cfg_scale = request["cfg_scale"]
-    empty_latent = request_pool.empty_latent
-    neg_cond = request_pool.neg_cond
+    # empty_latent = request_pool.empty_latent
+    # neg_cond = request_pool.neg_cond
     old_denoised = None
     width = 1024
     height = 1024
@@ -64,7 +63,7 @@ def process_each_timestep(handler, request_id, request_pool, cache_interval, com
     
     request["noise_scaled"] = latent
     request["old_denoised"] = old_denoised
-    request_pool.requests[request_id] = request
+    # request_pool.requests[request_id] = request
 
     if save_latents:
         save_dir = f"../saved_latents_{cache_interval}"
@@ -73,6 +72,7 @@ def process_each_timestep(handler, request_id, request_pool, cache_interval, com
         torch.save(request["noise_scaled"].detach().cpu(), latent_path)
     # print("Time taken with attention", time.time() - st)
     # print("Time taken with attention computation", time.time() - st_2)
+    return request
 
 
 
@@ -187,14 +187,14 @@ def process_each_timestep_batched_1(handler, request_ids, request_pool, compute_
     return requests
 
 
-def process_each_timestep_batched(handler, request_ids, request_pool, cache_interval, compute_attention=False, save_latents=False):
+def process_each_timestep_batched(handler, request_ids, requests, neg_cond, cache_interval, compute_attention=False, save_latents=False):
     # st = time.time()
     denoiser = handler.denoiser
     model = handler.sd3.model
     num_requests = len(request_ids)
     # print("Num requests: ", len(request_ids))
     # Get first request to determine tensor shapes
-    first_request = request_pool.requests[request_ids[0]]
+    first_request = requests[0]
     noise_shape = first_request["noise_scaled"].shape
     cond_cross_shape = first_request["conditioning"]["c_crossattn"].shape
     cond_y_shape = first_request["conditioning"]["y"].shape
@@ -224,8 +224,8 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
     x_latent_batch = {}
     # Fill tensors directly
     # print("Lenth of request ids: ", len(request_ids))
-    for idx, request_id in enumerate(request_ids):
-        request = request_pool.requests[request_id]
+    for idx, request in enumerate(requests):
+        # request = request_pool.requests[request_id]
         
         # Direct tensor assignments
         noise_scaled_batch[idx] = request["noise_scaled"]
@@ -239,8 +239,8 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
         
         conditioning_cross[idx] = request["conditioning"]["c_crossattn"]
         conditioning_y[idx] = request["conditioning"]["y"]
-        neg_cond_cross[idx] = request_pool.neg_cond["c_crossattn"]
-        neg_cond_y[idx] = request_pool.neg_cond["y"]
+        neg_cond_cross[idx] = neg_cond["c_crossattn"]
+        neg_cond_y[idx] = neg_cond["y"]
         
         # Fill x_latent tensors
         # for key, tensor in request["x_latent"].items():
@@ -310,14 +310,14 @@ def process_each_timestep_batched(handler, request_ids, request_pool, cache_inte
             extra_args
         )
     # Update requests directly
-    requests = []
+    # requests = []
     # st_3 = time.time()
-    for idx, request_id in enumerate(request_ids):
-        request = request_pool.requests[request_id]
+    for idx, request in enumerate(requests):
+        # request = request_pool.requests[request_id]
         request["noise_scaled"] = latent_batch[idx:idx+1]
         request["old_denoised"] = new_old_denoised_batch[idx:idx+1]
         request["elapsed_gpu_time"] += elapsed_gpu_time
-        requests.append(request)
+        # requests.append(request)
 
         if save_latents:
             save_dir = f"../saved_latents_{cache_interval}"

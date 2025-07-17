@@ -270,39 +270,45 @@ class RequestHandler:
             request = self.request_pool.requests[request_id]
             
             # Run the potentially CPU-intensive process in a separate thread
-            await asyncio.to_thread(
+            proc_request = await asyncio.to_thread(
                 process_each_timestep,
                 inference_handler,
                 request_id,
-                self.request_pool,
+                request,
+                self.request_pool.empty_latent,
+                self.request_pool.neg_cond,
                 cache_interval=self.cache_interval,
                 compute_attention=True,
                 save_latents=save_latents
             )
+            self.request_pool.requests[request_id] = proc_request
             
             # Update request state
-            request["cache_interval"] = self.cache_interval
-            request["timesteps_left"] -= 1
-            request["current_timestep"] += 1
+            proc_request["cache_interval"] = self.cache_interval
+            proc_request["timesteps_left"] -= 1
+            proc_request["current_timestep"] += 1
             
             # Handle completion
             # if request["timesteps_left"] == 0:
             #     await self.request_pool.decode_queue.put(request_id)
             
-            self.update_status(request)
-            processed_requests.append(request)
+            self.update_status(proc_request)
+            processed_requests.append(proc_request)
         
         return processed_requests
 
     async def _process_active_batch(self, inference_handler, request_ids, save_latents):
         """Process a batch of non-attention requests asynchronously."""
         # Use the existing batch processing for active requests
-
+        requests = []
+        for request_id in request_ids:
+            requests.append(self.request_pool.requests[request_id])
         processed_requests = await asyncio.to_thread(
             process_each_timestep_batched,
             inference_handler,
             request_ids,
-            self.request_pool,
+            requests,
+            self.request_pool.neg_cond,
             cache_interval=self.cache_interval,
             compute_attention=False,
             save_latents=save_latents
