@@ -1,0 +1,604 @@
+{
+  "completed_requests": [
+    {
+      "request_id": "d70dc6b2-1087-4393-8abd-4da13e6bd37d",
+      "prompt": "a dragon breathing fire",
+      "elapsed_gpu_time": 2.269994044303894,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:02.684019",
+      "processing_time_start": "2025-07-16T14:58:02.881364",
+      "time_completed": "2025-07-16T14:58:07.014121",
+      "image": "/home/DiTServing/custom_serve/output_images/request_d70dc6b2-1087-4393-8abd-4da13e6bd37d.png"
+    },
+    {
+      "request_id": "2e974314-c952-4337-a802-401849a9b322",
+      "prompt": "anger",
+      "elapsed_gpu_time": 2.4462099802494053,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:04.683172",
+      "processing_time_start": "2025-07-16T14:58:04.826560",
+      "time_completed": "2025-07-16T14:58:13.492236",
+      "image": "/home/DiTServing/custom_serve/output_images/request_2e974314-c952-4337-a802-401849a9b322.png"
+    },
+    {
+      "request_id": "6883f363-c0d9-4aef-9e2a-c3223fcec948",
+      "prompt": "a pair of glasses under a computer monitor",
+      "elapsed_gpu_time": 2.258663849115372,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:07.012962",
+      "processing_time_start": "2025-07-16T14:58:07.569270",
+      "time_completed": "2025-07-16T14:58:17.935883",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6883f363-c0d9-4aef-9e2a-c3223fcec948.png"
+    },
+    {
+      "request_id": "818f4783-a066-4c17-9f43-a77b87b50c39",
+      "prompt": "a kangaroo",
+      "elapsed_gpu_time": 2.486238270998001,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:08.688262",
+      "processing_time_start": "2025-07-16T14:58:08.823694",
+      "time_completed": "2025-07-16T14:58:21.905964",
+      "image": "/home/DiTServing/custom_serve/output_images/request_818f4783-a066-4c17-9f43-a77b87b50c39.png"
+    },
+    {
+      "request_id": "b2fa8716-a7d5-4f95-8c77-a49f86821fea",
+      "prompt": "a small garden with an apple tree behind it",
+      "elapsed_gpu_time": 2.9465321598052974,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:10.687832",
+      "processing_time_start": "2025-07-16T14:58:10.908687",
+      "time_completed": "2025-07-16T14:58:26.277212",
+      "image": "/home/DiTServing/custom_serve/output_images/request_b2fa8716-a7d5-4f95-8c77-a49f86821fea.png"
+    },
+    {
+      "request_id": "17163343-b4a9-4d17-b218-bc2db4d9f7a5",
+      "prompt": "A close-up of two mantis wearing karate uniforms and fighting, jumping over a waterfall.",
+      "elapsed_gpu_time": 2.42154700255394,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:12.689285",
+      "processing_time_start": "2025-07-16T14:58:13.384557",
+      "time_completed": "2025-07-16T14:58:29.630222",
+      "image": "/home/DiTServing/custom_serve/output_images/request_17163343-b4a9-4d17-b218-bc2db4d9f7a5.png"
+    },
+    {
+      "request_id": "c9c2068c-fe04-4ed9-81e9-4acf56bc6fb5",
+      "prompt": "a red cube",
+      "elapsed_gpu_time": 2.7470523996353147,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:14.690801",
+      "processing_time_start": "2025-07-16T14:58:14.849332",
+      "time_completed": "2025-07-16T14:58:32.061334",
+      "image": "/home/DiTServing/custom_serve/output_images/request_c9c2068c-fe04-4ed9-81e9-4acf56bc6fb5.png"
+    },
+    {
+      "request_id": "79d73a7a-4348-448b-a4e5-0f2744201c5f",
+      "prompt": "an abstract painting of a house on a mountain",
+      "elapsed_gpu_time": 2.8707238688468926,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:16.690968",
+      "processing_time_start": "2025-07-16T14:58:16.916145",
+      "time_completed": "2025-07-16T14:58:34.883002",
+      "image": "/home/DiTServing/custom_serve/output_images/request_79d73a7a-4348-448b-a4e5-0f2744201c5f.png"
+    },
+    {
+      "request_id": "0878fc1e-29f7-4fba-b91d-cbd8e9ac7c25",
+      "prompt": "A blue Porsche 356 parked in front of a yellow brick wall",
+      "elapsed_gpu_time": 2.863067967414856,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:18.691182",
+      "processing_time_start": "2025-07-16T14:58:18.875202",
+      "time_completed": "2025-07-16T14:58:37.364475",
+      "image": "/home/DiTServing/custom_serve/output_images/request_0878fc1e-29f7-4fba-b91d-cbd8e9ac7c25.png"
+    },
+    {
+      "request_id": "fe222d69-c032-4287-97fe-f690ea499623",
+      "prompt": "An aerial view of Ha Long Bay",
+      "elapsed_gpu_time": 2.2689919075965883,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:20.692821",
+      "processing_time_start": "2025-07-16T14:58:21.904279",
+      "time_completed": "2025-07-16T14:58:40.411778",
+      "image": "/home/DiTServing/custom_serve/output_images/request_fe222d69-c032-4287-97fe-f690ea499623.png"
+    },
+    {
+      "request_id": "0945e1bf-103f-453a-8373-2843d5e4b8b4",
+      "prompt": "Portrait of a gecko wearing a train conductor\u2019s hat and holding a flag that has a yin-yang symbol on it. Watercolor.",
+      "elapsed_gpu_time": 2.893484059810638,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:22.693915",
+      "processing_time_start": "2025-07-16T14:58:26.097663",
+      "time_completed": "2025-07-16T14:58:44.911584",
+      "image": "/home/DiTServing/custom_serve/output_images/request_0945e1bf-103f-453a-8373-2843d5e4b8b4.png"
+    },
+    {
+      "request_id": "7f02c6bb-2f22-4fda-a4e3-a851a8cf5fa6",
+      "prompt": "motion",
+      "elapsed_gpu_time": 2.3478646016120908,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:24.695547",
+      "processing_time_start": "2025-07-16T14:58:29.351730",
+      "time_completed": "2025-07-16T14:58:48.488170",
+      "image": "/home/DiTServing/custom_serve/output_images/request_7f02c6bb-2f22-4fda-a4e3-a851a8cf5fa6.png"
+    },
+    {
+      "request_id": "4d74b4d8-6499-4cd8-94a0-25473dd39650",
+      "prompt": "a drawing of a pig face with an eye patch",
+      "elapsed_gpu_time": 2.947074235916138,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:26.696766",
+      "processing_time_start": "2025-07-16T14:58:31.967294",
+      "time_completed": "2025-07-16T14:58:50.930622",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4d74b4d8-6499-4cd8-94a0-25473dd39650.png"
+    },
+    {
+      "request_id": "f4437cd0-4378-4575-97a1-66e71ce653c2",
+      "prompt": "a book cover",
+      "elapsed_gpu_time": 2.785461198329925,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:28.697119",
+      "processing_time_start": "2025-07-16T14:58:34.881636",
+      "time_completed": "2025-07-16T14:58:53.623456",
+      "image": "/home/DiTServing/custom_serve/output_images/request_f4437cd0-4378-4575-97a1-66e71ce653c2.png"
+    },
+    {
+      "request_id": "8bf3611d-31bc-43c4-92ec-a19e1ed79626",
+      "prompt": "a toaster",
+      "elapsed_gpu_time": 3.23785472869873,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:30.699582",
+      "processing_time_start": "2025-07-16T14:58:36.988670",
+      "time_completed": "2025-07-16T14:58:55.920341",
+      "image": "/home/DiTServing/custom_serve/output_images/request_8bf3611d-31bc-43c4-92ec-a19e1ed79626.png"
+    },
+    {
+      "request_id": "a0f569d8-1929-4322-8960-ce25b16b5f6c",
+      "prompt": "a sword slicing through pouring milk",
+      "elapsed_gpu_time": 2.7160632824897757,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:32.700653",
+      "processing_time_start": "2025-07-16T14:58:40.410601",
+      "time_completed": "2025-07-16T14:58:58.841002",
+      "image": "/home/DiTServing/custom_serve/output_images/request_a0f569d8-1929-4322-8960-ce25b16b5f6c.png"
+    },
+    {
+      "request_id": "95d0fbf2-dd74-4edb-b873-72906ca09851",
+      "prompt": "black hi-top sneakers",
+      "elapsed_gpu_time": 3.0644766383171085,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:35.349135",
+      "processing_time_start": "2025-07-16T14:58:44.768689",
+      "time_completed": "2025-07-16T14:59:03.254822",
+      "image": "/home/DiTServing/custom_serve/output_images/request_95d0fbf2-dd74-4edb-b873-72906ca09851.png"
+    },
+    {
+      "request_id": "4c343ad3-22a2-4ba0-a938-3f3ce79dad02",
+      "prompt": "a turkey",
+      "elapsed_gpu_time": 2.571387780666352,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:36.990609",
+      "processing_time_start": "2025-07-16T14:58:48.209060",
+      "time_completed": "2025-07-16T14:59:06.896148",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4c343ad3-22a2-4ba0-a938-3f3ce79dad02.png"
+    },
+    {
+      "request_id": "50f711bf-ccdd-445d-a8dc-3221f6dc0a6c",
+      "prompt": "a mountain with a cloud hanging over it",
+      "elapsed_gpu_time": 2.997371798992157,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:38.702933",
+      "processing_time_start": "2025-07-16T14:58:50.568041",
+      "time_completed": "2025-07-16T14:59:09.266025",
+      "image": "/home/DiTServing/custom_serve/output_images/request_50f711bf-ccdd-445d-a8dc-3221f6dc0a6c.png"
+    },
+    {
+      "request_id": "1edd2904-cd9b-4eed-9c4f-6add1f4f7d66",
+      "prompt": "a flock of geese in front of The Alamo",
+      "elapsed_gpu_time": 2.8492575240135194,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:40.889666",
+      "processing_time_start": "2025-07-16T14:58:53.621752",
+      "time_completed": "2025-07-16T14:59:12.294554",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1edd2904-cd9b-4eed-9c4f-6add1f4f7d66.png"
+    },
+    {
+      "request_id": "3431307d-4274-4e6f-9e13-745f054a876d",
+      "prompt": "A Vietnam map",
+      "elapsed_gpu_time": 2.7401559300422673,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:42.706848",
+      "processing_time_start": "2025-07-16T14:58:55.559144",
+      "time_completed": "2025-07-16T14:59:14.894200",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3431307d-4274-4e6f-9e13-745f054a876d.png"
+    },
+    {
+      "request_id": "3366079a-e940-4a36-aa05-6b1edfdda708",
+      "prompt": "An oil painting of a two-story house lifting off the ground like a rocket.",
+      "elapsed_gpu_time": 2.2008675055503844,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:44.771337",
+      "processing_time_start": "2025-07-16T14:58:58.839429",
+      "time_completed": "2025-07-16T14:59:18.024065",
+      "image": "/home/DiTServing/custom_serve/output_images/request_3366079a-e940-4a36-aa05-6b1edfdda708.png"
+    },
+    {
+      "request_id": "e9b7f016-bda7-443f-a958-012d57458fa2",
+      "prompt": "Wood engraving of the Greek letter Omega",
+      "elapsed_gpu_time": 2.751076959133148,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:46.709813",
+      "processing_time_start": "2025-07-16T14:59:03.118541",
+      "time_completed": "2025-07-16T14:59:22.516970",
+      "image": "/home/DiTServing/custom_serve/output_images/request_e9b7f016-bda7-443f-a958-012d57458fa2.png"
+    },
+    {
+      "request_id": "6b6c75ba-3663-4908-89c2-60206741ece5",
+      "prompt": "the Beatles crossing Abbey road",
+      "elapsed_gpu_time": 2.191195058345795,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:48.917601",
+      "processing_time_start": "2025-07-16T14:59:06.652126",
+      "time_completed": "2025-07-16T14:59:25.916416",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6b6c75ba-3663-4908-89c2-60206741ece5.png"
+    },
+    {
+      "request_id": "6380ff4b-970e-4ea8-bf4b-9b85326ed0a6",
+      "prompt": "a large open book showing text and an illustration of a cat",
+      "elapsed_gpu_time": 2.738129637241364,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:50.711757",
+      "processing_time_start": "2025-07-16T14:59:09.246616",
+      "time_completed": "2025-07-16T14:59:28.522904",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6380ff4b-970e-4ea8-bf4b-9b85326ed0a6.png"
+    },
+    {
+      "request_id": "b1d136ee-e134-4c09-a04b-6835eb3b0ec3",
+      "prompt": "a volcano erupting near a small town",
+      "elapsed_gpu_time": 2.6137782931327815,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:52.713475",
+      "processing_time_start": "2025-07-16T14:59:12.292277",
+      "time_completed": "2025-07-16T14:59:31.475373",
+      "image": "/home/DiTServing/custom_serve/output_images/request_b1d136ee-e134-4c09-a04b-6835eb3b0ec3.png"
+    },
+    {
+      "request_id": "26c6bf8a-08fa-4e16-8a67-adbe2595ae0e",
+      "prompt": "a flag with a dinosaur on it",
+      "elapsed_gpu_time": 2.7693626360893235,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:54.715148",
+      "processing_time_start": "2025-07-16T14:59:14.542303",
+      "time_completed": "2025-07-16T14:59:33.940130",
+      "image": "/home/DiTServing/custom_serve/output_images/request_26c6bf8a-08fa-4e16-8a67-adbe2595ae0e.png"
+    },
+    {
+      "request_id": "1fc31148-1150-4ad1-908f-ea3a37ecbb17",
+      "prompt": "a pick-up truck rolling over a grassy field",
+      "elapsed_gpu_time": 2.321673398017883,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:56.716440",
+      "processing_time_start": "2025-07-16T14:59:18.022499",
+      "time_completed": "2025-07-16T14:59:37.159232",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1fc31148-1150-4ad1-908f-ea3a37ecbb17.png"
+    },
+    {
+      "request_id": "5868ffd1-1867-42c6-9e63-86dc898907a5",
+      "prompt": "a coffee table with a magazine on it",
+      "elapsed_gpu_time": 2.901064430713654,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:58:59.224096",
+      "processing_time_start": "2025-07-16T14:59:22.383249",
+      "time_completed": "2025-07-16T14:59:41.510546",
+      "image": "/home/DiTServing/custom_serve/output_images/request_5868ffd1-1867-42c6-9e63-86dc898907a5.png"
+    },
+    {
+      "request_id": "6815a20b-82d2-41db-9d8d-09f091f2678b",
+      "prompt": "a hot air balloon with a yin-yang symbol, with the moon visible in the daytime sky",
+      "elapsed_gpu_time": 2.458285933017731,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:00.719591",
+      "processing_time_start": "2025-07-16T14:59:25.676268",
+      "time_completed": "2025-07-16T14:59:44.914156",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6815a20b-82d2-41db-9d8d-09f091f2678b.png"
+    },
+    {
+      "request_id": "02bd1187-0574-4d98-93c1-f4210f834fb6",
+      "prompt": "a volcano exploding next to a marina",
+      "elapsed_gpu_time": 2.9957270073890694,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:03.120364",
+      "processing_time_start": "2025-07-16T14:59:28.516183",
+      "time_completed": "2025-07-16T14:59:47.348172",
+      "image": "/home/DiTServing/custom_serve/output_images/request_02bd1187-0574-4d98-93c1-f4210f834fb6.png"
+    },
+    {
+      "request_id": "5f4f8527-3b14-45b0-a0d0-6be52f8cf089",
+      "prompt": "A punk rock frog in a studded leather jacket shouting into a microphone while standing on a lily pad",
+      "elapsed_gpu_time": 2.697719108104706,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:04.719861",
+      "processing_time_start": "2025-07-16T14:59:31.473628",
+      "time_completed": "2025-07-16T14:59:50.456241",
+      "image": "/home/DiTServing/custom_serve/output_images/request_5f4f8527-3b14-45b0-a0d0-6be52f8cf089.png"
+    },
+    {
+      "request_id": "1523c895-fc02-41fa-920d-c5b1b65e6339",
+      "prompt": "a white country home",
+      "elapsed_gpu_time": 2.814178617954253,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:06.722599",
+      "processing_time_start": "2025-07-16T14:59:33.639095",
+      "time_completed": "2025-07-16T14:59:53.000961",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1523c895-fc02-41fa-920d-c5b1b65e6339.png"
+    },
+    {
+      "request_id": "23e85352-f027-4102-bdb4-bc098caa867d",
+      "prompt": "A high resolution photo of a donkey in a clown costume giving a lecture at the front of a lecture hall. The blackboard has mathematical equations on it. There are many students in the lecture hall.",
+      "elapsed_gpu_time": 2.2788593921661375,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:09.248625",
+      "processing_time_start": "2025-07-16T14:59:37.157124",
+      "time_completed": "2025-07-16T14:59:56.050159",
+      "image": "/home/DiTServing/custom_serve/output_images/request_23e85352-f027-4102-bdb4-bc098caa867d.png"
+    },
+    {
+      "request_id": "8923fad3-c31c-4307-8aaf-c4dcf2978e06",
+      "prompt": "a capybara",
+      "elapsed_gpu_time": 2.638425134181976,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:10.727760",
+      "processing_time_start": "2025-07-16T14:59:41.374559",
+      "time_completed": "2025-07-16T15:00:00.520751",
+      "image": "/home/DiTServing/custom_serve/output_images/request_8923fad3-c31c-4307-8aaf-c4dcf2978e06.png"
+    },
+    {
+      "request_id": "46cd4158-67be-42d7-864a-198210493fe6",
+      "prompt": "a yellow t-shirt with a dog on it",
+      "elapsed_gpu_time": 2.4433844199180603,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:12.884235",
+      "processing_time_start": "2025-07-16T14:59:44.735980",
+      "time_completed": "2025-07-16T15:00:04.047571",
+      "image": "/home/DiTServing/custom_serve/output_images/request_46cd4158-67be-42d7-864a-198210493fe6.png"
+    },
+    {
+      "request_id": "88c34dad-55e7-4ae1-ab39-96c4cdffb4ac",
+      "prompt": "a child",
+      "elapsed_gpu_time": 2.9691509461402896,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:14.728976",
+      "processing_time_start": "2025-07-16T14:59:47.290645",
+      "time_completed": "2025-07-16T15:00:06.496141",
+      "image": "/home/DiTServing/custom_serve/output_images/request_88c34dad-55e7-4ae1-ab39-96c4cdffb4ac.png"
+    },
+    {
+      "request_id": "927f37b1-882c-4746-9d0b-7b648929fa20",
+      "prompt": "a milk container in a refrigerator",
+      "elapsed_gpu_time": 2.704418318271637,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:16.731643",
+      "processing_time_start": "2025-07-16T14:59:50.454128",
+      "time_completed": "2025-07-16T15:00:09.556280",
+      "image": "/home/DiTServing/custom_serve/output_images/request_927f37b1-882c-4746-9d0b-7b648929fa20.png"
+    },
+    {
+      "request_id": "ccaba799-9d83-467f-9c58-36f02b23276b",
+      "prompt": "slices of avocado on a piece of toast",
+      "elapsed_gpu_time": 2.860813522338867,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:18.731009",
+      "processing_time_start": "2025-07-16T14:59:52.715618",
+      "time_completed": "2025-07-16T15:00:12.084517",
+      "image": "/home/DiTServing/custom_serve/output_images/request_ccaba799-9d83-467f-9c58-36f02b23276b.png"
+    },
+    {
+      "request_id": "4160aae6-7ff9-44c3-8d92-2a89bf2f5c4c",
+      "prompt": "a sunken submarine at the bottom of the ocean",
+      "elapsed_gpu_time": 2.5011975612640382,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:20.734442",
+      "processing_time_start": "2025-07-16T14:59:56.048293",
+      "time_completed": "2025-07-16T15:00:15.024691",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4160aae6-7ff9-44c3-8d92-2a89bf2f5c4c.png"
+    },
+    {
+      "request_id": "cf94cc32-d7a2-419e-8fdf-e28b84adba52",
+      "prompt": "a black shoe with a lightning bolt on it",
+      "elapsed_gpu_time": 2.9824436221122754,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:22.897269",
+      "processing_time_start": "2025-07-16T15:00:00.472236",
+      "time_completed": "2025-07-16T15:00:19.502260",
+      "image": "/home/DiTServing/custom_serve/output_images/request_cf94cc32-d7a2-419e-8fdf-e28b84adba52.png"
+    },
+    {
+      "request_id": "a66bfeb8-516c-4988-a0d7-50977df7e835",
+      "prompt": "a man with long blonde hair, brown eyes and blue jeans",
+      "elapsed_gpu_time": 2.292502352714539,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:24.737569",
+      "processing_time_start": "2025-07-16T15:00:03.811661",
+      "time_completed": "2025-07-16T15:00:22.939233",
+      "image": "/home/DiTServing/custom_serve/output_images/request_a66bfeb8-516c-4988-a0d7-50977df7e835.png"
+    },
+    {
+      "request_id": "315a418e-4e9a-48cf-837a-04a9b59f5826",
+      "prompt": "orange juice",
+      "elapsed_gpu_time": 2.639394362926484,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:26.739388",
+      "processing_time_start": "2025-07-16T15:00:06.424299",
+      "time_completed": "2025-07-16T15:00:25.411476",
+      "image": "/home/DiTServing/custom_serve/output_images/request_315a418e-4e9a-48cf-837a-04a9b59f5826.png"
+    },
+    {
+      "request_id": "6207c94f-764c-4249-aa20-e350ae3ae70e",
+      "prompt": "a bowl",
+      "elapsed_gpu_time": 2.7565550918579103,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:28.955690",
+      "processing_time_start": "2025-07-16T15:00:09.554739",
+      "time_completed": "2025-07-16T15:00:28.496546",
+      "image": "/home/DiTServing/custom_serve/output_images/request_6207c94f-764c-4249-aa20-e350ae3ae70e.png"
+    },
+    {
+      "request_id": "ac73be47-b304-4647-a5a7-627531324dfb",
+      "prompt": "a horse in a field of flowers",
+      "elapsed_gpu_time": 2.625175524234771,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:30.743580",
+      "processing_time_start": "2025-07-16T15:00:11.732055",
+      "time_completed": "2025-07-16T15:00:30.901080",
+      "image": "/home/DiTServing/custom_serve/output_images/request_ac73be47-b304-4647-a5a7-627531324dfb.png"
+    },
+    {
+      "request_id": "a5c02c2d-c8de-45bf-a6e9-b24a642c804c",
+      "prompt": "A red dragon dressed in a tuxedo and playing chess. The chess pieces are fashioned after robots.",
+      "elapsed_gpu_time": 2.333222176551819,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:32.745475",
+      "processing_time_start": "2025-07-16T15:00:15.022959",
+      "time_completed": "2025-07-16T15:00:33.986190",
+      "image": "/home/DiTServing/custom_serve/output_images/request_a5c02c2d-c8de-45bf-a6e9-b24a642c804c.png"
+    },
+    {
+      "request_id": "7dceb5d0-79c0-4f7f-a23e-4ed1cc5d14dd",
+      "prompt": "a pony with a shooting star on its flank",
+      "elapsed_gpu_time": 3.060170315265655,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:34.743226",
+      "processing_time_start": "2025-07-16T15:00:19.398820",
+      "time_completed": "2025-07-16T15:00:38.456567",
+      "image": "/home/DiTServing/custom_serve/output_images/request_7dceb5d0-79c0-4f7f-a23e-4ed1cc5d14dd.png"
+    },
+    {
+      "request_id": "55f0e722-9ec3-4010-b595-ae1000af9aea",
+      "prompt": "The Oriental Pearl",
+      "elapsed_gpu_time": 2.450078938484191,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:37.479228",
+      "processing_time_start": "2025-07-16T15:00:22.701358",
+      "time_completed": "2025-07-16T15:00:42.040824",
+      "image": "/home/DiTServing/custom_serve/output_images/request_55f0e722-9ec3-4010-b595-ae1000af9aea.png"
+    },
+    {
+      "request_id": "2c1fd791-4b30-48a6-9f6a-298cd0b9c3be",
+      "prompt": "the sun setting behind the Parthenon",
+      "elapsed_gpu_time": 2.9615152368545523,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:38.745908",
+      "processing_time_start": "2025-07-16T15:00:25.290370",
+      "time_completed": "2025-07-16T15:00:44.375867",
+      "image": "/home/DiTServing/custom_serve/output_images/request_2c1fd791-4b30-48a6-9f6a-298cd0b9c3be.png"
+    },
+    {
+      "request_id": "4340a983-104a-4bf0-868b-e26f8fc35e29",
+      "prompt": "a massive modern windmill",
+      "elapsed_gpu_time": 2.9135422821044914,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:40.749793",
+      "processing_time_start": "2025-07-16T15:00:28.494772",
+      "time_completed": "2025-07-16T15:00:47.505145",
+      "image": "/home/DiTServing/custom_serve/output_images/request_4340a983-104a-4bf0-868b-e26f8fc35e29.png"
+    },
+    {
+      "request_id": "dd832d06-d8e2-4f60-9b22-f9eb84aafb6e",
+      "prompt": "a person with arms like a tree branch",
+      "elapsed_gpu_time": 2.9037406396865832,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:42.752106",
+      "processing_time_start": "2025-07-16T15:00:30.550427",
+      "time_completed": "2025-07-16T15:00:49.965482",
+      "image": "/home/DiTServing/custom_serve/output_images/request_dd832d06-d8e2-4f60-9b22-f9eb84aafb6e.png"
+    },
+    {
+      "request_id": "f22ac20f-594a-4f4b-9b83-96642205980c",
+      "prompt": "a painting of a phone from the 20s",
+      "elapsed_gpu_time": 2.3694000887870788,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:44.751904",
+      "processing_time_start": "2025-07-16T15:00:33.984124",
+      "time_completed": "2025-07-16T15:00:52.909072",
+      "image": "/home/DiTServing/custom_serve/output_images/request_f22ac20f-594a-4f4b-9b83-96642205980c.png"
+    },
+    {
+      "request_id": "40bfc410-29a4-4ce9-aab3-fdc4a96aeac5",
+      "prompt": "a pair of glasses under a computer monitor",
+      "elapsed_gpu_time": 2.7517907404899606,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:47.292720",
+      "processing_time_start": "2025-07-16T15:00:38.408532",
+      "time_completed": "2025-07-16T15:00:57.349076",
+      "image": "/home/DiTServing/custom_serve/output_images/request_40bfc410-29a4-4ce9-aab3-fdc4a96aeac5.png"
+    },
+    {
+      "request_id": "9b30ddbc-f1cf-4c8e-8603-85ac52bdcbf6",
+      "prompt": "a photo of the back of a covered wagon. a polar bear is sticking it's head out of the wagon.",
+      "elapsed_gpu_time": 2.485048774719238,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:48.756524",
+      "processing_time_start": "2025-07-16T15:00:41.998475",
+      "time_completed": "2025-07-16T15:01:00.901870",
+      "image": "/home/DiTServing/custom_serve/output_images/request_9b30ddbc-f1cf-4c8e-8603-85ac52bdcbf6.png"
+    },
+    {
+      "request_id": "d125bf5c-949d-4d36-8c84-050a08207896",
+      "prompt": "a cartoon of a house on a mountain",
+      "elapsed_gpu_time": 2.8593569822311404,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:50.984715",
+      "processing_time_start": "2025-07-16T15:00:44.271811",
+      "time_completed": "2025-07-16T15:01:03.411417",
+      "image": "/home/DiTServing/custom_serve/output_images/request_d125bf5c-949d-4d36-8c84-050a08207896.png"
+    },
+    {
+      "request_id": "0a31b602-fd58-415f-97d3-eb6d12ad46a4",
+      "prompt": "an aerial view of the Great Wall",
+      "elapsed_gpu_time": 2.911716970443725,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:52.759887",
+      "processing_time_start": "2025-07-16T15:00:47.502940",
+      "time_completed": "2025-07-16T15:01:05.971879",
+      "image": "/home/DiTServing/custom_serve/output_images/request_0a31b602-fd58-415f-97d3-eb6d12ad46a4.png"
+    },
+    {
+      "request_id": "1f1bb7e9-b7d5-40ce-91b3-c33fb298a3bb",
+      "prompt": "ten triangles and five squares on a black background",
+      "elapsed_gpu_time": 2.9259939708709712,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:54.760270",
+      "processing_time_start": "2025-07-16T15:00:49.669477",
+      "time_completed": "2025-07-16T15:01:07.573478",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1f1bb7e9-b7d5-40ce-91b3-c33fb298a3bb.png"
+    },
+    {
+      "request_id": "aeeb745d-bea2-44f3-a1d9-c48b38527f0e",
+      "prompt": "a dolphin jumping over a rowboat",
+      "elapsed_gpu_time": 2.9199907226562503,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:56.763853",
+      "processing_time_start": "2025-07-16T15:00:52.907427",
+      "time_completed": "2025-07-16T15:01:09.982750",
+      "image": "/home/DiTServing/custom_serve/output_images/request_aeeb745d-bea2-44f3-a1d9-c48b38527f0e.png"
+    },
+    {
+      "request_id": "70c1fa23-3d7e-453f-93cf-5f4a1c2feda6",
+      "prompt": "a red sports car on the road",
+      "elapsed_gpu_time": 2.863054034233093,
+      "status": "completed",
+      "timestamp": "2025-07-16T14:59:58.763403",
+      "processing_time_start": "2025-07-16T15:00:57.231289",
+      "time_completed": "2025-07-16T15:01:12.010282",
+      "image": "/home/DiTServing/custom_serve/output_images/request_70c1fa23-3d7e-453f-93cf-5f4a1c2feda6.png"
+    },
+    {
+      "request_id": "1b674452-a800-4ff7-aee3-463f8992ea4d",
+      "prompt": "a store front",
+      "elapsed_gpu_time": 2.806232647418976,
+      "status": "completed",
+      "timestamp": "2025-07-16T15:00:01.021652",
+      "processing_time_start": "2025-07-16T15:01:00.728773",
+      "time_completed": "2025-07-16T15:01:13.533278",
+      "image": "/home/DiTServing/custom_serve/output_images/request_1b674452-a800-4ff7-aee3-463f8992ea4d.png"
+    }
+  ]
+}

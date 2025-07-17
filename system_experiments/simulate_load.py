@@ -8,7 +8,8 @@ import time
 
 # Config
 PROMPT_FILE = "/home/DiTServing/partiprompts_generation/parti_prompts.json"
-completed_log_path = "/home/DiTServing/system_experiments/completed_requests_log_100_req.json"
+# completed_log_path = "/home/DiTServing/system_experiments/completed_requests_test.json"
+completed_log_path = "/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
 SAVE_INTERVAL = 5
 
 # Load prompts
@@ -122,10 +123,10 @@ async def main():
 
     # Simulate steady load
     # await simulate_load(num_requests=6, delay_between=1)
-    await(simulate_constant_throughput(4, 25))
+    await(simulate_constant_throughput(2, 100))
 
     # Keep polling for a while to finish all responses
-    await asyncio.sleep(200)
+    await asyncio.sleep(500)
     poll_task.cancel()
 
 

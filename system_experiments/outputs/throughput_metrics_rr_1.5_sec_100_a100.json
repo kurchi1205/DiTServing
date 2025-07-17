@@ -1,0 +1,32 @@
+{
+  "latency": {
+    "total": {
+      "avg": 129.338,
+      "p95": 239.675,
+      "max": 247.98
+    },
+    "queue": {
+      "avg": 115.407,
+      "p95": 224.696,
+      "max": 236.044
+    },
+    "inference": {
+      "avg": 13.93,
+      "p95": 14.902,
+      "max": 15.551
+    },
+    "gpu_inference": {
+      "avg": 1.835,
+      "p95": 2.029,
+      "max": 2.11
+    }
+  },
+  "throughput": {
+    "requests_per_second": 0.432,
+    "gpu_minutes": 4.588,
+    "requests_per_gpu_minute": 32.693,
+    "time_span_sec": 347.5,
+    "failed_requests": 0,
+    "total_completed_requests": 150
+  }
+}

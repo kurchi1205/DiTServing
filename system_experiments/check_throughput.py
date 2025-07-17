@@ -15,6 +15,7 @@ def save_latency_throughput_metrics(
     time_span,
     throughput_rps,
     throughput_per_gpu_min,
+    failed_requests_count,
     output_file="latency_metrics.json"
 ):
     def safe_stats(data):
@@ -38,7 +39,8 @@ def save_latency_throughput_metrics(
             "gpu_minutes": round(sum(gpu_latencies) / 60, 3),
             "requests_per_gpu_minute": round(throughput_per_gpu_min, 3),
             "time_span_sec": round(time_span, 2),
-            "total_requests": len(all_end_times)
+            "failed_requests": failed_requests_count,
+            "total_completed_requests": len(all_end_times)
         }
     }
 
@@ -57,8 +59,14 @@ def analyze_requests(requests):
     gpu_latencies = []
     all_start_times = []
     all_end_times = []
+    failed_requests_count = 0
 
     for req in requests:
+        status = req.get("status", "").lower()
+        if status == "failed":
+            failed_requests_count += 1
+            continue
+
         try:
             t_add = parse_time(req["timestamp"])
             t_start = parse_time(req["processing_time_start"])
@@ -102,11 +110,12 @@ def analyze_requests(requests):
         time_span,
         throughput_rps,
         throughput_per_gpu_min,
-        output_file="/home/DiTServing/system_experiments/throughput_metrics_4_req.json"
+        failed_requests_count,
+        output_file="/home/DiTServing/system_experiments/throughput_metrics_rr_2_sec_100_a100.json"
     )
 
 if __name__ == "__main__":
-    log_path = "/home/DiTServing/system_experiments/completed_requests_log_100_req.json"
+    log_path = "/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
     with open(log_path, "r") as f:
         data = json.load(f)
         if "completed_requests" in data:
