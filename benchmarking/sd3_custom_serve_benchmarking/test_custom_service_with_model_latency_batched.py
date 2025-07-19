@@ -158,7 +158,7 @@ class BenchmarkClient:
 
 async def main():
     # Configure these parameters as needed
-    ITERATIONS = 2
+    ITERATIONS = 5
     BATCH_SIZE = 6
     BASE_PROMPT = "Generate an image of a cat"
     TIMESTEPS = 50
