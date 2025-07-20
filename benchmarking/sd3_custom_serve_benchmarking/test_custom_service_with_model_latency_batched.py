@@ -6,7 +6,7 @@ import numpy as np
 
 
 class BenchmarkClient:
-    def __init__(self, config_path="../configs/config.yaml"):
+    def __init__(self, config_path="../../configs/config.yaml"):
         self.server_url = "http://localhost:8000"
         self.poll_interval = 0.1  # Shorter polling interval for benchmarking
         self.empty_pool_timeout = 30  # Timeout after 30 seconds of empty pool

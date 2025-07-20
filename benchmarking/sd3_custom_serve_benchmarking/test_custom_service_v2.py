@@ -3,7 +3,7 @@ import time
 import statistics
 from datetime import datetime
 import sys
-sys.path.append("../custom_serve/")
+sys.path.append("../../custom_serve/")
 from client import Client
 
 
