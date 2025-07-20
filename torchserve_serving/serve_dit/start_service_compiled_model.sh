@@ -1,11 +1,3 @@
-pip install -r requirements.txt
-git clone https://github.com/pytorch/serve.git
-cd serve && python ./ts_scripts/install_dependencies.py --force --cuda "cu121"
-cd ..
-rm -rf serve
-cp ../pipelines/base_pipeline_dit.py base_pipeline_dit.py
-python download_model.py
-
 cd Dit_model
 zip -r ../model.zip *
 cd ..
