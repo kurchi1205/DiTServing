@@ -1,2 +1,0 @@
-torchserve
-torch-model-archiver
