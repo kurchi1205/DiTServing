@@ -1,8 +1,6 @@
 import argparse
-import json
 from datetime import datetime
 import time
-import numpy as np
 import requests
 from PIL import Image
 
