@@ -2,9 +2,25 @@ import json
 from datetime import datetime
 import numpy as np
 from pathlib import Path
+import argparse
+import sys
+
 
 def parse_time(t):
+    """Parses ISO formatted timestamp into a datetime object."""
     return datetime.fromisoformat(t)
+
+
+def safe_stats(data):
+    """Calculates average, p95, and max safely for a list of values."""
+    if not data:
+        return {"avg": None, "p95": None, "max": None}
+    return {
+        "avg": round(np.mean(data), 3),
+        "p95": round(np.percentile(data, 95), 3),
+        "max": round(np.max(data), 3)
+    }
+
 
 def save_latency_throughput_metrics(
     total_latencies,
@@ -16,17 +32,9 @@ def save_latency_throughput_metrics(
     throughput_rps,
     throughput_per_gpu_min,
     failed_requests_count,
-    output_file="latency_metrics.json"
+    output_file
 ):
-    def safe_stats(data):
-        if not data:
-            return {"avg": None, "p95": None, "max": None}
-        return {
-            "avg": round(np.mean(data), 3),
-            "p95": round(np.percentile(data, 95), 3),
-            "max": round(np.max(data), 3)
-        }
-
+    """Saves calculated latency and throughput metrics to a JSON file."""
     metrics = {
         "latency": {
             "total": safe_stats(total_latencies),
@@ -52,13 +60,12 @@ def save_latency_throughput_metrics(
         print(f"Failed to save metrics: {e}")
 
 
-def analyze_requests(requests):
-    total_latencies = []
-    queue_latencies = []
-    inference_latencies = []
-    gpu_latencies = []
-    all_start_times = []
-    all_end_times = []
+def analyze_requests(requests, output_file):
+    """
+    Analyzes latency and throughput metrics from a list of request logs.
+    """
+    total_latencies, queue_latencies, inference_latencies, gpu_latencies = [], [], [], []
+    all_start_times, all_end_times = [], []
     failed_requests_count = 0
 
     for req in requests:
@@ -76,11 +83,8 @@ def analyze_requests(requests):
             queue_latencies.append((t_start - t_add).total_seconds())
             inference_latencies.append((t_end - t_start).total_seconds())
 
-            # GPU time from request if present
-            if "elapsed_gpu_time" in req:
-                gpu_time = float(req["elapsed_gpu_time"])
-            else:
-                gpu_time = (t_end - t_start).total_seconds()  # fallback
+            # GPU time from request if present, fallback to inference time
+            gpu_time = float(req.get("elapsed_gpu_time", (t_end - t_start).total_seconds()))
             gpu_latencies.append(gpu_time)
 
             all_start_times.append(t_add)
@@ -90,17 +94,17 @@ def analyze_requests(requests):
             print(f"Skipping request {req.get('request_id', '?')} due to error: {e}")
             continue
 
-    # Time range and throughput calculations
+    # Throughput calculations
     if all_end_times:
         time_span = (max(all_end_times) - min(all_start_times)).total_seconds()
         throughput_rps = len(all_end_times) / time_span if time_span > 0 else 0
     else:
-        time_span = 0
-        throughput_rps = 0
+        time_span, throughput_rps = 0, 0
 
     total_gpu_minutes = sum(gpu_latencies) / 60
     throughput_per_gpu_min = len(all_end_times) / total_gpu_minutes if total_gpu_minutes > 0 else 0
 
+    # Save metrics
     save_latency_throughput_metrics(
         total_latencies,
         queue_latencies,
@@ -111,15 +115,31 @@ def analyze_requests(requests):
         throughput_rps,
         throughput_per_gpu_min,
         failed_requests_count,
-        output_file="/home/DiTServing/system_experiments/throughput_metrics_rr_2_sec_100_a100.json"
+        output_file
     )
 
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Analyze latency and throughput metrics from completed requests.")
+    parser.add_argument("--log_file", required=True, help="Path to the completed requests JSON file.")
+    parser.add_argument("--output_file", default="latency_metrics.json", help="Path to save the metrics output JSON.")
+
+    args = parser.parse_args()
+
+    log_path = Path(args.log_file)
+    if not log_path.exists():
+        print(f"Log file not found: {log_path}")
+
+    try:
+        with open(log_path, "r") as f:
+            data = json.load(f)
+            requests = data.get("completed_requests", data)
+    except Exception as e:
+        print(f"Failed to read log file: {e}")
+
+    analyze_requests(requests, args.output_file)
+
+
 if __name__ == "__main__":
-    log_path = "/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
-    with open(log_path, "r") as f:
-        data = json.load(f)
-        if "completed_requests" in data:
-            requests = data["completed_requests"]
-        else:
-            requests = data
-        analyze_requests(requests)
+    main()
