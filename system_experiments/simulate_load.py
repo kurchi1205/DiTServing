@@ -3,21 +3,21 @@ import random
 import asyncio
 import aiohttp
 import os
-from datetime import datetime
+import argparse
 import time
 
-# Config
-PROMPT_FILE = "/home/DiTServing/partiprompts_generation/parti_prompts.json"
-# completed_log_path = "/home/DiTServing/system_experiments/completed_requests_test.json"
-completed_log_path = "/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
-SAVE_INTERVAL = 5
-
-# Load prompts
-prompts = list(json.load(open(PROMPT_FILE)).items())
-accumulated = {"completed_requests": []}
+# Config Defaults
+DEFAULT_PROMPT_FILE = "/home/DiTServing/partiprompts_generation/parti_prompts.json"
+DEFAULT_COMPLETED_LOG_PATH = "/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
+DEFAULT_SAVE_INTERVAL = 5
 
 
+# Utility function to append new data to a JSON file safely
 def append_to_json_file(new_requests, file_path):
+    """
+    Appends a list of completed requests to a JSON file.
+    If the file doesn't exist or is empty, it initializes the structure.
+    """
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             try:
@@ -28,13 +28,17 @@ def append_to_json_file(new_requests, file_path):
         existing_data = {"completed_requests": []}
 
     existing_data["completed_requests"].extend(new_requests)
-    print("Dumping to json")
+    print(f"Dumping {len(new_requests)} requests to JSON")
     with open(file_path, "w") as f:
         json.dump(existing_data, f, indent=2)
 
 
-async def poll_until_completed(get_url):
-    global accumulated
+# Polling function to fetch completed requests periodically
+async def poll_until_completed(get_url, completed_log_path, save_interval):
+    """
+    Continuously polls the server for completed requests and saves them periodically.
+    """
+    accumulated = {"completed_requests": []}
     last_flush_time = time.time()
     FLUSH_INTERVAL_SECONDS = 10  # Flush even if less than SAVE_INTERVAL
 
@@ -57,7 +61,7 @@ async def poll_until_completed(get_url):
                                     print(f"Logged request {req_id}")
 
                             # Save if batch size reached
-                            if len(accumulated["completed_requests"]) >= SAVE_INTERVAL:
+                            if len(accumulated["completed_requests"]) >= save_interval:
                                 append_to_json_file(accumulated["completed_requests"], completed_log_path)
                                 accumulated["completed_requests"].clear()
 
@@ -69,6 +73,8 @@ async def poll_until_completed(get_url):
                     accumulated["completed_requests"].clear()
                 last_flush_time = time.time()
 
+    except asyncio.CancelledError:
+        print("Polling task cancelled.")
     except Exception as e:
         print(f"Error while polling: {e}")
 
@@ -76,10 +82,13 @@ async def poll_until_completed(get_url):
     if accumulated["completed_requests"]:
         append_to_json_file(accumulated["completed_requests"], completed_log_path)
         print(f"Final flush: saved {len(accumulated['completed_requests'])} requests.")
-        accumulated["completed_requests"].clear()
 
 
-async def send_request(prompt_key, prompt_text, host="http://localhost:8000"):
+# Function to send a single request
+async def send_request(prompt_key, prompt_text, host):
+    """
+    Sends a prompt request to the server.
+    """
     add_url = f"{host}/add_request"
     data = {
         "prompt": prompt_text,
@@ -97,35 +106,58 @@ async def send_request(prompt_key, prompt_text, host="http://localhost:8000"):
         print(f"Exception adding {prompt_key}: {e}")
 
 
-async def simulate_load(num_requests=10, delay_between=0.5):
+# Load simulation functions
+async def simulate_load(prompts, host, num_requests=10, delay_between=0.5):
+    """
+    Sends a fixed number of requests with a delay between them.
+    """
     tasks = []
-
     for _ in range(num_requests):
         prompt_key, prompt_text = random.choice(prompts)
-        tasks.append(send_request(prompt_key, prompt_text))
+        tasks.append(send_request(prompt_key, prompt_text, host))
         await asyncio.sleep(delay_between)
-
     await asyncio.gather(*tasks)
 
-async def simulate_constant_throughput(rate_per_sec=2, total_duration=30):
+
+async def simulate_constant_throughput(prompts, host, rate_per_sec=2, total_duration=30):
+    """
+    Sends requests at a constant rate (requests per second) for a total duration.
+    """
     interval = 1.0 / rate_per_sec
     end_time = asyncio.get_event_loop().time() + total_duration
     while asyncio.get_event_loop().time() < end_time:
         prompt_key, prompt_text = random.choice(prompts)
-        asyncio.create_task(send_request(prompt_key, prompt_text))
+        asyncio.create_task(send_request(prompt_key, prompt_text, host))
         await asyncio.sleep(interval)
 
 
+# Main function with argument parsing
 async def main():
-    # Start background polling
-    get_url = "http://localhost:8000/get_output"
-    poll_task = asyncio.create_task(poll_until_completed(get_url))
+    parser = argparse.ArgumentParser(description="Async request simulator with polling.")
+    parser.add_argument("--prompt_file", default=DEFAULT_PROMPT_FILE, help="Path to the prompt JSON file.")
+    parser.add_argument("--completed_log", default=DEFAULT_COMPLETED_LOG_PATH, help="Path to save completed requests log.")
+    parser.add_argument("--save_interval", type=int, default=DEFAULT_SAVE_INTERVAL, help="Number of requests before saving batch.")
+    parser.add_argument("--host", default="http://localhost:8000", help="Server host URL.")
+    parser.add_argument("--rate", type=float, default=2, help="Requests per second for constant throughput.")
+    parser.add_argument("--duration", type=int, default=100, help="Duration (seconds) for load simulation.")
+    parser.add_argument("--mode", choices=["constant", "burst"], default="constant", help="Load simulation mode.")
 
-    # Simulate steady load
-    # await simulate_load(num_requests=6, delay_between=1)
-    await(simulate_constant_throughput(2, 100))
+    args = parser.parse_args()
 
-    # Keep polling for a while to finish all responses
+    # Load prompts from file
+    prompts = list(json.load(open(args.prompt_file)).items())
+
+    # Start background polling task
+    get_url = f"{args.host}/get_output"
+    poll_task = asyncio.create_task(poll_until_completed(get_url, args.completed_log, args.save_interval))
+
+    # Run selected simulation mode
+    if args.mode == "constant":
+        await simulate_constant_throughput(prompts, args.host, args.rate, args.duration)
+    else:
+        await simulate_load(prompts, args.host, num_requests=20, delay_between=1)
+
+    # Allow time for all responses to finish
     await asyncio.sleep(500)
     poll_task.cancel()
 
