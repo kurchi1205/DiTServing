@@ -37,7 +37,8 @@ class DitPipelineAttnScores(DitPipeline):
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
         get_intermediate_latents: bool = False,
-        attention_scores_layer: int = 0
+        attention_scores_layer: int = 0,
+        attention_score_folder: str = "attention_scores/",
         
     ) -> Union[ImagePipelineOutput, Tuple]:
         r"""
@@ -182,7 +183,7 @@ class DitPipelineAttnScores(DitPipeline):
 
         if output_type == "pil":
             samples = self.numpy_to_pil(samples)
-        with open(f"../results/attention/attention_scores_{attention_scores_layer}.json", "w") as f:
+        with open(f"{attention_score_folder}_{attention_scores_layer}.json", "w") as f:
             json.dump(self.attn_scores_across_timesteps, f)
 
         # Offload all models
