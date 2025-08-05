@@ -1,35 +1,36 @@
 import requests
+import argparse
 
-def download_file_with_token(url, access_token, output_file_path):
+def download_file_with_token(url: str, access_token: str, output_file_path: str) -> None:
     """
     Downloads a file from a URL that requires an access token.
 
-    :param url: str, URL of the file to download
-    :param access_token: str, access token for authorization
-    :param output_file_path: str, path to save the downloaded file
+    Args:
+        url (str): URL of the file to download
+        access_token (str): Access token for authorization
+        output_file_path (str): Path to save the downloaded file
     """
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
-    
+    headers = {"Authorization": f"Bearer {access_token}"}
+
     try:
-        response = requests.get(url, headers=headers, stream=True)
-        response.raise_for_status()  # Raise an error for HTTP errors
-
-        with open(output_file_path, "wb") as file:
-            for chunk in response.iter_content(chunk_size=8192):
-                file.write(chunk)
-
+        with requests.get(url, headers=headers, stream=True) as response:
+            response.raise_for_status()  # Raise an error for HTTP errors
+            with open(output_file_path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
         print(f"File downloaded successfully and saved to {output_file_path}")
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
 
-# Example usage
-# url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/clip_g.safetensors"
-# url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/clip_l.safetensors"
-# url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/text_encoders/t5xxl_fp16.safetensors"
-url = "https://huggingface.co/stabilityai/stable-diffusion-3-medium/resolve/main/sd3_medium.safetensors"
-access_token = ""
-output_file_path = "models/sd3_medium.safetensors"
+def main():
+    parser = argparse.ArgumentParser(description="Download files with access token")
+    parser.add_argument("-t", "--access-token", help="Access token for authorization", required=True)
+    parser.add_argument("-u", "--url", help="URL of the file to download", required=True)
+    parser.add_argument("-o", "--output-file", help="Path to save the downloaded file", required=True)
 
-download_file_with_token(url, access_token, output_file_path)
+    args = parser.parse_args()
+
+    download_file_with_token(args.url, args.access_token, args.output_file)
+
+if __name__ == "__main__":
+    main()
