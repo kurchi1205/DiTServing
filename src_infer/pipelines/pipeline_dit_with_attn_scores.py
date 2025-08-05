@@ -7,11 +7,11 @@ from diffusers import AutoencoderKL, DDIMScheduler, ImagePipelineOutput
 from diffusers.utils.torch_utils import randn_tensor
 
 try:
-    from models.dit import Transformer2DModelWithAttScores
+    from attn_models.dit import Transformer2DModelWithAttScores
 except:
     import sys
     sys.path.insert(0, "../")
-    from models.dit import Transformer2DModelWithAttScores
+    from attn_models.dit import Transformer2DModelWithAttScores
 
 class DitPipelineAttnScores(DitPipeline):
     def __init__(
