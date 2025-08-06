@@ -1,8 +1,9 @@
-import asyncio
-import aiohttp
 import sys
 import os
 import json
+import argparse
+import asyncio
+import aiohttp
 from datetime import datetime
 from PIL import Image
 from collections import defaultdict
@@ -149,16 +150,22 @@ async def process_prompts(client, prompts_dict, challenges_dict, interval):
             logger.error(f"Error processing {key}: {e}")
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Process prompts with caching intervals")
+    parser.add_argument("--interval_list", type=int, nargs="+", default=[5], help="List of caching intervals")
+    parser.add_argument("--prompt_path", type=str, default="parti_prompts.json", help="Path to prompts JSON file")
+    parser.add_argument("--challenge_path", type=str, default="parti_challenges.json", help="Path to challenges JSON file")
+    return parser.parse_args()
 
 if __name__ == "__main__":
+    args = parse_args()
     client = CachingClient()
-    interval_list = [5]
+    interval_list = args.interval_list
+    prompt_path = args.prompt_path
+    challenge_path = args.challenge_path
 
-    prompt_path = "parti_prompts.json"
-    challenge_path = "parti_challenges.json"
     prompts = json.load(open(prompt_path))
     challenges = json.load(open(challenge_path))
 
     for interval in interval_list:
         asyncio.run(process_prompts(client, prompts, challenges, interval))
-
