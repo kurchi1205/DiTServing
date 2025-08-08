@@ -25,3 +25,4 @@ dit_serve/Dit_model/*
 **/wandb
 
 **/*.egg-info
+scripts/batch_results.json

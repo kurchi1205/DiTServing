@@ -16,7 +16,7 @@ class CacheBenchmarkClient:
         self.server_url = "http://localhost:8000"
         self.poll_interval = 0.1
         self.empty_pool_timeout = 10000
-        self.output_dir = "results/cache_benchmark_results"
+        self.output_dir = "cache_benchmark_results"
         self.metrics_file = os.path.join(self.output_dir, "metrics.json")
         os.makedirs(self.output_dir, exist_ok=True)
         print(f"Created output directory: {self.output_dir}")
