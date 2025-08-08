@@ -1,3 +1,4 @@
+# Import necessary modules
 import asyncio
 import os
 from datetime import datetime
@@ -8,11 +9,10 @@ from serving.request_handler import RequestHandler
 from serving.config_loader import ConfigLoader
 from pipeline.pipeline import SD3Inferencer
 from utils.logger import get_logger
-from contextlib import asynccontextmanager
 from fastapi import BackgroundTasks, FastAPI
 
 
-
+# Create a logger
 logger = get_logger(__name__)
 
 # Load configuration
@@ -22,18 +22,20 @@ config = config_loader.config
 # Initialize the RequestHandler
 handler = None
 inference_handler = None
+
+# Set environment variable for GPU profiling
 os.environ["PROFILE_GPU"] = str(config["system"].get("profile_gpu", False)).lower()
 
 
 # Initialize FastAPI app
 app = FastAPI()
 
-
+# Define a Pydantic model for request input
 class RequestInput(BaseModel):
     prompt: str
     timesteps_left: int
 
-
+# Define API endpoints
 @app.post("/start_background_process")
 async def start_background_process(model, background_tasks: BackgroundTasks):
     global inference_handler
@@ -120,20 +122,7 @@ async def get_output():
         raise HTTPException(status_code=500, detail="Failed to retrieve completed requests.")
 
 
-# @app.on_event("startup")
-# async def startup_event():
-#     """
-#     Start the background task to monitor and process requests.
-#     """
-#     try:
-#         model = None  # Replace with the actual model if needed
-#         asyncio.create_task(handler.process_request(model))
-#         logger.info("Background request processing started during server startup.")
-#     except Exception as e:
-#         logger.error(f"Error during startup: {e}")
-#         raise RuntimeError("Failed to initialize background processing.")
-
-
+# Define a startup event to load the model and start the background task
 @app.on_event("startup")
 async def startup_event():
     """
