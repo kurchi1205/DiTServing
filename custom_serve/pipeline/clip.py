@@ -3,7 +3,6 @@ from pipeline.configs import ACTIVATIONS
 from pipeline.utils import attention
 
 
-
 class CLIPEmbeddings(torch.nn.Module):
     def __init__(
         self, embed_dim, vocab_size=49408, num_positions=77, dtype=None, device=None
@@ -129,7 +128,6 @@ class CLIPLayer(torch.nn.Module):
         self.layer_norm1 = torch.nn.LayerNorm(embed_dim, dtype=dtype, device=device)
         self.self_attn = CLIPAttention(embed_dim, heads, dtype, device)
         self.layer_norm2 = torch.nn.LayerNorm(embed_dim, dtype=dtype, device=device)
-        # self.mlp = CLIPMLP(embed_dim, intermediate_size, intermediate_activation, dtype, device)
         self.mlp = Mlp(
             embed_dim,
             intermediate_size,

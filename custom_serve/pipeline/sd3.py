@@ -1,6 +1,5 @@
 import math
 import torch
-import time
 import re
 from safetensors import safe_open
 from pipeline.utils import load_into
@@ -178,12 +177,6 @@ class CFGDenoiser(torch.nn.Module):
         cond_scale,
         **kwargs,
     ):
-        # print("Og size: ", x.size())
-        # print("Og timestep: ", timestep.size())
-        # Run cond and uncond in a batch together
-        # print("Cond:", cond)
-        # print("uncond:", uncond)
-        # st = time.time()
         batched = self.model.apply_model(
             torch.cat([x, x]),
             torch.cat([adaptive_timestep, adaptive_timestep]),
@@ -192,7 +185,6 @@ class CFGDenoiser(torch.nn.Module):
             y=torch.cat([cond["y"], uncond["y"]]),
             **kwargs,
         )
-        # print("Apply model: ", time.time() - st)
         # Then split and apply CFG Scaling
         pos_out, neg_out = batched.chunk(2)
         scaled = neg_out + (pos_out - neg_out) * cond_scale
