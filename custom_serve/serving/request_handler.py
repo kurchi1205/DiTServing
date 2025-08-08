@@ -275,7 +275,6 @@ class RequestHandler:
                 inference_handler,
                 request_id,
                 request,
-                self.request_pool.empty_latent,
                 self.request_pool.neg_cond,
                 cache_interval=self.cache_interval,
                 compute_attention=True,

@@ -8,3 +8,4 @@ fire==0.7.0
 einops
 uvicorn
 fastapi
+aiohttp
