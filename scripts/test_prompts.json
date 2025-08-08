@@ -1,0 +1,13 @@
+[
+    { "prompt": "A serene forest with a crystal-clear river flowing through it", "timesteps": 30 },
+    { "prompt": "A futuristic space station orbiting a colorful gas giant", "timesteps": 35 },
+    { "prompt": "An ancient library lit by floating lanterns", "timesteps": 40 },
+    { "prompt": "A bustling medieval marketplace with merchants and street performers", "timesteps": 32 },
+    { "prompt": "A giant mech standing in the ruins of a cyberpunk city", "timesteps": 38 },
+    { "prompt": "A magical castle floating among the clouds", "timesteps": 45 },
+    { "prompt": "A steampunk airship sailing through a fiery sunset sky", "timesteps": 50 },
+    { "prompt": "A cozy cabin in a snowy forest, with smoke rising from the chimney", "timesteps": 36 },
+    { "prompt": "A coral reef teeming with colorful fish and marine life", "timesteps": 42 },
+    { "prompt": "An enchanted desert oasis under a star-filled night sky", "timesteps": 48 }
+]
+  

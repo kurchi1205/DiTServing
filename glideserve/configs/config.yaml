@@ -12,7 +12,7 @@ client:
   poll_interval: 0.08             # Interval for polling for completed requests
 
 model:
-  model_path: "/home/DiTServing/stability_sd3_infer/models/sd3_medium.safetensors"
-  model_folder: "/home/DiTServing/stability_sd3_infer/models/"
+  model_path: "/home/DiTServing/sd3_model/sd3_medium.safetensors"
+  model_folder: "/home/DiTServing/sd3_model"
 
   
