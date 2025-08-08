@@ -7,9 +7,11 @@ class ConfigLoader:
         config_path = (Path(__file__).parent.parent / "configs/config.yaml")
         self.config = self._load_config(config_path)
 
+
     def _load_config(self, config_path):
         with open(config_path, "r") as file:
             return yaml.safe_load(file)
+
 
     def get(self, key, default=None):
         """Get a value from the config with a default fallback."""

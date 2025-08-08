@@ -15,7 +15,7 @@ class Scheduler:
         self.lock = asyncio.Lock()
         logger.info(f"Scheduler initialized with batch_size={self.batch_size}")
 
-    async def add_to_active_request_queue_1(self, request_pool, max_request_size):
+    async def add_to_active_request_queue(self, request_pool, max_request_size):
         # async with self.lock:
             # Determine how many more requests can be added to the active queue
         available_slots = max_request_size - request_pool.active_queue.qsize() - request_pool.attn_queue.qsize()
@@ -48,51 +48,6 @@ class Scheduler:
             logger.info(f"Added {added_requests} requests to the active queue (Batch size: {self.batch_size}).")
 
 
-    async def async_iter(self, iterator, limit):
-        count = 0
-        for item in iterator:
-            if count >= limit:
-                break
-            yield item
-            count += 1
-
-    async def add_to_active_request_queue(self, request_pool, max_request_size):
-        available_slots = (
-            max_request_size
-            - request_pool.active_queue.qsize()
-            - request_pool.attn_queue.qsize()
-        )
-
-        if available_slots <= 0:
-            logger.info(f"Active queue is full. Max size: {max_request_size}")
-            return
-
-        requests_to_add = min(self.batch_size, available_slots)
-
-        if requests_to_add <= 0:
-            logger.debug("No capacity to add new requests.")
-            return
-
-        added_requests = 0
-        pending_items = (
-            (req_id, req)
-            for req_id, req in request_pool.requests.items()
-            if req["status"] == RequestStatus.PENDING
-        )
-
-        async for request_id, request in self.async_iter(pending_items, limit=requests_to_add):
-            await request_pool.add_to_active_queue(request_id)
-            request["status"] = RequestStatus.IN_PROGRESS
-            logger.debug(f"Request {request_id} added to active queue.")
-            added_requests += 1
-
-        if added_requests:
-            logger.info(f"Added {added_requests} requests to active queue (Batch size: {self.batch_size}).")
-        else:
-            logger.debug("No pending requests available to add to the active queue.")
-
-
-    
 
     async def shift_to_attn_queue(self, request_pool, max_active_requests):
         """Shift requests requiring attention to the attention queue."""
@@ -138,6 +93,7 @@ class Scheduler:
                         await request_pool.attn_queue.put(request_id)
                         request["status"] = RequestStatus.IN_PROGRESS
                         logger.debug(f"New request {request_id} added to attention queue.")
+
 
     async def shift_to_active_queue_from_attn(self, request_pool):
         """
