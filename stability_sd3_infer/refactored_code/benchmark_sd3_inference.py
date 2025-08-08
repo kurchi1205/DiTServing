@@ -7,12 +7,12 @@ from pipeline import SD3Inferencer
 
 def run_benchmark(
     prompt="A scenic view of mountains during sunset",
-    model_path="models/sd3_medium.safetensors",
-    model_folder="models/",
+    model_path="../../sd3_model/sd3_medium.safetensors",
+    model_folder="../../sd3_model/",
     output_dir="outputs",
     width=1024,
     height=1024,
-    steps=10,
+    steps=50,
     cfg_scale=5.0,
     seed=42,
     sampler="dpmpp_2m",
@@ -50,8 +50,8 @@ def run_benchmark(
     for i in range(runs):
         print(f"\nRun {i+1}/{runs}")
         start = time.time()
-        images = inferencer.gen_image(
-            prompts=[prompt],
+        images = inferencer.gen_image_batched(
+            prompts=[prompt, prompt, prompt, prompt, prompt, prompt],
             width=width,
             height=height,
             steps=steps,

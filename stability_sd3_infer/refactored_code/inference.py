@@ -6,7 +6,7 @@ from pipeline import SD3Inferencer
 
 # Assuming the SD3Inferencer and necessary classes are already imported
 
-def run_inference(prompt, model_path="models/sd3_medium.safetensors", model_folder="models/", output_dir="outputs", width=1024, height=1024, steps=30, cfg_scale=5.0, seed=42, sampler="dpmpp_2m"):
+def run_inference(prompt, model_path="../../sd3_model/sd3_medium.safetensors", model_folder="../../sd3_model/", output_dir="outputs", width=1024, height=1024, steps=30, cfg_scale=5.0, seed=42, sampler="dpmpp_2m"):
     """
     Run SD3 model inference to generate an image based on the provided prompt.
 

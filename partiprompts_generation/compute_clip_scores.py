@@ -30,7 +30,7 @@ def compute_clip_scores(image_dir, prompts_path, output_path):
 
     clip_scores = {}
 
-    for img_path in sorted(image_dir.glob("*.png")):
+    for img_path in sorted(image_dir.glob("*.jpeg")):
         filename = img_path.stem  # e.g., 'p2_prompt_0_cache_2'
         
         # Extract the key by removing '_cache*' from filename
