@@ -2,19 +2,17 @@ import sys
 import os
 import asyncio
 import uuid
-import time
 import torch
 from datetime import datetime, timedelta
-from concurrent.futures import ProcessPoolExecutor
 
 try:
     from scheduler import Scheduler
     from constants import RequestStatus
-    from processor import process_each_timestep
+    from custom_serve.serving.request_processor import process_each_timestep
 except ImportError:
     from .scheduler import Scheduler
     from .constants import RequestStatus
-    from .processor import process_each_timestep, process_each_timestep_batched
+    from .request_processor import process_each_timestep, process_each_timestep_batched
 
 sys.path.append("../")
 from utils.logger import get_logger
