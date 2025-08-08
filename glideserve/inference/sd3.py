@@ -2,9 +2,9 @@ import math
 import torch
 import re
 from safetensors import safe_open
-from pipeline.utils import load_into
-from pipeline.mmditx import MMDiTX
-from pipeline.sd3_sampler_with_latent import ModelSamplingDiscreteFlowAdaptive
+from inference.utils import load_into
+from inference.mmditx import MMDiTX
+from inference.sd3_sampler_with_latent import ModelSamplingDiscreteFlowAdaptive
 
 
 class ModelSamplingDiscreteFlow(torch.nn.Module):

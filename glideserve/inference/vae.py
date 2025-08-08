@@ -2,7 +2,7 @@ import os
 import torch
 import einops
 from safetensors import safe_open
-from pipeline.utils import load_into
+from inference.utils import load_into
 
 def Normalize(in_channels, num_groups=32, dtype=torch.float32, device=None):
     return torch.nn.GroupNorm(

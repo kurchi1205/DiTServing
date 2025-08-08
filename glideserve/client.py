@@ -4,7 +4,7 @@ from tracemalloc import start
 import aiohttp
 import json
 from utils.logger import get_logger
-from serving.config_loader import ConfigLoader
+from request_management.config_loader import ConfigLoader
 
 logger = get_logger(__name__)
 

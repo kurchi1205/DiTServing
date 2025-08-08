@@ -5,9 +5,9 @@ from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from serving.request_handler import RequestHandler
-from serving.config_loader import ConfigLoader
-from pipeline.pipeline import SD3Inferencer
+from request_management.request_handler import RequestHandler
+from request_management.config_loader import ConfigLoader
+from inference.pipeline import SD3Inferencer
 from utils.logger import get_logger
 from fastapi import BackgroundTasks, FastAPI
 

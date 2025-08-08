@@ -4,10 +4,10 @@ import math
 import numpy as np
 from PIL import Image
 import sys
-from pipeline.tokenizer import SD3Tokenizer
-from pipeline.text_encoder import T5XXL, ClipL, ClipG
-from pipeline.sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
-from pipeline.vae import VAE
+from inference.tokenizer import SD3Tokenizer
+from inference.text_encoder import T5XXL, ClipL, ClipG
+from inference.sd3 import SD3, SD3LatentFormat, SkipLayerCFGDenoiser, CFGDenoiser
+from inference.vae import VAE
 from tqdm import tqdm
 import time
 PROFILE_GPU = os.getenv("PROFILE_GPU", "false").lower() == "true"

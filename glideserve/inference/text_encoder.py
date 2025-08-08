@@ -1,9 +1,9 @@
 import torch
 from safetensors import safe_open
-from pipeline.utils import load_into
-from pipeline.configs import CLIPG_CONFIG, CLIPL_CONFIG, T5_CONFIG
-from pipeline.t5 import T5
-from pipeline.clip import CLIPEmbeddings, CLIPEncoder
+from inference.utils import load_into
+from inference.configs import CLIPG_CONFIG, CLIPL_CONFIG, T5_CONFIG
+from inference.t5 import T5
+from inference.clip import CLIPEmbeddings, CLIPEncoder
 
 class ClipTokenWeightEncoder:
     def encode_token_weights(self, token_weight_pairs):

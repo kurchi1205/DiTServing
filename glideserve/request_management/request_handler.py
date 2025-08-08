@@ -16,7 +16,7 @@ except ImportError:
 
 sys.path.append("../")
 from utils.logger import get_logger
-from pipeline.sd3 import CFGDenoiser, SD3LatentFormat
+from inference.sd3 import CFGDenoiser, SD3LatentFormat
 
 PROFILE_GPU = os.getenv("PROFILE_GPU", "false").lower() == "true"
 

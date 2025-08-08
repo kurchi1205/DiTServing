@@ -1,6 +1,6 @@
 import torch
-from pipeline.configs import ACTIVATIONS
-from pipeline.utils import attention
+from inference.configs import ACTIVATIONS
+from inference.utils import attention
 
 
 class CLIPEmbeddings(torch.nn.Module):

@@ -8,8 +8,8 @@ import torch
 import torch.nn as nn
 from einops import rearrange, repeat
 
-from pipeline.clip import Mlp
-from pipeline.utils import attention
+from inference.clip import Mlp
+from inference.utils import attention
 
 
 class PatchEmbed(nn.Module):
