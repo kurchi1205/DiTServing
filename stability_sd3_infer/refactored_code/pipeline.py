@@ -324,7 +324,7 @@ class SD3Inferencer:
             skip_layer_config={},
         ):
             controlnet_cond = None
-            latent = self.get_empty_latent(1, width, height, seed, "cpu")
+            latent = self.get_empty_latent(len(prompts), width, height, seed, "cpu")
             latent = latent.cuda()
             neg_cond = self.get_cond("")
             seed_num = None

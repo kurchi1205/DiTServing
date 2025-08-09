@@ -30,7 +30,7 @@ def run_inference(prompt, model_path="../../sd3_model/sd3_medium.safetensors", m
     inferencer.load(
         model=model_path,
         model_folder=model_folder,
-        text_encoder_device="cpu",
+        text_encoder_device="cuda",
         verbose=True
     )
 

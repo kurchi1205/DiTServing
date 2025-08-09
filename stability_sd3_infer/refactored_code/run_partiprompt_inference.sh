@@ -11,7 +11,7 @@ SEED=50
 
 echo "🚀 Starting batch inference..."
 
-python inference.py \
+python batch_inference.py \
     --prompt_json_path "$PROMPT_JSON" \
     --challenge_json_path "$CHALLENGE_JSON"\
     --model_path "$MODEL_PATH" \

@@ -13,4 +13,7 @@
 # python inference.py "Cozy Bedroom Scene with Woman Taking a Mirror Selfie Art" --output_dir /home/DiTServing/assets/10_steps_prompt_5 --steps 10 --seed 50
 # python inference.py "Serene Young Woman Portrait with Iridescent Shawl Art" --output_dir /home/DiTServing/assets/10_steps_prompt_6 --steps 10 --seed 50
 # python inference.py "Whimsical Garden Gnome with Flowers and Butterflies Poster" --output_dir /home/DiTServing/assets/10_steps_prompt_7 --steps 10 --seed 50
-python inference.py "A helicopter flies over Yosemite" --output_dir /home/DiTServing/assets/prompt_8 --steps 50 --seed 50
+python inference.py "A helicopter flies over Yosemite" --output_dir /home/DiTServing/assets/sd3_og_step_10/yosemite --steps 10 --seed 50
+python inference.py "Downtown Singapore at sunrise. detailed ink wash." --output_dir /home/DiTServing/assets/sd3_og_step_10/SG --steps 10 --seed 50
+python inference.py "A tornado made of sharks crashing into a skyscraper. painting in the style of abstract cubism." --output_dir /home/DiTServing/assets/sd3_og_step_10/tornado --steps 10 --seed 50
+python inference.py "A punk rock frog in a studded leather jacket shouting into a microphone while standing on a boulder" --output_dir /home/DiTServing/assets/sd3_og_step_10/frog --steps 10 --seed 50

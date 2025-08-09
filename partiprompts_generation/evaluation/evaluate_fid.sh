@@ -1,7 +1,7 @@
 SRC_DIR="/home/DiTServing/assets/partiprompts_sd3_og"
 TGT_DIR="/home/DiTServing/assets/partiprompts_sd3_custom"
 OUTPUT_JSON="/home/DiTServing/partiprompts_generation/outputs/fid_scores_by_prompt.json"
-INTERVALS="4 5"
+INTERVALS="1 2 3 4 5 6"
 
 # Run the Python script
 python compute_fid_scores.py \
