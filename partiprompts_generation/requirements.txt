@@ -3,5 +3,5 @@ aiohttp
 torchvision==0.23.0
 diffusers==0.30.0
 accelerate==1.0.1
-torchmetrics
+torchmetrics==1.8.1
 torch-fidelity
