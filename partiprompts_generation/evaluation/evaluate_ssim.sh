@@ -12,4 +12,4 @@ python compute_ssim_scores.py \
     --output "$OUTPUT_JSON" \
     --intervals $INTERVALS
 
-python ssim_stats_summary.py --json_path "/home/DiTServing/partiprompts_generation/outputs/ssim_scores_by_prompt.json"
+python stats_summary_ssim.py --json_path "/home/DiTServing/partiprompts_generation/outputs/ssim_scores_by_prompt.json"
