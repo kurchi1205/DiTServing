@@ -1,5 +1,7 @@
 datasets==4.0.0
 aiohttp
-torchvision
+torchvision==0.23.0
+diffusers==0.30.0
+accelerate==1.0.1
 torchmetrics
 torch-fidelity

@@ -8,14 +8,14 @@ from datetime import datetime
 from PIL import Image
 from collections import defaultdict
 
-sys.path.insert(0, "../")
-from custom_serve.utils.logger import get_logger
-from custom_serve.serving.config_loader import ConfigLoader
+sys.path.insert(0, "../../")
+from glideserve.utils.logger import get_logger
+from glideserve.request_management.config_loader import ConfigLoader
 
 logger = get_logger(__name__)
 
 class CachingClient:
-    def __init__(self, config_path="../cystom_serve/configs/config.yaml"):
+    def __init__(self, config_path="../glideserve/configs/config.yaml"):
         self.config = ConfigLoader(config_path).config
         self.server_url = self.config["server"]["url"]
         self.poll_interval = self.config["client"]["poll_interval"]
@@ -112,8 +112,8 @@ class CachingClient:
         # logger.info("Starting background process...")
         # await self.start_background_process()
 
-        # logger.info(f"Setting caching interval to {interval}")
-        # await self.change_caching_interval(interval)
+        logger.info(f"Setting caching interval to {interval}")
+        await self.change_caching_interval(interval)
 
         logger.info("Submitting inference request...")
         await self.add_request(prompt, timesteps_left)
