@@ -59,7 +59,8 @@ def infer(pipe: StableDiffusion3Pipeline, prompt: str, num_inference_steps: int)
         num_inference_steps=num_inference_steps,
         height=512,
         width=512,
-        guidance_scale=7.0,
+        guidance_scale=5.0,
+        generator=torch.Generator(device="cuda").manual_seed(50)
     ).images[0]
     return image
 
