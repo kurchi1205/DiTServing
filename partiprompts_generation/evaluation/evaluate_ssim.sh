@@ -3,7 +3,7 @@
 SRC_DIR="/home/DiTServing/assets/partiprompts_sd3_og"
 TGT_DIR="/home/DiTServing/assets/partiprompts_sd3_custom"
 OUTPUT_JSON="/home/DiTServing/partiprompts_generation/outputs/ssim_scores_by_prompt.json"
-INTERVALS="5"
+INTERVALS="1 2 3 4 5 6"
 
 # Run SSIM evaluation
 python compute_ssim_scores.py \

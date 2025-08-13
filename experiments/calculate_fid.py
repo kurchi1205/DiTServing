@@ -6,10 +6,11 @@ from PIL import Image
 from torchmetrics.image.fid import FrechetInceptionDistance
 
 class FIDCalculator:
-    def __init__(self, source_dir):
-        """Initialize with the source directory containing reference images."""
+    def __init__(self, source_dir, index):
+        """Initialize with the source directory containing reference images and index."""
         self.source_dir = source_dir
-        self.fid = FrechetInceptionDistance(normalize=True)
+        self.index = index
+        self.fid = FrechetInceptionDistance(normalize=True, feature=64, input_img_size=(3, 300, 300))
         self._load_source_images()
 
     def _load_source_images(self):
@@ -17,9 +18,10 @@ class FIDCalculator:
         self.fid.reset()
         source_tensors = []
         for img_name in os.listdir(self.source_dir):
-            if img_name.endswith(('.png', '.jpg', '.jpeg')):
+            if img_name.endswith(f"_{self.index}.png") or img_name.endswith(f"_{self.index}.jpg") or img_name.endswith(f"_{self.index}.jpeg"):
                 img_path = os.path.join(self.source_dir, img_name)
                 img = self._process_image(img_path)
+                source_tensors.append(img)
                 source_tensors.append(img)
         
         if source_tensors:
@@ -29,8 +31,9 @@ class FIDCalculator:
             raise ValueError("No valid source images found.")
     
     def _process_image(self, image_path):
-        """Load and preprocess an image."""
+        """Load, resize and preprocess an image."""
         img = Image.open(image_path).convert('RGB')
+        img = img.resize((300, 300))
         img_tensor = torch.from_numpy(np.array(img)).permute(2, 0, 1).unsqueeze(0)
         return img_tensor
     
@@ -39,10 +42,8 @@ class FIDCalculator:
         try:
             gen_img = self._process_image(generated_image_path)
             gen_img_batch = gen_img.repeat(2, 1, 1, 1)
-            print(gen_img_batch.size())
             self.fid.update(gen_img_batch, real=False)
             fid_value = self.fid.compute().item()
-            self._load_source_images()
             # self.fid.reset()  # Reset after each calculation
             return fid_value if np.isfinite(fid_value) else None
         except Exception as e:
@@ -53,7 +54,7 @@ class FIDCalculator:
         """Compute FID for all images in the target directory."""
         fid_scores = {}
         for img_name in os.listdir(target_dir):
-            if img_name.endswith(('.png', '.jpg', '.jpeg')):
+            if img_name.endswith(f"_{self.index}.png") or img_name.endswith(f"_{self.index}.jpg") or img_name.endswith(f"_{self.index}.jpeg"):
                 img_path = os.path.join(target_dir, img_name)
                 fid_value = self.calculate_fid(img_path)
                 if fid_value is not None:
@@ -81,6 +82,14 @@ class FIDCalculator:
 
 
 # Example usage:
-fid_calc = FIDCalculator("/home/DiTServing/assets/fid/prompt_0")
-fid_scores = fid_calc.calculate_fid_for_directory("/home/DiTServing/assets/fid_2/prompt_0")
-fid_calc.plot_fid_scores(fid_scores)
+index = 2
+source_dir = "/home/DiTServing/assets/images_diffusers"
+target_dirs = ["/home/DiTServing/assets/images_distri", "/home/DiTServing/assets/images_Katz", "/home/DiTServing/assets/images_nirvana"]
+
+fid_calc = FIDCalculator(source_dir, index)
+for target_dir in target_dirs:
+    fid_scores = fid_calc.calculate_fid_for_directory(target_dir)
+    print(f"FID scores for {target_dir}:")
+    for img_name, fid_value in fid_scores.items():
+        print(f"{img_name}: {fid_value:.4f}")
+    print()
