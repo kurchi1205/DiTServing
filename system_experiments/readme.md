@@ -25,7 +25,7 @@ Run scripts using Python or shell. For example:
 
 ```bash
 python start_background.py
-./simulate_load.sh
+./run_simulation.sh
 ./analyze_metrics.sh
 python plot_throughput.py
 python plot_job_latency.py

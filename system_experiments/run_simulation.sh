@@ -1,14 +1,14 @@
 #!/bin/bash
 
 PROMPT_FILE="/home/DiTServing/partiprompts_generation/parti_prompts.json"
-COMPLETED_LOG="/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
+COMPLETED_LOG="/home/DiTServing/system_experiments/outputs/completed_requests_rr_3_sec_100.json"
 HOST="http://localhost:8000"
 SAVE_INTERVAL=5
-RATE=2              # requests per second
+RATE=3             # requests per second
 DURATION=100        # total duration in seconds
 MODE="constant"     # "constant" or "burst"
 
-python simulate_requests.py \
+python simulate_load.py \
   --prompt_file "$PROMPT_FILE" \
   --completed_log "$COMPLETED_LOG" \
   --host "$HOST" \

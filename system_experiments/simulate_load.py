@@ -158,7 +158,7 @@ async def main():
         await simulate_load(prompts, args.host, num_requests=20, delay_between=1)
 
     # Allow time for all responses to finish
-    await asyncio.sleep(500)
+    await asyncio.sleep(1000)
     poll_task.cancel()
 
 
