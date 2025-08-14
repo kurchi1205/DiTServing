@@ -21,7 +21,7 @@ def plot_correlation_matrix(json_file, layer_name):
     plt.title('Correlation Matrix of Attention Scores Across Timesteps')
     plt.xlabel('Attention Scores Index')
     plt.ylabel('Attention Scores Index')
-    plt.savefig(f"attention_results/attn_corr_{layer_name}.jpeg")  # Save the figure to a file
+    plt.savefig(f"../results/attention/attn_corr_{layer_name}.jpeg")  # Save the figure to a file
     plt.close()
 
 
@@ -33,4 +33,4 @@ def parse_args():
 # Example usage:
 if __name__ == "__main__":
     args = parse_args()
-    plot_correlation_matrix(f"attention_results/attention_scores_{args.attention_scores_layer}.json", args.attention_scores_layer)
+    plot_correlation_matrix(f"../results/attention/attention_scores_{args.attention_scores_layer}.json", args.attention_scores_layer)
