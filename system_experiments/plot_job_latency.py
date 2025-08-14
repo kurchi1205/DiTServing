@@ -41,9 +41,9 @@ def get_latency_from_jsons(json_list, output_path):
 
 if __name__ == '__main__':
     json_list = [
-            "/home/DiTServing/system_experiments/outputs/throughput_metrics_rr_0.5_sec_100_a100.json",
-            "/home/DiTServing/system_experiments/outputs/throughput_metrics_rr_1_sec_100_a100.json",
-            "/home/DiTServing/system_experiments/outputs/throughput_metrics_rr_1.5_sec_100_a100.json",
-            "/home/DiTServing/system_experiments/outputs/throughput_metrics_rr_2_sec_100_a100.json"
+            "/home/fast-dit-serving/system_experiments/outputs/throughput_metrics_rr_0.5_sec_100_a100.json",
+            "/home/fast-dit-serving/system_experiments/outputs/throughput_metrics_rr_1_sec_100_a100.json",
+            "/home/fast-dit-serving/system_experiments/outputs/throughput_metrics_rr_1.5_sec_100_a100.json",
+            "/home/fast-dit-serving/system_experiments/outputs/throughput_metrics_rr_2_sec_100_a100.json"
         ]
-    get_latency_from_jsons(json_list, "/home/DiTServing/system_experiments/outputs/latency_plot.jpeg")
+    get_latency_from_jsons(json_list, "/home/fast-dit-serving/system_experiments/outputs/latency_plot.jpeg")

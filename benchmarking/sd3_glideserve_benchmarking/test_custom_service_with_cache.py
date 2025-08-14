@@ -116,7 +116,7 @@ class CacheBenchmarkClient:
     def calculate_fid(self, generated_image_path, prompt_index):
         """Calculate FID score between generated image and references"""
         try:
-            reference_folder = os.path.join("/home/DiTServing/assets/fid", f"prompt_{prompt_index}")
+            reference_folder = os.path.join("/home/fast-dit-serving/assets/fid", f"prompt_{prompt_index}")
             
             # Reset FID metric
             self.reset_fid()

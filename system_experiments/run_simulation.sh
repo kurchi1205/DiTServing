@@ -1,7 +1,7 @@
 #!/bin/bash
 
-PROMPT_FILE="/home/DiTServing/partiprompts_generation/parti_prompts.json"
-COMPLETED_LOG="/home/DiTServing/system_experiments/outputs/completed_requests_rr_3_sec_100.json"
+PROMPT_FILE="/home/fast-dit-serving/partiprompts_generation/parti_prompts.json"
+COMPLETED_LOG="/home/fast-dit-serving/system_experiments/outputs/completed_requests_rr_3_sec_100.json"
 HOST="http://localhost:8000"
 SAVE_INTERVAL=5
 RATE=3             # requests per second

@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 
 # Load saved LPIPS results
-with open("/home/DiTServing/outputs/niqe_scores_by_prompt.json", "r") as f:
+with open("/home/fast-dit-serving/outputs/niqe_scores_by_prompt.json", "r") as f:
     niqe_data = json.load(f)
 
 # Convert interval strings to integers and sort
@@ -23,4 +23,4 @@ plt.title("NIQE Score vs Cache Interval (per prompt)")
 plt.legend(title="Prompt", bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.grid(True)
 plt.tight_layout()
-plt.savefig("/home/DiTServing/outputs/niqe_scores_by_prompt_plot.png")
+plt.savefig("/home/fast-dit-serving/outputs/niqe_scores_by_prompt_plot.png")

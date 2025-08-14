@@ -48,13 +48,13 @@ def get_psnr_list(src_dir, target_dir, src_id, target_id, psnr_metric):
 
 if __name__=="__main__":
     # ---- Define paths ----
-    src_path = "/home/DiTServing/saved_latents_0"
+    src_path = "/home/fast-dit-serving/saved_latents_0"
     target_paths = [
-        # "/home/DiTServing/saved_latents_0",
-        "/home/DiTServing/saved_latents_1",
-        # "/home/DiTServing/saved_latents_2",
-        # "/home/DiTServing/saved_latents_4",
-        # "/home/DiTServing/saved_latents_3",
+        # "/home/fast-dit-serving/saved_latents_0",
+        "/home/fast-dit-serving/saved_latents_1",
+        # "/home/fast-dit-serving/saved_latents_2",
+        # "/home/fast-dit-serving/saved_latents_4",
+        # "/home/fast-dit-serving/saved_latents_3",
     ]
     psnr_metric = PeakSignalNoiseRatio(data_range=12.0)
     # ---- Select source request ID ----

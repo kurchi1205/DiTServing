@@ -1,8 +1,8 @@
-PROMPT_JSON="/home/DiTServing/partiprompts_generation/parti_prompts.json"
-CHALLENGE_JSON="/home/DiTServing/partiprompts_generation/parti_challenges.json"
+PROMPT_JSON="/home/fast-dit-serving/partiprompts_generation/parti_prompts.json"
+CHALLENGE_JSON="/home/fast-dit-serving/partiprompts_generation/parti_challenges.json"
 MODEL_PATH="../models/sd3_medium.safetensors"
 MODEL_FOLDER="../models/"
-OUTPUT_DIR="/home/DiTServing/assets/partiprompts_sd3_og"
+OUTPUT_DIR="/home/fast-dit-serving/assets/partiprompts_sd3_og"
 WIDTH=1024
 HEIGHT=1024
 STEPS=50

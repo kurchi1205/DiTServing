@@ -223,8 +223,8 @@ def niqe(inputImgData):
 
 if __name__ == "__main__":
     
-    ref = np.array(Image.open('/home/DiTServing/assets/our_outputs/prompt_2/cache_6.png').convert('LA'))[:,:,0] # ref
-    # ref = np.array(Image.open('/home/DiTServing/assets/prompt_1/generated_image.png').convert('LA'))[:,:,0] # ref
+    ref = np.array(Image.open('/home/fast-dit-serving/assets/our_outputs/prompt_2/cache_6.png').convert('LA'))[:,:,0] # ref
+    # ref = np.array(Image.open('/home/fast-dit-serving/assets/prompt_1/generated_image.png').convert('LA'))[:,:,0] # ref
     # dis = np.array(Image.open('./test_imgs/bikes_distorted.bmp').convert('LA'))[:,:,0] # dis
 
     print('NIQE of ref bikes image is: %0.3f'% niqe(ref))

@@ -11,8 +11,8 @@ from torchmetrics.image.fid import FrechetInceptionDistance
 
 
 
-source_root = Path("/home/DiTServing/assets")
-target_root = Path("/home/DiTServing/assets/our_outputs")
+source_root = Path("/home/fast-dit-serving/assets")
+target_root = Path("/home/fast-dit-serving/assets/our_outputs")
 cache_intervals = [0, 1, 2, 3, 4, 5, 6]  # Your desired intervals
 
 transform = transforms.Compose([
@@ -86,7 +86,7 @@ for interval, results in fid_scores.items():
         final_scores[prompt][str(interval)] = score  # Use str for JSON keys
 
 # Save to file
-output_path = "/home/DiTServing/outputs/fid_scores_by_prompt.json"
+output_path = "/home/fast-dit-serving/outputs/fid_scores_by_prompt.json"
 with open(output_path, "w") as f:
     json.dump(final_scores, f, indent=2)
 

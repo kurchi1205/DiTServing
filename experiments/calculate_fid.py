@@ -83,8 +83,8 @@ class FIDCalculator:
 
 # Example usage:
 index = 2
-source_dir = "/home/DiTServing/assets/images_diffusers"
-target_dirs = ["/home/DiTServing/assets/images_distri", "/home/DiTServing/assets/images_Katz", "/home/DiTServing/assets/images_nirvana"]
+source_dir = "/home/fast-dit-serving/assets/images_diffusers"
+target_dirs = ["/home/fast-dit-serving/assets/images_distri", "/home/fast-dit-serving/assets/images_Katz", "/home/fast-dit-serving/assets/images_nirvana"]
 
 fid_calc = FIDCalculator(source_dir, index)
 for target_dir in target_dirs:

@@ -7,8 +7,8 @@ import argparse
 import time
 
 # Config Defaults
-DEFAULT_PROMPT_FILE = "/home/DiTServing/partiprompts_generation/parti_prompts.json"
-DEFAULT_COMPLETED_LOG_PATH = "/home/DiTServing/system_experiments/completed_requests_rr_2_sec_100.json"
+DEFAULT_PROMPT_FILE = "/home/fast-dit-serving/partiprompts_generation/parti_prompts.json"
+DEFAULT_COMPLETED_LOG_PATH = "/home/fast-dit-serving/system_experiments/completed_requests_rr_2_sec_100.json"
 DEFAULT_SAVE_INTERVAL = 5
 
 

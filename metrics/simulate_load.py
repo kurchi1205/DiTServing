@@ -7,8 +7,8 @@ from datetime import datetime
 import time
 
 # Config
-PROMPT_FILE = "/home/DiTServing/metrics/testing_prompts.json"
-completed_log_path = "/home/DiTServing/metrics/completed_requests_log_100_req.json"
+PROMPT_FILE = "/home/fast-dit-serving/metrics/testing_prompts.json"
+completed_log_path = "/home/fast-dit-serving/metrics/completed_requests_log_100_req.json"
 SAVE_INTERVAL = 5
 
 # Load prompts

@@ -82,8 +82,8 @@ def compute_psnr_for_folders(source_root, target_root, cache_intervals):
 
 
 if __name__ == "__main__":
-    source_dir = "/home/DiTServing/assets"
-    target_dir = "/home/DiTServing/assets/our_outputs"
+    source_dir = "/home/fast-dit-serving/assets"
+    target_dir = "/home/fast-dit-serving/assets/our_outputs"
     cache_steps = [1, 2, 3, 4, 5, 6]  # Update as needed
 
     compute_psnr_for_folders(source_dir, target_dir, cache_steps)

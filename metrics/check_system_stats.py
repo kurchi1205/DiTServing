@@ -57,4 +57,4 @@ def collect_system_metrics(interval=2, output_file="system_metrics.json"):
 
 
 if __name__ == "__main__":
-    collect_system_metrics(interval=2, output_file="/home/DiTServing/outputs/metrics.json")
+    collect_system_metrics(interval=2, output_file="/home/fast-dit-serving/outputs/metrics.json")

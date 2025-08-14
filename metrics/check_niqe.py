@@ -53,9 +53,9 @@ def evaluate_niqe_by_prompt(src_root, tgt_root, cache_intervals, output_path="ni
 
 # --- Entry Point ---
 if __name__ == "__main__":
-    src_root = "/home/DiTServing/assets"
-    tgt_root = "/home/DiTServing/assets/our_outputs"
-    output_path = "/home/DiTServing/outputs/niq_scores_by_prompt.json"
+    src_root = "/home/fast-dit-serving/assets"
+    tgt_root = "/home/fast-dit-serving/assets/our_outputs"
+    output_path = "/home/fast-dit-serving/outputs/niq_scores_by_prompt.json"
     cache_intervals = [1, 2, 3, 4, 5, 6]
 
     evaluate_niqe_by_prompt(src_root, tgt_root, cache_intervals, output_path)
