@@ -9,13 +9,13 @@ from PIL import Image
 from collections import defaultdict
 
 sys.path.insert(0, "../../")
-from glideserve.utils.logger import get_logger
-from glideserve.request_management.config_loader import ConfigLoader
+from sd3_serve.utils.logger import get_logger
+from sd3_serve.request_management.config_loader import ConfigLoader
 
 logger = get_logger(__name__)
 
 class CachingClient:
-    def __init__(self, config_path="../glideserve/configs/config.yaml"):
+    def __init__(self, config_path="../sd3_serve/configs/config.yaml"):
         self.config = ConfigLoader(config_path).config
         self.server_url = self.config["server"]["url"]
         self.poll_interval = self.config["client"]["poll_interval"]

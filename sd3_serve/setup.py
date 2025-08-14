@@ -6,7 +6,7 @@ def read_requirements():
 
 
 setup(
-    name='glideServe',
+    name='sd3_serve',
     version='0.1',
     packages=find_packages(),  # Automatically finds all submodules
     install_requires=read_requirements(),       # You can add your dependencies here or use requirements.txt
