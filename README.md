@@ -66,7 +66,7 @@ Figure&nbsp;1 illustrates the processing pipeline of our framework, detailing th
 
 ### 1. Installation
 ```bash
-cd glideserve
+cd sd3_serve
 pip install -e .
 ```
 
@@ -79,7 +79,7 @@ cd scripts
 ### 3. Usage
 #### Start the Server
 ```bash
-cd glideserve
+cd sd3_serve
 python server.py
 ```
 #### Single and Batched Inference
@@ -94,13 +94,13 @@ python run_batched_example.py test_prompts.json
 
 ## Benchmarking
 Benchmarks were run on an **NVIDIA A100 GPU**.  
-_For detailed usage instructions on running these benchmarks, see the [Benchmarking Guide](./benchmarking/sd3_glideserve_benchmarking/benchmarking.md)._
+_For detailed usage instructions on running these benchmarks, see the [Benchmarking Guide](./benchmarking/sd3_sd3_serve_benchmarking/benchmarking.md)._
 
 #### Results
 | Server Tested           | Mean Time (s) | Median Time (s) |
 |-------------------------|---------------|-----------------|
-| GlideServe (Single)     | 1.23          | 1.10            | 
-| GlideServe (Batched)    | 0.85          | 0.80            |
+| sd3_serve (Single)     | 1.23          | 1.10            | 
+| sd3_serve (Batched)    | 0.85          | 0.80            |
 
 
 ## Load Testing
