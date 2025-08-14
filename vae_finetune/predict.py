@@ -70,8 +70,8 @@ def load_vae_model(model_path, dtype=torch.float16, device="cpu"):
 
 
 def main():
-    image_path = "/home/DiTServing/custom_serve/output_images/request_164409f4-2980-4b58-a57b-61f297fad19c.png"                      # Change to your image
-    model_path = "/home/DiTServing/vae_finetune/outputs/models_v4_fp16/250-finetuned.pth"        # Change to your model
+    image_path = "/home/fast-dit-serving/custom_serve/output_images/request_164409f4-2980-4b58-a57b-61f297fad19c.png"                      # Change to your image
+    model_path = "/home/fast-dit-serving/vae_finetune/outputs/models_v4_fp16/250-finetuned.pth"        # Change to your model
     save_path = "output_denoised.png"
 
     device = "cuda" if torch.cuda.is_available() else "cpu"

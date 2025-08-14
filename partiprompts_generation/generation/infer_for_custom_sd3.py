@@ -119,7 +119,7 @@ class CachingClient:
         await self.add_request(prompt, timesteps_left)
 
         logger.info("Polling for output...")
-        path = f"/home/DiTServing/assets/partiprompts_sd3_custom/{key}_cache_{interval}.png"
+        path = f"/home/fast-dit-serving/assets/partiprompts_sd3_custom/{key}_cache_{interval}.png"
         await self.poll_for_outputs(path)
 
 

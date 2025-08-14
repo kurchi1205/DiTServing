@@ -55,7 +55,7 @@ def parse_args():
 
     # default setting I'm using:
     args.pretrained_model_name_or_path = r"pretrained_model/sdxl_vae"
-    args.vae_model = "/home/DiTServing/stability_sd3_infer/models/sd3_medium.safetensors"
+    args.vae_model = "/home/fast-dit-serving/stability_sd3_infer/models/sd3_medium.safetensors"
     # args.revision
     # args.dataset_name = "ideepankarsharma2003/MidJourney-generated-images"
     args.dataset_name = "ehristoforu/midjourney-images"

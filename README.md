@@ -1,4 +1,4 @@
-# DiTServing
+# fast-dit-serving
 ## Overview
 
 Our contributions are summarized as follows:

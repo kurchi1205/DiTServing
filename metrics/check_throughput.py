@@ -83,12 +83,12 @@ def analyze_requests(requests):
         all_end_times,
         time_span,
         throughput,
-        output_file = "/home/DiTServing/outputs/throughput_metrics_4_req.json"
+        output_file = "/home/fast-dit-serving/outputs/throughput_metrics_4_req.json"
     )
 
 
 if __name__ == "__main__":
-    log_path = "/home/DiTServing/metrics/completed_requests_log_4_req.json"
+    log_path = "/home/fast-dit-serving/metrics/completed_requests_log_4_req.json"
     with open(log_path, "r") as f:
         data = json.load(f)
         if "completed_requests" in data:

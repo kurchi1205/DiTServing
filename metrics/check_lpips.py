@@ -72,9 +72,9 @@ def compute_lpips_for_folders(source_root, target_root, cache_intervals, output_
 
 
 if __name__ == "__main__":
-    source_dir = "/home/DiTServing/assets"
-    target_dir = "/home/DiTServing/assets/our_outputs"
-    output_json = "/home/DiTServing/outputs/lpips_scores_by_prompt.json"
+    source_dir = "/home/fast-dit-serving/assets"
+    target_dir = "/home/fast-dit-serving/assets/our_outputs"
+    output_json = "/home/fast-dit-serving/outputs/lpips_scores_by_prompt.json"
     cache_steps = [0, 1, 2, 3, 4, 5, 6]  # include baseline
 
     compute_lpips_for_folders(source_dir, target_dir, cache_steps, output_json)

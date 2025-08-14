@@ -195,7 +195,7 @@
         "time": "2024-10-27T16:02:15+00:00",
         "author_time": "2024-10-27T16:02:15+00:00",
         "dirty": true,
-        "project": "DiTServing",
+        "project": "fast-dit-serving",
         "branch": "main"
     },
     "benchmarks": [

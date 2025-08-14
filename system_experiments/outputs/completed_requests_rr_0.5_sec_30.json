@@ -8,7 +8,7 @@
       "timestamp": "2025-07-16T14:55:45.120828",
       "processing_time_start": "2025-07-16T14:55:45.306593",
       "time_completed": "2025-07-16T14:55:53.818708",
-      "image": "/home/DiTServing/custom_serve/output_images/request_c9082134-578d-4012-8834-0ae51cf84c0e.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_c9082134-578d-4012-8834-0ae51cf84c0e.png"
     },
     {
       "request_id": "c23a71d1-5a5a-4f71-bd86-4fa6ffff1246",
@@ -18,7 +18,7 @@
       "timestamp": "2025-07-16T14:55:47.120212",
       "processing_time_start": "2025-07-16T14:55:47.243080",
       "time_completed": "2025-07-16T14:55:56.528259",
-      "image": "/home/DiTServing/custom_serve/output_images/request_c23a71d1-5a5a-4f71-bd86-4fa6ffff1246.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_c23a71d1-5a5a-4f71-bd86-4fa6ffff1246.png"
     },
     {
       "request_id": "9bb3382e-be6d-4462-a7e1-834cfa5f5b94",
@@ -28,7 +28,7 @@
       "timestamp": "2025-07-16T14:55:49.133405",
       "processing_time_start": "2025-07-16T14:55:49.331434",
       "time_completed": "2025-07-16T14:56:02.224206",
-      "image": "/home/DiTServing/custom_serve/output_images/request_9bb3382e-be6d-4462-a7e1-834cfa5f5b94.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_9bb3382e-be6d-4462-a7e1-834cfa5f5b94.png"
     },
     {
       "request_id": "e3f9480e-03d2-4fb9-935c-efa558ac0b8e",
@@ -38,7 +38,7 @@
       "timestamp": "2025-07-16T14:55:51.128113",
       "processing_time_start": "2025-07-16T14:55:51.465263",
       "time_completed": "2025-07-16T14:56:06.679209",
-      "image": "/home/DiTServing/custom_serve/output_images/request_e3f9480e-03d2-4fb9-935c-efa558ac0b8e.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_e3f9480e-03d2-4fb9-935c-efa558ac0b8e.png"
     },
     {
       "request_id": "20a45625-1a18-4537-8a59-298cc1db0504",
@@ -48,7 +48,7 @@
       "timestamp": "2025-07-16T14:55:53.129970",
       "processing_time_start": "2025-07-16T14:55:53.816853",
       "time_completed": "2025-07-16T14:56:10.020837",
-      "image": "/home/DiTServing/custom_serve/output_images/request_20a45625-1a18-4537-8a59-298cc1db0504.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_20a45625-1a18-4537-8a59-298cc1db0504.png"
     },
     {
       "request_id": "2853da93-06f1-4170-8f16-07184475ed76",
@@ -58,7 +58,7 @@
       "timestamp": "2025-07-16T14:55:55.131371",
       "processing_time_start": "2025-07-16T14:55:55.510114",
       "time_completed": "2025-07-16T14:56:12.657425",
-      "image": "/home/DiTServing/custom_serve/output_images/request_2853da93-06f1-4170-8f16-07184475ed76.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_2853da93-06f1-4170-8f16-07184475ed76.png"
     },
     {
       "request_id": "36583f50-808a-4bd9-b475-7f584611a43b",
@@ -68,7 +68,7 @@
       "timestamp": "2025-07-16T14:55:57.130265",
       "processing_time_start": "2025-07-16T14:55:57.291291",
       "time_completed": "2025-07-16T14:56:15.224138",
-      "image": "/home/DiTServing/custom_serve/output_images/request_36583f50-808a-4bd9-b475-7f584611a43b.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_36583f50-808a-4bd9-b475-7f584611a43b.png"
     },
     {
       "request_id": "b5a4b41b-7202-43a8-a23e-de9b2ef68d58",
@@ -78,7 +78,7 @@
       "timestamp": "2025-07-16T14:55:59.131155",
       "processing_time_start": "2025-07-16T14:55:59.418363",
       "time_completed": "2025-07-16T14:56:17.998705",
-      "image": "/home/DiTServing/custom_serve/output_images/request_b5a4b41b-7202-43a8-a23e-de9b2ef68d58.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_b5a4b41b-7202-43a8-a23e-de9b2ef68d58.png"
     },
     {
       "request_id": "7c9d9523-3b12-4753-87e1-73293fef23fb",
@@ -88,7 +88,7 @@
       "timestamp": "2025-07-16T14:56:01.130959",
       "processing_time_start": "2025-07-16T14:56:02.217992",
       "time_completed": "2025-07-16T14:56:21.016727",
-      "image": "/home/DiTServing/custom_serve/output_images/request_7c9d9523-3b12-4753-87e1-73293fef23fb.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_7c9d9523-3b12-4753-87e1-73293fef23fb.png"
     },
     {
       "request_id": "314e74fa-ba3b-4ccf-a3ce-56349c207217",
@@ -98,7 +98,7 @@
       "timestamp": "2025-07-16T14:56:03.134745",
       "processing_time_start": "2025-07-16T14:56:06.673993",
       "time_completed": "2025-07-16T14:56:25.321043",
-      "image": "/home/DiTServing/custom_serve/output_images/request_314e74fa-ba3b-4ccf-a3ce-56349c207217.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_314e74fa-ba3b-4ccf-a3ce-56349c207217.png"
     },
     {
       "request_id": "bce253ac-5e64-40be-9ad0-83a384247608",
@@ -108,7 +108,7 @@
       "timestamp": "2025-07-16T14:56:05.138978",
       "processing_time_start": "2025-07-16T14:56:09.799052",
       "time_completed": "2025-07-16T14:56:28.050227",
-      "image": "/home/DiTServing/custom_serve/output_images/request_bce253ac-5e64-40be-9ad0-83a384247608.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_bce253ac-5e64-40be-9ad0-83a384247608.png"
     },
     {
       "request_id": "ccedc52c-220c-4fb6-acf4-3f71d6742666",
@@ -118,7 +118,7 @@
       "timestamp": "2025-07-16T14:56:07.136924",
       "processing_time_start": "2025-07-16T14:56:12.655372",
       "time_completed": "2025-07-16T14:56:30.573657",
-      "image": "/home/DiTServing/custom_serve/output_images/request_ccedc52c-220c-4fb6-acf4-3f71d6742666.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_ccedc52c-220c-4fb6-acf4-3f71d6742666.png"
     },
     {
       "request_id": "4265c4dd-abc4-40cc-8dab-c3c76ffd2103",
@@ -128,7 +128,7 @@
       "timestamp": "2025-07-16T14:56:09.137424",
       "processing_time_start": "2025-07-16T14:56:14.886991",
       "time_completed": "2025-07-16T14:56:32.298040",
-      "image": "/home/DiTServing/custom_serve/output_images/request_4265c4dd-abc4-40cc-8dab-c3c76ffd2103.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_4265c4dd-abc4-40cc-8dab-c3c76ffd2103.png"
     },
     {
       "request_id": "9cf9249f-e231-40cc-bb58-68bca18a76fb",
@@ -138,7 +138,7 @@
       "timestamp": "2025-07-16T14:56:11.136077",
       "processing_time_start": "2025-07-16T14:56:17.997068",
       "time_completed": "2025-07-16T14:56:34.379016",
-      "image": "/home/DiTServing/custom_serve/output_images/request_9cf9249f-e231-40cc-bb58-68bca18a76fb.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_9cf9249f-e231-40cc-bb58-68bca18a76fb.png"
     },
     {
       "request_id": "e6750691-2910-4ebe-a448-f883d1ff4edf",
@@ -148,7 +148,7 @@
       "timestamp": "2025-07-16T14:56:13.210889",
       "processing_time_start": "2025-07-16T14:56:21.015491",
       "time_completed": "2025-07-16T14:56:34.861266",
-      "image": "/home/DiTServing/custom_serve/output_images/request_e6750691-2910-4ebe-a448-f883d1ff4edf.png"
+      "image": "/home/fast-dit-serving/custom_serve/output_images/request_e6750691-2910-4ebe-a448-f883d1ff4edf.png"
     }
   ]
 }

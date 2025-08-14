@@ -116,7 +116,7 @@ class CachingClient:
         await self.add_request(prompt, timesteps_left)
 
         logger.info("Polling for output...")
-        path = f"/home/DiTServing/assets/our_outputs/{key}/cache_{interval}.png"
+        path = f"/home/fast-dit-serving/assets/our_outputs/{key}/cache_{interval}.png"
         await self.poll_for_outputs(path)
 
 
@@ -130,7 +130,7 @@ async def process_prompts(client, prompts, interval):
         if key != "prompt_9":
             continue
         timesteps_left = 50
-        path = f"/home/DiTServing/assets/our_outputs/{key}.png"
+        path = f"/home/fast-dit-serving/assets/our_outputs/{key}.png"
         print(f"Processing {key}")
         try:
             await client.run(interval, prompt, timesteps_left, key)
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     client = CachingClient()
     # asyncio.run(client.start_bg_process())
     interval_list = [5]
-    prompts = json.load(open("/home/DiTServing/metrics/testing_prompts.json"))
+    prompts = json.load(open("/home/fast-dit-serving/metrics/testing_prompts.json"))
     for interval in interval_list:
         # interval = 0  # Set desired caching interval
     #     prompt = '''pinkfantasybabes, 
