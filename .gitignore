@@ -1,7 +1,12 @@
 #media
 **/*.jpeg
 **/*.png
-
+!assets/image_quality_grid.png
+!assets/latency_speedup.png
+!assets/methodology.png
+!assets/p2_benchmark.png
+!assets/proc_diag.png
+!assets/request_rate_eval.png
 
 
 #compiled files
