@@ -8,6 +8,7 @@
 !assets/proc_diag.png
 !assets/request_rate_eval.png
 !assets/partiprompts_sd3_custom/*_cache_5*
+!assets/images_*/*
 
 #compiled files
 **/*.pyc
