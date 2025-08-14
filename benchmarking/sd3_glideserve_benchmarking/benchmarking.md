@@ -9,7 +9,7 @@ Measures the processing time of individual requests and provides statistical ana
 
 **Run:**
 ```bash
-python test_glideserve_with_model_latency.py
+python test_sd3_serve_with_model_latency.py
 ```
 What it tests:
 - End-to-end latency for single requests
@@ -22,7 +22,7 @@ Evaluates server efficiency when handling multiple concurrent requests.
 
 **Run:**
 ```bash
-python test_glideserve_with_model_latency_batched.py
+python test_sd3_serve_with_model_latency_batched.py
 ```
 What it tests:
 - Batch processing efficiency vs sequential processing
