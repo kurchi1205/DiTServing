@@ -94,7 +94,7 @@ python run_batched_example.py test_prompts.json
 
 ## Benchmarking
 Benchmarks were run on an **NVIDIA A100 GPU**.  
-_For detailed usage instructions on running these benchmarks, see the [Benchmarking Guide](./benchmarking/sd3_sd3_serve_benchmarking/benchmarking.md)._
+_For detailed usage instructions on running these benchmarks, see the [Benchmarking Guide](./benchmarking/sd3_serve_benchmarking/benchmarking.md)._
 
 #### Results
 | Server Tested           | Mean Time (s) | Median Time (s) |
